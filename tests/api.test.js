@@ -324,6 +324,82 @@ async function main() {
     await delPage(litA.id);
     await delPage(litB.id);
 
+    // --- Varmuusvarasto ---
+    const p0 = await jget('/api/pantry');
+    ok('varasto aluksi tyhjä ja kategoriat mukana', p0.items.length === 0 && p0.categories.includes('Juomavesi'));
+    ok('varaston tuote ilman nimeä hylätään', await status('POST', '/api/pantry', { name: ' ' }) === 400);
+    const pa = await jsend('POST', '/api/pantry', { name: 'Hernekeitto', barcode: '6408430000258', category: 'Ruoka', qty: 2, best_before: '2027-01-31' });
+    ok('varastoon lisätään tuote', pa.id && pa.qty === 2 && pa.best_before === '2027-01-31');
+    ok('lisääjä tulee istunnosta', pa.created_by === 'Testi Admin');
+    const pb = await jsend('POST', '/api/pantry', { name: 'Vesi', category: 'Keksitty', qty: -5, best_before: '2027-02-30' });
+    ok('virheellinen päiväys, kategoria ja määrä siivotaan', pb.best_before === '' && pb.category === 'Muu' && pb.qty === 1,
+      JSON.stringify(pb));
+    await jsend('POST', '/api/pantry', { name: 'Näkkileipä', best_before: '2026-12-01' });
+    const plist = await jget('/api/pantry');
+    ok('varasto järjestyy päiväyksen mukaan, päiväyksettömät viimeisinä',
+      plist.items.map((i) => i.name).join(',') === 'Näkkileipä,Hernekeitto,Vesi', plist.items.map((i) => i.name).join(','));
+    const cat = await jget('/api/pantry/catalog/6408430000258');
+    ok('viivakoodi muistetaan katalogiin', cat && cat.name === 'Hernekeitto' && cat.category === 'Ruoka');
+    ok('tuntematon viivakoodi palauttaa null', (await jget('/api/pantry/catalog/000')) === null);
+    const pu = await jsend('PUT', `/api/pantry/${pa.id}`, { name: 'Hernekeitto 435 g', barcode: '6408430000258', category: 'Ruoka', qty: 2, best_before: '2027-01-31' });
+    ok('varaston tuotetta voi muokata', pu.name === 'Hernekeitto 435 g');
+    ok('muokkaus päivittää katalogin nimen', (await jget('/api/pantry/catalog/6408430000258')).name === 'Hernekeitto 435 g');
+    const use1 = await jsend('POST', `/api/pantry/${pa.id}/use`, {});
+    ok('käytetty 1 vähentää määrää', use1.qty === 1);
+    const use2 = await jsend('POST', `/api/pantry/${pa.id}/use`, {});
+    ok('viimeisen käyttö poistaa rivin', use2.removed === true && !(await jget('/api/pantry')).items.some((i) => i.id === pa.id));
+    ok('katalogi säilyy vaikka tuote loppuu', (await jget('/api/pantry/catalog/6408430000258')) !== null);
+    ok('olemattoman tuotteen muokkaus 404', await status('PUT', '/api/pantry/99999', { name: 'x' }) === 404);
+    ok('lukija ei voi lisätä varastoon (403)', await status('POST', '/api/pantry', { name: 'x' }, V_COOKIE) === 403);
+    ok('lukija näkee varaston', await status('GET', '/api/pantry', null, V_COOKIE) === 200);
+    ok('varasto vaatii kirjautumisen', await status('GET', '/api/pantry', null, '') === 401);
+
+    // --- Kauppalista + reaaliaikaiset tapahtumat ---
+    ok('tapahtumavirta vaatii kirjautumisen', await status('GET', '/api/events', null, '') === 401);
+    const ctrl = new AbortController();
+    const evRes = await fetch(B + '/api/events', { headers: H(), signal: ctrl.signal });
+    ok('tapahtumavirta on text/event-stream', (evRes.headers.get('content-type') || '').startsWith('text/event-stream'));
+    const reader = evRes.body.getReader();
+    const dec = new TextDecoder();
+    let evText = '';
+    const waitFor = async (needle, ms = 2000) => {
+      const end = Date.now() + ms;
+      while (!evText.includes(needle) && Date.now() < end) {
+        const r = await Promise.race([reader.read(), new Promise((res) => setTimeout(() => res(null), end - Date.now()))]);
+        if (!r || r.done) break;
+        evText += dec.decode(r.value);
+      }
+      return evText.includes(needle);
+    };
+    await waitFor('retry:');
+    ok('tyhjä tuote hylätään', await status('POST', '/api/shopping', { text: '   ' }) === 400);
+    const s1x = await jsend('POST', '/api/shopping', { text: 'Maito', qty: '2 l' });
+    ok('kauppalistaan lisätään tuote', s1x.id && s1x.text === 'Maito' && s1x.qty === '2 l' && s1x.added_by === 'Testi Admin');
+    ok('lisäys lähettää shopping-tapahtuman muille laitteille', await waitFor('event: shopping'));
+    const dupe = await jsend('POST', '/api/shopping', { text: 'maito' });
+    ok('sama ostamaton tuote ei tuplaannu', dupe.duplicate === true && dupe.id === s1x.id);
+    const s2x = await jsend('POST', '/api/shopping', { text: 'Leipä' });
+    const done1 = await jsend('PUT', `/api/shopping/${s1x.id}`, { done: true });
+    ok('ruksaus merkitsee ostajan ja ajan', done1.done_at && done1.done_by === 'Testi Admin');
+    const order = await jget('/api/shopping');
+    ok('ostamattomat ensin, ostetut lopussa', order[0].id === s2x.id && order[order.length - 1].id === s1x.id);
+    const again = await jsend('POST', '/api/shopping', { text: 'Maito' });
+    ok('ostetun tuotteen voi lisätä uudelleen uutena rivinä', again.id !== s1x.id && !again.duplicate);
+    const undone = await jsend('PUT', `/api/shopping/${s1x.id}`, { done: false });
+    ok('ruksin voi perua', undone.done_at === null && undone.done_by === '');
+    await jsend('PUT', `/api/shopping/${s1x.id}`, { done: true });
+    const cleared = await jsend('POST', '/api/shopping/clear-done', {});
+    ok('tyhjennä ostetut poistaa vain ruksitut', cleared.removed === 1 && (await jget('/api/shopping')).length === 2);
+    ok('lukija ei voi muokata kauppalistaa (403)', await status('POST', '/api/shopping', { text: 'x' }, V_COOKIE) === 403);
+    evText = '';
+    await jsend('POST', '/api/pantry', { name: 'Paristot AA', category: 'Paristot ja valo' });
+    ok('varaston muutos lähettää pantry-tapahtuman', await waitFor('event: pantry'));
+    ctrl.abort();
+    for (const r of await jget('/api/shopping')) await fetch(`${B}/api/shopping/${r.id}`, { method: 'DELETE', headers: H() });
+    ok('kauppalistan rivit voi poistaa', (await jget('/api/shopping')).length === 0);
+    const hdr = await fetch(B + '/', { headers: H() });
+    ok('kamera sallittu vain omalle sivulle', (hdr.headers.get('permissions-policy') || '').includes('camera=(self)'));
+
     // --- Offline ---
     const offRes = await fetch(B + '/offline', { headers: H() });
     const off = await offRes.text();

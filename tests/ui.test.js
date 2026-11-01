@@ -361,10 +361,97 @@ async function main() {
     await mob.goto(fileUrl); await mob.waitForTimeout(800);
     ok('alapalkki näkyy puhelimessa', await mob.isVisible('#bottomNav'));
     ok('alapalkissa 5 kohtaa', (await mob.$$('.bn-item')).length === 5);
-    await mob.click('.bn-item[data-bnav="shiftlog"]'); await mob.waitForTimeout(400);
-    ok('alapalkista siirrytään päiväkirjaan', /#\/paivakirja/.test(mob.url()), mob.url());
+    await mob.click('.bn-item[data-bnav="shopping"]'); await mob.waitForTimeout(400);
+    ok('alapalkista siirrytään kauppalistaan', /#\/kauppalista/.test(mob.url()), mob.url());
     ok('alapalkin aktiivinen kohta korostuu',
-      (await mob.$$('.bn-item.active[data-bnav="shiftlog"]')).length === 1);
+      (await mob.$$('.bn-item.active[data-bnav="shopping"]')).length === 1);
+
+    // ===== Kauppalista (sandbox) =====
+    await mob.fill('#shopText', 'Maito');
+    await mob.fill('#shopQty', '2 l');
+    await mob.click('#shopAddForm button[type="submit"]'); await mob.waitForTimeout(300);
+    await mob.fill('#shopText', 'Ruisleipä');
+    await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
+    ok('kauppalistaan lisätään tuotteita', (await mob.$$('#shopOpen .shop-row')).length === 2);
+    ok('määrä näkyy rivillä', (await mob.textContent('#shopOpen')).includes('2 l'));
+    ok('lisäyksen jälkeen kenttä tyhjenee ja on valmis seuraavaan',
+      (await mob.inputValue('#shopText')) === '' && await mob.evaluate(() => document.activeElement.id === 'shopText'));
+    await mob.fill('#shopText', 'maito');
+    await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
+    ok('sama tuote ei tuplaannu (kirjainkoko ei ratkaise)', (await mob.$$('#shopOpen .shop-row')).length === 2);
+    await mob.click('#shopOpen .shop-row:first-child .shop-check'); await mob.waitForTimeout(300);
+    ok('ruksattu tuote siirtyy ostettuihin', (await mob.$$('#shopOpen .shop-row')).length === 1
+      && (await mob.textContent('#shopDoneToggle')).includes('Ostettu (1)'));
+    await mob.click('#shopDoneToggle'); await mob.waitForTimeout(250);
+    await mob.click('.shop-row.done .shop-check'); await mob.waitForTimeout(300);
+    ok('ostetun voi palauttaa listalle', (await mob.$$('#shopOpen .shop-row')).length === 2);
+    await mob.click('#shopOpen .shop-row:first-child .shop-check'); await mob.waitForTimeout(300);
+    await mob.click('#shopClearDone'); await mob.waitForTimeout(300);
+    ok('tyhjennä ostetut poistaa ruksitut', (await mob.$$('.shop-row.done')).length === 0
+      && (await mob.$$('#shopOpen .shop-row')).length === 1);
+    ok('XSS: tuotteen nimi escapetaan', await (async () => {
+      await mob.fill('#shopText', '<img src=x onerror="window.__xss=1">');
+      await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
+      return !(await mob.evaluate(() => window.__xss)) && (await mob.textContent('#shopOpen')).includes('<img');
+    })());
+    ok('kauppalista ei aiheuta vaakavieritystä puhelimessa',
+      await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+
+    // ===== Varmuusvarasto (sandbox) =====
+    await mob.click('.bn-item[data-bnav="pantry"]'); await mob.waitForTimeout(400);
+    ok('alapalkista siirrytään varastoon', /#\/varasto/.test(mob.url()));
+    ok('tyhjä varasto opastaa aloittamaan', (await mob.textContent('#pantryList')).includes('Varasto on tyhjä'));
+    const isoIn = (days) => { const d = new Date(); d.setDate(d.getDate() + days);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+    async function addPantry(name, days, qty, code) {
+      await mob.click('#pAddBtn'); await mob.waitForTimeout(250);
+      await mob.fill('#pfName', name);
+      if (days !== null) await mob.fill('#pfBb', isoIn(days));
+      await mob.fill('#pfQty', String(qty));
+      if (code) await mob.fill('#pfCode', code);
+      await mob.click('#pfSave'); await mob.waitForTimeout(300);
+    }
+    await addPantry('Vesi 5 l', 300, 3, '');
+    await addPantry('Hernekeitto', 10, 2, '6408430000258');
+    await addPantry('Näkkileipä', -3, 1, '');
+    await addPantry('Taskulamppu', null, 1, '');
+    const names = await mob.$$eval('.pantry-name', (els) => els.map((e) => e.textContent));
+    ok('varasto järjestyy vanhenemisen mukaan, päiväyksettömät loppuun',
+      JSON.stringify(names) === JSON.stringify(['Näkkileipä', 'Hernekeitto', 'Vesi 5 l', 'Taskulamppu']), JSON.stringify(names));
+    ok('vanhentunut merkitään', (await mob.textContent('.pantry-item.lv-bad')).includes('vanhentunut 3 pv'));
+    ok('pian vanheneva merkitään', (await mob.textContent('.pantry-item.lv-warn')).includes('10 pv jäljellä'));
+    ok('tilastot laskevat kappaleet ja varoitukset',
+      JSON.stringify(await mob.$$eval('.pstat b', (els) => els.map((e) => e.textContent))) === '["7","1","1"]');
+    // Käytetty 1: määrä vähenee, viimeinen poistaa
+    await mob.click('.pantry-item.lv-warn [data-puse]'); await mob.waitForTimeout(300);
+    ok('käytetty 1 vähentää määrää', (await mob.textContent('.pantry-item.lv-warn')).includes('1 kpl'));
+    await mob.click('.pantry-item.lv-bad [data-puse]'); await mob.waitForTimeout(300);
+    ok('viimeisen käyttö poistaa tuotteen', (await mob.$$('.pantry-item.lv-bad')).length === 0);
+    // Kauppalistalle varastosta
+    await mob.click('.pantry-item.lv-warn [data-pshop]'); await mob.waitForTimeout(300);
+    ok('varastosta lisätään kauppalistalle', await mob.evaluate(async () =>
+      (await Store.shopping.list()).some((i) => i.text === 'Hernekeitto' && !i.done_at)));
+    // Tuttu viivakoodi muistetaan
+    ok('viivakoodi muistetaan nimen kanssa', await mob.evaluate(async () =>
+      ((await Store.pantry.lookup('6408430000258')) || {}).name === 'Hernekeitto'));
+    // Suodatin
+    await mob.click('[data-pfilter="Ruoka"]'); await mob.waitForTimeout(200);
+    ok('kategoriasuodatin toimii', (await mob.$$('.pantry-item')).length === 3);
+    await mob.click('[data-pfilter="Kaikki"]'); await mob.waitForTimeout(200);
+    // Poisto vaatii vahvistuksen
+    await mob.click('.pantry-item.lv-none [data-paskdel]'); await mob.waitForTimeout(200);
+    ok('poisto kysyy vahvistuksen', (await mob.$$('[data-pdel]')).length === 1);
+    await mob.click('[data-pdel]'); await mob.waitForTimeout(300);
+    ok('vahvistettu poisto poistaa', (await mob.$$('.pantry-item')).length === 2);
+    ok('varasto ei aiheuta vaakavieritystä puhelimessa',
+      await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    // Etusivun kortit
+    await mob.click('.bn-item[data-bnav="home"]'); await mob.waitForTimeout(600);
+    ok('etusivulla kauppalistakortti', (await mob.textContent('#dashRoot')).includes('Hernekeitto'));
+    ok('etusivulla vanhenevat tuotteet', (await mob.$$('.dash-pantry li')).length === 1);
+    await mob.fill('.dash-shop-add input', 'Kahvi');
+    await mob.press('.dash-shop-add input', 'Enter'); await mob.waitForTimeout(600);
+    ok('etusivun kortista voi lisätä kauppalistalle', (await mob.textContent('.dash-shop')).includes('Kahvi'));
     await mob.close();
 
     // ===== Regressiotestit korjatuille bugeille =====

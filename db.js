@@ -173,4 +173,40 @@ if (!pageCols.includes('deleted_at')) {
 // Osittaisindeksi: näkyvien ohjeiden haut ovat ylivoimaisesti yleisimpiä.
 db.exec('CREATE INDEX IF NOT EXISTS idx_pages_live ON pages(category_id) WHERE deleted_at IS NULL');
 
+// Migraatio: varmuusvarasto ja kauppalista (koti-routes.js).
+// - pantry_items: varaston tuotteet päiväyksineen (best_before = YYYY-MM-DD tai '')
+// - pantry_catalog: viivakoodi -> nimi + kategoria, jotta tuttu tuote täyttyy
+//   skannatessa itsestään
+// - shopping_items: yhteinen kauppalista (done_at NULL = vielä ostamatta)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pantry_items (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    barcode     TEXT NOT NULL DEFAULT '',
+    category    TEXT NOT NULL DEFAULT 'Muu',
+    qty         INTEGER NOT NULL DEFAULT 1,
+    best_before TEXT NOT NULL DEFAULT '',
+    created_at  TEXT NOT NULL,
+    created_by  TEXT NOT NULL DEFAULT '',
+    updated_at  TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS pantry_catalog (
+    barcode    TEXT PRIMARY KEY,
+    name       TEXT NOT NULL,
+    category   TEXT NOT NULL DEFAULT 'Muu',
+    updated_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS shopping_items (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    text       TEXT NOT NULL,
+    qty        TEXT NOT NULL DEFAULT '',
+    added_by   TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    done_at    TEXT,
+    done_by    TEXT NOT NULL DEFAULT ''
+  );
+  CREATE INDEX IF NOT EXISTS idx_pantry_bb ON pantry_items(best_before);
+  CREATE INDEX IF NOT EXISTS idx_shopping_done ON shopping_items(done_at);
+`);
+
 module.exports = db;

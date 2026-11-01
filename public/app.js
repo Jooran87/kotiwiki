@@ -90,6 +90,8 @@ const ICON_PATHS = {
   shield: '<path d="M12 3l7 2.5V11c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V5.5z"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   search2: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+  cart: '<path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+  box: '<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
 };
 function icon(name, cls) {
   const p = ICON_PATHS[name];
@@ -269,6 +271,17 @@ function applyUser(user) {
   if (logoutBtn) {
     logoutBtn.style.display = '';
     logoutBtn.onclick = async () => { await Store.auth.logout(); location.reload(); };
+  }
+  // Puhelimessa yläpalkissa ei ole tilaa nimelle ja uloskirjautumiselle:
+  // ne näytetään valikon (sivupalkin) alareunassa (koti.css piilottaa yläpalkin versiot).
+  const nav = document.querySelector('#sidebar nav');
+  if (nav && !$('#mobileLogout')) {
+    const b = document.createElement('button');
+    b.className = 'nav-link mobile-only';
+    b.id = 'mobileLogout';
+    b.innerHTML = `${icon('back')}<span>Kirjaudu ulos (${esc(user.name)})</span>`;
+    b.onclick = async () => { await Store.auth.logout(); location.reload(); };
+    nav.appendChild(b);
   }
   const nameBox = document.querySelector('.user');
   if (nameBox) nameBox.style.display = 'none';
@@ -628,6 +641,8 @@ async function router() {
   // (esim. poistetun sivun avaaminen).
   try {
     if (parts.length === 0) { setActiveNav('home'); return await viewHome(); }
+    if (parts[0] === 'kauppalista') { setActiveNav('shopping'); return await Koti.viewShopping(); }
+    if (parts[0] === 'varasto') { setActiveNav('pantry'); return await Koti.viewPantry(); }
     if (parts[0] === 'paivakirja') { setActiveNav('shiftlog'); return await viewShiftLog(); }
     if (parts[0] === 'numerot') { setActiveNav('contacts'); return await viewContacts(); }
     if (parts[0] === 'muistutukset') { setActiveNav('announcements'); return await viewAnnouncements(); }
@@ -1866,9 +1881,9 @@ function openLightbox(images, start) {
   bar.setAttribute('aria-label', 'Päävalikko');
   const items = [
     { nav: 'home', ic: 'home', label: 'Etusivu' },
-    { nav: 'shiftlog', ic: 'note', label: 'Päiväkirja' },
+    { nav: 'shopping', ic: 'cart', label: 'Kauppalista' },
     { act: 'search', ic: 'search2', label: 'Haku' },
-    { nav: 'announcements', ic: 'announce', label: 'Muistutukset' },
+    { nav: 'pantry', ic: 'box', label: 'Varasto' },
     { act: 'menu', ic: 'menu', label: 'Valikko' },
   ];
   bar.innerHTML = items.map((it) =>
@@ -1876,7 +1891,7 @@ function openLightbox(images, start) {
       ${icon(it.ic)}<span>${it.label}</span></button>`).join('');
   document.body.appendChild(bar);
   bar.querySelectorAll('[data-bnav]').forEach((b) => b.onclick = () => {
-    const routes = { home: '#/', shiftlog: '#/paivakirja', announcements: '#/muistutukset' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', announcements: '#/muistutukset' };
     location.hash = routes[b.dataset.bnav] || '#/';
     window.scrollTo({ top: 0 });
   });
@@ -1922,7 +1937,7 @@ document.addEventListener('click', async (e) => {
   if (cat) { location.hash = '#/kohde/' + cat.dataset.cat; return; }
   const nav = e.target.closest('[data-nav]');
   if (nav) {
-    const routes = { home: '#/', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
     location.hash = routes[nav.dataset.nav] || '#/';
     return;
   }

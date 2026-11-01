@@ -1,0 +1,27 @@
+[Unit]
+Description=Kotiwiki (oma dashboard, varasto, kauppalista)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/kotiwiki/app
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3000
+# Kuunnellaan vain koneen sisällä: ulospäin näkyy ainoastaan Caddy (HTTPS).
+Environment=HOST=127.0.0.1
+# HTTPS-proxyn takana: Secure-eväste ja oikea IP kirjautumisrajoitukseen.
+Environment=BEHIND_PROXY=1
+Environment=ELAMA_DATA_DIR=/opt/kotiwiki/data
+User=kotiwiki
+Group=kotiwiki
+# Kovennukset: palvelu ei näe muuta levyä eikä saa lisäoikeuksia.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/kotiwiki/data /opt/kotiwiki/backups
+
+[Install]
+WantedBy=multi-user.target

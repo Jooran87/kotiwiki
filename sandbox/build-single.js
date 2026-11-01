@@ -19,6 +19,8 @@ const offlineTpl = fs.readFileSync(path.join(root, 'public', 'offline-template.j
 const storeLocal = fs.readFileSync(path.join(__dirname, 'store-local.js'), 'utf8');
 const dashboard = fs.readFileSync(path.join(root, 'public', 'dashboard.js'), 'utf8');
 const cardsJs = fs.readFileSync(path.join(root, 'public', 'cards.js'), 'utf8');
+const kotiJs = fs.readFileSync(path.join(root, 'public', 'koti.js'), 'utf8');
+const kotiCss = fs.readFileSync(path.join(root, 'public', 'koti.css'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'public', 'app.js'), 'utf8');
 
 const html = `<!DOCTYPE html>
@@ -37,6 +39,7 @@ const html = `<!DOCTYPE html>
   <style>
 ${css}
 ${design2a}
+${kotiCss}
     .sandbox-badge { background:#1c2430; color:#fff; font-size:11px; font-weight:700;
       padding:2px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:.04em; }
   </style>
@@ -62,6 +65,8 @@ ${design2a}
     <aside id="sidebar" class="sidebar">
       <nav>
         <button class="nav-link" data-nav="home" data-icon="home"><span>Etusivu</span></button>
+        <button class="nav-link" data-nav="shopping" data-icon="cart"><span>Kauppalista</span></button>
+        <button class="nav-link" data-nav="pantry" data-icon="box"><span>Varmuusvarasto</span></button>
         <button class="nav-link" data-nav="announcements" data-icon="announce"><span>Muistutukset</span></button>
         <button class="nav-link" data-nav="shiftlog" data-icon="note"><span>Päiväkirja</span></button>
         <button class="nav-link" data-nav="contacts" data-icon="contact"><span>Tärkeät numerot</span></button>
@@ -103,6 +108,9 @@ ${dashboard}
   </script>
   <script>
 ${cardsJs}
+  </script>
+  <script>
+${kotiJs}
   </script>
   <script>
 ${app}

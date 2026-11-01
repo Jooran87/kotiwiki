@@ -107,7 +107,7 @@ const ready = ensureSeeded();
 
 async function ensureSeeded() {
   if (DB) { migrateExisting(); return; }
-  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [] };
+  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [] };
 
   // Elämän osa-alueet. Vaihda omiksesi – tämä on vain runko.
   const koti = { id: nextId(), name: 'Koti', icon: 'svg:building', color: '#0369a1', sort_order: 0, parent_id: null };
@@ -277,6 +277,9 @@ function migrateExisting() {
   if (!DB.announcements) { DB.announcements = []; changed = true; }
   if (!DB.terms) { DB.terms = []; changed = true; }
   if (!DB.links) { DB.links = []; changed = true; }
+  if (!DB.pantry) { DB.pantry = []; changed = true; }
+  if (!DB.pantryCatalog) { DB.pantryCatalog = {}; changed = true; }
+  if (!DB.shopping) { DB.shopping = []; changed = true; }
   DB.categories.forEach((c) => { if (typeof c.icon !== 'string') { c.icon = ''; changed = true; } });
   DB.categories.forEach((c) => { if (c.parent_id === undefined) { c.parent_id = null; changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.color !== 'string') { c.color = ''; changed = true; } });
@@ -323,6 +326,21 @@ function makeSnippet(text, q) {
   const start = Math.max(0, idx - 40);
   const end = Math.min(plain.length, idx + q.length + 60);
   return (start > 0 ? '…' : '') + plain.slice(start, end).trim() + (end < plain.length ? '…' : '');
+}
+
+// Varmuusvaraston kenttien siivous (vastaa koti-routes.js:n sääntöjä).
+const PANTRY_CATEGORIES = ['Ruoka', 'Juomavesi', 'Ensiapu ja lääkkeet', 'Paristot ja valo',
+  'Hygienia', 'Koiran tarvikkeet', 'Muu'];
+function pantryFields(d) {
+  const bb = String(d.best_before || '').slice(0, 10);
+  const q = parseInt(d.qty, 10);
+  return {
+    name: String(d.name || '').trim().slice(0, 200),
+    barcode: String(d.barcode || '').replace(/[^0-9A-Za-z\-.]/g, '').slice(0, 64),
+    category: PANTRY_CATEGORIES.includes(d.category) ? d.category : 'Muu',
+    qty: Number.isFinite(q) ? Math.min(Math.max(q, 1), 9999) : 1,
+    best_before: /^\d{4}-\d{2}-\d{2}$/.test(bb) ? bb : '',
+  };
 }
 
 // ---------- Store-rajapinta ----------
@@ -643,6 +661,83 @@ const Store = {
     },
     async reorder(ids) { await ready; applyReorder(DB.contacts, ids); save(DB); return { ok: true }; },
   },
+
+  // ---------- Varmuusvarasto (sama rajapinta kuin palvelimella) ----------
+  pantry: {
+    async list() {
+      await ready;
+      const items = clone(DB.pantry).sort((a, b) =>
+        (a.best_before === '') - (b.best_before === '') || a.best_before.localeCompare(b.best_before) || a.name.localeCompare(b.name, 'fi'));
+      return { categories: PANTRY_CATEGORIES, items };
+    },
+    async lookup(code) { await ready; const c = DB.pantryCatalog[code]; return c ? clone(c) : null; },
+    async create(data) {
+      await ready;
+      const f = pantryFields(data);
+      if (!f.name) throw new Error('Nimi puuttuu');
+      const it = { id: nextId(), ...f, created_at: nowISO(), created_by: '', updated_at: nowISO() };
+      DB.pantry.push(it);
+      if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
+      save(DB); return clone(it);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const it = DB.pantry.find((x) => x.id === id);
+      if (!it) throw new Error('Tuotetta ei löydy');
+      const f = pantryFields(data);
+      if (!f.name) throw new Error('Nimi puuttuu');
+      Object.assign(it, f, { updated_at: nowISO() });
+      if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
+      save(DB); return clone(it);
+    },
+    async useOne(id) {
+      await ready; id = Number(id);
+      const it = DB.pantry.find((x) => x.id === id);
+      if (!it) throw new Error('Tuotetta ei löydy');
+      if (it.qty <= 1) DB.pantry = DB.pantry.filter((x) => x.id !== id); else it.qty -= 1;
+      save(DB); return { id, qty: Math.max(0, it.qty) };
+    },
+    async remove(id) { await ready; id = Number(id); DB.pantry = DB.pantry.filter((x) => x.id !== id); save(DB); return { ok: true }; },
+  },
+
+  // ---------- Kauppalista ----------
+  shopping: {
+    async list() {
+      await ready;
+      const open = DB.shopping.filter((i) => !i.done_at).sort((a, b) => a.created_at.localeCompare(b.created_at));
+      const done = DB.shopping.filter((i) => i.done_at).sort((a, b) => b.done_at.localeCompare(a.done_at));
+      return clone([...open, ...done]);
+    },
+    async add(text, qty) {
+      await ready;
+      text = String(text || '').trim().slice(0, 200);
+      if (!text) throw new Error('Kirjoita tuote');
+      const dup = DB.shopping.find((i) => !i.done_at && i.text.toLowerCase() === text.toLowerCase());
+      if (dup) return { ...clone(dup), duplicate: true };
+      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
+      DB.shopping.push(it); save(DB); return clone(it);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const it = DB.shopping.find((x) => x.id === id);
+      if (!it) throw new Error('Riviä ei löydy');
+      if (data.text !== undefined) it.text = String(data.text).trim().slice(0, 200) || it.text;
+      if (data.qty !== undefined) it.qty = String(data.qty).trim().slice(0, 40);
+      if (data.done === true && !it.done_at) it.done_at = nowISO();
+      if (data.done === false) it.done_at = null;
+      save(DB); return clone(it);
+    },
+    async remove(id) { await ready; id = Number(id); DB.shopping = DB.shopping.filter((x) => x.id !== id); save(DB); return { ok: true }; },
+    async clearDone() {
+      await ready;
+      const before = DB.shopping.length;
+      DB.shopping = DB.shopping.filter((i) => !i.done_at);
+      save(DB); return { removed: before - DB.shopping.length };
+    },
+  },
+
+  // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
+  events: null,
 
   notes: {
     async list({ categoryId, limit } = {}) {

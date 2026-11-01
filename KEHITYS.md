@@ -1,4 +1,4 @@
-# Kehittäjän käsikirja – Oma dashboard
+# Kehittäjän käsikirja – Kotiwiki
 
 Tämä dokumentti siirtää projektin hiljaisen tiedon seuraavalle kehittäjälle
 tai tekoälyavustajalle. Lue tämä ennen muutosten tekemistä.
@@ -19,6 +19,11 @@ public/
 sandbox/
   store-local.js     Datakerros sandboxille (localStorage + IndexedDB, EI authia)
   build-single.js    Kokoaa yhden tiedoston sandboxin (elama-sandbox.html)
+koti-routes.js       Varasto + kauppalista + reaaliaikaiset tapahtumat (SSE)
+public/koti.js       Varaston ja kauppalistan näkymät, viivakoodiskanneri, kortit
+public/koti.css      Niiden ulkoasu (2a-tokenit)
+public/vendor/       zxing.min.js (Apache-2.0), ladataan vain skannatessa
+deploy/              systemd-palvelu ja Caddyfile omalle palvelimelle
 tests/               npm test: api (auth+CRUD+turva), backup, ui (Chromium)
 backup.js/restore.js Varmuuskopiointi (VACUUM INTO) ja palautus
 seed.js              Esimerkkisisältö (vain tyhjään kantaan)
@@ -38,7 +43,7 @@ Pohjaprojektin etusivu oli kiinteä; tässä se on **korttirekisteri**.
 - `public/cards.js` – kortit. Uusi kortti = yksi `register`-kutsu, etusivun
   koodiin ei kosketa.
 - `viewHome()` (app.js) piirtää vain otsikon ja kutsuu `Dashboard.render()`.
-- Skriptijärjestys on **dashboard.js → cards.js → app.js** sekä index.html:ssä
+- Skriptijärjestys on **dashboard.js → cards.js → koti.js → app.js** sekä index.html:ssä
   että build-single.js:ssä. Väärä järjestys kaataa käynnistyksen.
 
 **load ja render on erotettu tarkoituksella:** kaikkien korttien datat haetaan
@@ -57,6 +62,38 @@ Selain ei ota yhteyttä ulos. Uusi lähde:
 `GET /api/dashboard` → kortin `load`. Näin CSP pysyy tiukkana, avaimet
 palvelimella, ja lähteen ollessa alhaalla voidaan näyttää viimeisin arvo.
 
+## Varmuusvarasto ja kauppalista
+
+- **Palvelin:** `koti-routes.js` liitetään server.js:ssä portin JÄLKEEN,
+  joten kirjautuminen ja roolit (lukija = vain GET) koskevat sitä
+  automaattisesti. Taulut `pantry_items`, `pantry_catalog` (viivakoodi →
+  nimi + kategoria) ja `shopping_items` luodaan db.js:n migraatiossa.
+- **Reaaliaikaisuus:** `GET /api/events` on SSE-virta. Jokainen kirjoitus
+  kutsuu `broadcast('pantry' | 'shopping')`; selain hakee listan uudelleen.
+  Ei kirjastoja. Keep-alive 25 s välein (`unref`, ei pidä testiajoa
+  hengissä). Caddyssa `flush_interval -1`, muuten virta puskuroituu.
+- **Selain:** `Store.events.on(tyyppi, fn)` (store-api.js). Sandboxissa
+  `Store.events = null` → ei reaaliaikaisuutta, kaikki muu toimii.
+  `Koti.listen()` pitää yhden tilauksen kerrallaan ja lopettaa sen, kun
+  käyttäjä on siirtynyt toiseen näkymään. Kauppalistan päivitys säilyttää
+  kesken olevan kirjoituksen; varasto ei päivity, jos lomake tai kamera on auki.
+- **Skanneri:** `getUserMedia` vaatii HTTPS:n tai localhostin. Tunnistus
+  ensin selaimen `BarcodeDetector`illa (Chrome/Android), muuten ZXing
+  (iPhone Safari). ZXing ladataan dynaamisesti `vendor/zxing.min.js`:stä
+  (CSP `script-src 'self'` sallii). Videosta luetaan keskialueen rajaus
+  ~220 ms välein. `Permissions-Policy: camera=(self)`.
+- Päiväys tallennetaan muodossa `YYYY-MM-DD` ja validoidaan (myös
+  olemattomat päivät kuten 30.2. hylätään → tyhjä).
+- Testit: e2e-tarkistus oikealla kamerasyötteellä onnistuu Chromiumin
+  `--use-file-for-fake-video-capture=<y4m>`-lipulla.
+
+## Palvelin internetissä
+
+`BEHIND_PROXY=1` (deploy/kotiwiki.service): `trust proxy = loopback`, jolloin
+kirjautumisrajoitus käyttää `req.ip`:tä (X-Forwarded-For) eikä lukitse
+kaikkia kerralla, ja istuntoeväste saa `Secure`-lipun. `HOST=127.0.0.1`
+pitää Noden piilossa Caddyn takana.
+
 ## Pelisäännöt (opittu kantapään kautta)
 
 1. **Ei uusia riippuvuuksia kevyin perustein.** Auth tehtiin Node cryptolla,
@@ -64,6 +101,11 @@ palvelimella, ja lähteen ollessa alhaalla voidaan näyttää viimeisin arvo.
    (`overrides`-kenttä package.jsonissa pakottaa korjatut versiot: `uuid`
    exceljs:lle ja `brace-expansion` koko puulle. Jos `npm audit` näyttää
    siirtymäriippuvuuden haavoittuvuuden, lisää override + aja `npm test`.)
+   **Tunnettu poikkeus (11/2026):** `minimatch <11` (moderate, DoS haitallisella
+   glob-lausekkeella) exceljs → archiver → glob 7 -ketjussa. Overridea ei voi
+   käyttää, koska minimatch 11 rikkoo glob 7:n (testattu). Ei hyödynnettävissä:
+   archiver ajaa vain sovelluksen omia kiinteitä lausekkeita, ei käyttäjän syötettä.
+   Poistuu kun exceljs päivittää archiverin.
 2. **Kaikki käyttäjäsisältö escapetaan** (`esc()` app.js:ssä) ennen innerHTML:ää.
    Markdown renderöidään escapetusta tekstistä. XSS-testit vartioivat tätä.
 3. **Skeemamuutokset vain lisäävinä migraatioina db.js:ään**
@@ -74,7 +116,7 @@ palvelimella, ja lähteen ollessa alhaalla voidaan näyttää viimeisin arvo.
    seed-dataan – tee näin vain kun uusi seed-sisältö on demolle tärkeä).
 5. **Ulkoasu-/logiikkamuutoksen jälkeen aina** `node sandbox/build-single.js`
    ja committaa syntynyt elama-sandbox.html.
-6. **`npm test` vihreänä (253 testiä) ennen jokaista committia.** Testit ajavat
+6. **`npm test` vihreänä (311 testiä) ennen jokaista committia.** Testit ajavat
    palvelimen eristetyssä ELAMA_DATA_DIR-hakemistossa – eivät koske oikeaa dataa.
 7. **Tekijätieto tulee AINA istunnosta** (`req.user.name`) – älä koskaan luota
    selaimen author-kenttään.
@@ -228,7 +270,7 @@ kokeiluvaiheen kytkin on poistettu.
 
 ```bash
 npm start                      # palvelin (PORT=xxxx vaihtaa portin)
-npm test                       # 253 testiä eristetyssä ympäristössä
+npm test                       # 311 testiä eristetyssä ympäristössä
 npm run backup                 # varmuuskopio backups/-kansioon
 node sandbox/build-single.js   # kokoa jaettava sandbox-tiedosto
 node reindex.js                # liitteiden hakuindeksin uudelleenajo

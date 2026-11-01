@@ -15,6 +15,16 @@ const PORT = process.env.PORT || 3000;
 
 // --- Tietoturvaotsakkeet ---
 app.disable('x-powered-by');
+
+// Internetissä wiki on HTTPS-käänteisproxyn (Caddy) takana samalla koneella.
+// BEHIND_PROXY=1 (ks. TUOTANTOON.md):
+//  - req.ip luetaan proxyn X-Forwarded-For-otsakkeesta, jotta kirjautumisyritysten
+//    rajoitus koskee oikeaa osoitetta eikä lukitse kaikkia käyttäjiä kerralla
+//    (ilman tätä jokainen pyyntö näyttäisi tulevan osoitteesta 127.0.0.1)
+//  - istuntoeväste saa Secure-lipun (lähetetään vain HTTPS-yhteydellä)
+const BEHIND_PROXY = process.env.BEHIND_PROXY === '1';
+if (BEHIND_PROXY) app.set('trust proxy', 'loopback');
+const COOKIE_SECURE = BEHIND_PROXY || process.env.COOKIE_SECURE === '1' ? '; Secure' : '';
 app.use((req, res, next) => {
   // /offline on itsenäinen dokumentti, jonka haku vaatii inline-skriptin.
   const csp = req.path === '/offline'
@@ -26,7 +36,8 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'same-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // Kamera sallitaan vain omalle sivulle: varaston viivakoodiskanneri.
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(), geolocation=()');
   next();
 });
 
@@ -90,7 +101,7 @@ function createSession(res, userId) {
   db.prepare('INSERT INTO sessions (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)')
     .run(token, userId, expires, now());
   res.setHeader('Set-Cookie',
-    `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS * 86400}`);
+    `${SESSION_COOKIE}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_DAYS * 86400}${COOKIE_SECURE}`);
 }
 
 function currentUser(req) {
@@ -157,7 +168,7 @@ app.post('/api/setup', (req, res) => {
 });
 
 app.post('/api/login', (req, res) => {
-  const ip = req.socket.remoteAddress || '?';
+  const ip = (BEHIND_PROXY ? req.ip : req.socket.remoteAddress) || '?';
   if (loginBlocked(ip)) return res.status(429).json({ error: 'Liian monta yritystä – odota hetki' });
   const username = String(req.body.username || '').trim().toLowerCase();
   const u = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
@@ -173,7 +184,7 @@ app.post('/api/login', (req, res) => {
 app.post('/api/logout', (req, res) => {
   const token = getCookie(req, SESSION_COOKIE);
   if (token) db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
-  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`);
+  res.setHeader('Set-Cookie', `${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0${COOKIE_SECURE}`);
   res.json({ ok: true });
 });
 
@@ -865,6 +876,9 @@ function deletePageFiles(pageId) {
   }
 }
 
+// ---------- Varmuusvarasto + kauppalista (+ reaaliaikaiset tapahtumat) ----------
+require('./koti-routes')(app, db);
+
 // Multer-virheet ihmisluettavaan muotoon.
 app.use((err, req, res, next) => {
   if (err) return res.status(400).json({ error: err.message });
@@ -877,6 +891,8 @@ const purged = purgeTrash();
 if (purged) console.log(`Roskakorista siivottu ${purged} yli ${TRASH_DAYS} vrk vanhaa ohjetta.`);
 setInterval(purgeTrash, 24 * 3600 * 1000).unref();
 
-app.listen(PORT, () => {
-  console.log(`Oma dashboard käynnissä: http://localhost:${PORT}`);
+// HOST=127.0.0.1 palvelimella: kuunnellaan vain koneen sisällä (Caddy edessä).
+const HOST = process.env.HOST || undefined;
+app.listen(PORT, HOST, () => {
+  console.log(`Oma dashboard käynnissä: http://${HOST || 'localhost'}:${PORT}`);
 });

@@ -128,6 +128,58 @@ const Store = {
     remove: (id) => api('/api/shift-notes/' + id, { method: 'DELETE' }),
   },
 
+  // Varmuusvarasto: { categories: [...], items: [...] }
+  pantry: {
+    list: () => api('/api/pantry'),
+    lookup: (barcode) => api('/api/pantry/catalog/' + encodeURIComponent(barcode)),
+    create: (data) => api('/api/pantry', jsonBody('POST', data)),
+    update: (id, data) => api('/api/pantry/' + id, jsonBody('PUT', data)),
+    useOne: (id) => api('/api/pantry/' + id + '/use', { method: 'POST' }),
+    remove: (id) => api('/api/pantry/' + id, { method: 'DELETE' }),
+  },
+
+  // Yhteinen kauppalista.
+  shopping: {
+    list: () => api('/api/shopping'),
+    add: (text, qty) => api('/api/shopping', jsonBody('POST', { text, qty: qty || '' })),
+    update: (id, data) => api('/api/shopping/' + id, jsonBody('PUT', data)),
+    remove: (id) => api('/api/shopping/' + id, { method: 'DELETE' }),
+    clearDone: () => api('/api/shopping/clear-done', { method: 'POST' }),
+  },
+
+  // Reaaliaikaiset muutokset muilta laitteilta (Server-Sent Events).
+  // on('shopping', fn) palauttaa funktion, jolla kuuntelun voi lopettaa.
+  events: (() => {
+    let es = null;
+    const handlers = { pantry: new Set(), shopping: new Set() };
+    function ensure() {
+      if (es || typeof EventSource === 'undefined') return;
+      es = new EventSource('/api/events');
+      // Verkkokatkos: EventSource yhdistää itse. Jos palvelin vastaa virheellä
+      // (esim. istunto vanheni), yhteys sulkeutuu pysyvästi → yritetään hetken päästä.
+      es.onerror = () => {
+        if (es && es.readyState === 2) {
+          es = null;
+          setTimeout(() => {
+            if (handlers.pantry.size || handlers.shopping.size) ensure();
+          }, 10000);
+        }
+      };
+      Object.keys(handlers).forEach((type) => {
+        es.addEventListener(type, () => handlers[type].forEach((fn) => { try { fn(); } catch (_) {} }));
+      });
+    }
+    return {
+      on(type, fn) {
+        if (!handlers[type]) return () => {};
+        handlers[type].add(fn);
+        ensure();
+        return () => handlers[type].delete(fn);
+      },
+      close() { if (es) { es.close(); es = null; } },
+    };
+  })(),
+
   search: (q) => api('/api/search?q=' + encodeURIComponent(q)).then((r) => {
     r.files.forEach((f) => { f.url = '/api/attachments/' + f.id; });
     return r;

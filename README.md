@@ -1,16 +1,44 @@
-# Oma dashboard
+# Kotiwiki (oma dashboard)
 
-Henkilökohtainen aloitussivu: **muistutukset, omat ohjeet ja päivän tiedot**
-yhdellä silmäyksellä. Rakennettu Palmian työohje-wikin pohjalle – sama moottori,
+Henkilökohtainen aloitussivu: **muistutukset, omat ohjeet, päivän tiedot,
+yhteinen kauppalista ja varmuusvaraston päiväysseuranta** yhdellä silmäyksellä. Rakennettu Palmian työohje-wikin pohjalle – sama moottori,
 eri käyttötarkoitus.
 
-Toimii **omalla koneella tai aina päällä olevalla pikkukoneella** (esim.
-Raspberry Pi). Ei pilvipalveluita eikä tilejä: kaikki data on omassa
-tietokannassa omalla koneella.
+Toimii omalla koneella, kotiverkon pikkukoneella tai omalla pienellä
+virtuaalipalvelimella (ks. `TUOTANTOON.md`). Ei pilvipalveluiden tilejä:
+kaikki data on omassa SQLite-tietokannassa.
 
 ---
 
 ## Mitä tässä on nyt
+
+### Kauppalista (reaaliaikainen, yhteinen)
+
+- Lisää tuote ja halutessa määrä (esim. "Maito · 2 l"). Enter lisää ja
+  kenttä on heti valmis seuraavaan.
+- Ruksi ostetuksi napauttamalla; ostetut siirtyvät omaan listaansa, josta
+  ne voi palauttaa tai tyhjentää kerralla.
+- **Muutokset näkyvät kaikilla laitteilla heti** (Server-Sent Events): kun
+  toinen lisää tai ruksii tuotteen, se päivittyy toisen puhelimeen sekunnissa.
+- Sama ostamaton tuote ei tuplaannu. Aiemmin ostetut tulevat ehdotuksina.
+- Rivillä näkyy kuka lisäsi ja kuka osti (nimi tulee kirjautumisesta).
+- Etusivulla oma kortti, josta voi myös lisätä suoraan.
+
+### Varmuusvarasto
+
+- **Viivakoodin luku puhelimen kameralla:** osoita koodia kameralla, luku
+  tapahtuu itsestään. Toimii myös iPhonessa (ZXing-kirjasto). Jos suora
+  kamerakuva ei ole käytettävissä, varalla valokuvasta luku.
+- **Tuttu tuote muistetaan:** kun viivakoodille on kerran annettu nimi ja
+  kategoria, ne täyttyvät seuraavalla skannauksella itsestään.
+- Parasta ennen -päiväys, määrä ja kategoria (Ruoka, Juomavesi, Ensiapu ja
+  lääkkeet, Paristot ja valo, Hygienia, Koiran tarvikkeet, Muu).
+- Lista vanhenemisjärjestyksessä värikoodein: punainen = vanhentunut,
+  oranssi = alle 30 pv, keltainen = alle 90 pv, vihreä = kunnossa.
+- **Käytetty 1** vähentää määrää, **Listalle** lisää tuotteen kauppalistalle.
+- Etusivun kortti näyttää 90 päivän sisällä vanhenevat.
+
+### Etusivu
 
 **Dashboard-runko korttipaikkoineen.** Etusivu koostuu korteista, joita voi
 lisätä, järjestää ja piilottaa. Nämä toimivat jo:
@@ -23,6 +51,8 @@ lisätä, järjestää ja piilottaa. Nämä toimivat jo:
 | **Viimeksi päivitetyt** | Mitä olet viimeksi muokannut |
 | **Tärkeät numerot** | Hätänumero korostettuna, muut alla |
 | **Muistiinpanot** | Pikakirjaus ja viimeisimmät merkinnät |
+| **Kauppalista** | Ostettavat + pikalisäys |
+| **Varasto: vanhenee pian** | 90 päivän sisällä vanhenevat tuotteet |
 
 Auringonnousuajat **lasketaan laitteessa** – niitäkään ei haeta verkosta.
 

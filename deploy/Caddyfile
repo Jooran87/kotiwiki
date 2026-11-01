@@ -1,0 +1,11 @@
+# Vaihda oma verkkotunnus. Caddy hakee ja uusii HTTPS-sertifikaatin itse.
+koti.omanimi.fi {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+	}
+	# flush_interval -1: reaaliaikaiset päivitykset (/api/events) läpi heti
+	reverse_proxy 127.0.0.1:3000 {
+		flush_interval -1
+	}
+}

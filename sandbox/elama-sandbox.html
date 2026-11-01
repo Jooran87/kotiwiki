@@ -1248,6 +1248,104 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .dash-slot .d2-cats, .dash-slot .d2-recent { padding: 14px 16px; }
 .dash-slot .d2-logbox { border-bottom: none; }
 
+/* Varmuusvarasto + kauppalista (koti.js). Käyttää 2a-ulkoasun tokeneita
+   (--crit, --warn, --ok, --line, --tx2 ...), joten tumma ja vaalea teema
+   toimivat ilman omia värejä. */
+
+.koti-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.koti-head h2 { margin: 0 0 6px; }
+.koti-live { font-size: 12.5px; color: var(--tx2, var(--muted)); display: inline-flex; align-items: center; gap: 6px; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok, #2f7d46);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok, #2f7d46) 25%, transparent); }
+
+/* ---------- Kauppalista ---------- */
+.shop-add { display: flex; gap: 8px; align-items: stretch; padding: 12px; }
+.shop-add input { flex: 1; min-width: 0; font-size: 16px; } /* 16px: iOS ei zoomaa */
+.shop-add .shop-qty-in { flex: 0 0 90px; }
+.shop-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.shop-list .empty { padding: 14px 0; }
+.shop-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line, var(--border)); }
+.shop-row:first-child { border-top: none; }
+.shop-check { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line2, var(--border));
+  background: transparent; color: var(--acttx, #fff); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.shop-check .ic { width: 20px; height: 20px; }
+.shop-row.done .shop-check { background: var(--ok, #2f7d46); border-color: var(--ok, #2f7d46); color: #fff; }
+.shop-body { flex: 1; min-width: 0; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.shop-text { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.shop-qty { font-size: 13px; color: var(--tx2, var(--muted)); }
+.shop-meta { flex-basis: 100%; font-size: 12px; color: var(--tx3, var(--muted)); }
+.shop-row.done .shop-text { text-decoration: line-through; color: var(--tx3, var(--muted)); font-weight: 500; }
+.linkish { background: none; border: none; padding: 0; font: inherit; font-weight: 650; color: inherit; cursor: pointer; }
+
+/* ---------- Varasto ---------- */
+.pantry-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+.pstat { background: var(--panel); border: 1px solid var(--line, var(--border)); border-radius: 10px; padding: 10px; text-align: center; }
+.pstat b { display: block; font-size: 22px; }
+.pstat span { font-size: 12px; color: var(--tx2, var(--muted)); }
+.pstat.warn b { color: var(--warn, #8a5605); }
+.pstat.bad b { color: var(--crit, #c8262c); }
+.pantry-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 12px; }
+.pantry-actions .btn { justify-content: center; display: inline-flex; align-items: center; gap: 6px; padding: 12px; }
+.pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pf-code { display: flex; gap: 8px; }
+.pf-code input { flex: 1; min-width: 0; }
+.pantry-form input, .pantry-form select { font-size: 16px; }
+.pchips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: none; }
+.pchip { flex: none; border: 1px solid var(--line, var(--border)); background: var(--panel); color: inherit;
+  border-radius: 99px; padding: 6px 12px; font: inherit; font-size: 13.5px; cursor: pointer; }
+.pchip.on { background: var(--act, var(--brand)); border-color: var(--act, var(--brand)); color: var(--acttx, #fff); }
+.pantry-item { background: var(--panel); border: 1px solid var(--line, var(--border)); border-left: 4px solid var(--line2, var(--border));
+  border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+.pantry-item.lv-bad { border-left-color: var(--crit, #c8262c); }
+.pantry-item.lv-warn { border-left-color: var(--warn, #8a5605); }
+.pantry-item.lv-soon { border-left-color: color-mix(in srgb, var(--warn, #8a5605) 55%, transparent); }
+.pantry-item.lv-ok { border-left-color: var(--ok, #2f7d46); }
+.pantry-top { align-items: flex-start; gap: 10px; }
+.pantry-name { font-weight: 650; }
+.pantry-meta { font-size: 12.5px; color: var(--tx2, var(--muted)); margin-top: 2px; }
+.pantry-acts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.pantry-acts .btn { display: inline-flex; align-items: center; gap: 4px; }
+.pantry-acts .ic { width: 15px; height: 15px; }
+.pbadge { flex: none; font-size: 11.5px; font-weight: 700; border-radius: 99px; padding: 3px 9px; white-space: nowrap;
+  background: var(--sel, var(--hover)); color: var(--tx2, var(--muted)); }
+.pbadge.lv-bad { background: var(--critbg, #fdeaea); color: var(--crit, #c8262c); }
+.pbadge.lv-warn, .pbadge.lv-soon { background: var(--warnbg, #fff3d6); color: var(--warn, #8a5605); }
+.pbadge.lv-ok { background: color-mix(in srgb, var(--ok, #2f7d46) 14%, transparent); color: var(--ok, #2f7d46); }
+
+/* Skanneri */
+.scan-view { position: relative; border-radius: 10px; overflow: hidden; background: #000; aspect-ratio: 4 / 3; max-height: 60vh; }
+.scan-view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-frame { position: absolute; left: 5%; right: 5%; top: 25%; bottom: 25%; border: 3px solid rgba(255,255,255,.9);
+  border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0,0,0,.35); pointer-events: none; }
+.scanner .row { margin-top: 8px; }
+
+/* ---------- Etusivun kortit ---------- */
+.dash-shop ul, .dash-pantry { list-style: none; margin: 0; padding: 4px 16px; }
+.dash-shop li, .dash-pantry li { display: flex; justify-content: space-between; gap: 10px; align-items: center;
+  padding: 7px 0; border-top: 1px solid var(--line, var(--border)); font-size: 13.5px; }
+.dash-shop li:first-child, .dash-pantry li:first-child { border-top: none; }
+.dash-shop .dash-more { padding: 0 16px 6px; font-size: 12px; }
+.dash-shop-add { display: flex; gap: 6px; padding: 8px 16px 14px; }
+.dash-shop-add input { flex: 1; min-width: 0; font-size: 16px; }
+
+@media (max-width: 560px) {
+  .shop-add { flex-wrap: wrap; }
+  .shop-add input[type="text"]#shopText { flex-basis: 100%; }
+  .shop-add .shop-qty-in { flex: 1; }
+}
+
+/* ---------- Puhelimen yläpalkki kirjautuneena ----------
+   Nimi + "Kirjaudu ulos" eivät mahdu 390 px leveyteen kellon ja haun kanssa,
+   vaan aiheuttivat vaakavierityksen. Puhelimessa ne ovat valikossa. */
+.mobile-only { display: none !important; }
+@media (max-width: 760px) {
+  #userChip, #logoutBtn { display: none !important; }
+  .mobile-only { display: flex !important; }
+}
+@media (max-width: 560px) {
+  .pantry-acts .btn { padding: 6px 9px; }
+}
+
     .sandbox-badge { background:#1c2430; color:#fff; font-size:11px; font-weight:700;
       padding:2px 8px; border-radius:10px; text-transform:uppercase; letter-spacing:.04em; }
   </style>
@@ -1273,6 +1371,8 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
     <aside id="sidebar" class="sidebar">
       <nav>
         <button class="nav-link" data-nav="home" data-icon="home"><span>Etusivu</span></button>
+        <button class="nav-link" data-nav="shopping" data-icon="cart"><span>Kauppalista</span></button>
+        <button class="nav-link" data-nav="pantry" data-icon="box"><span>Varmuusvarasto</span></button>
         <button class="nav-link" data-nav="announcements" data-icon="announce"><span>Muistutukset</span></button>
         <button class="nav-link" data-nav="shiftlog" data-icon="note"><span>Päiväkirja</span></button>
         <button class="nav-link" data-nav="contacts" data-icon="contact"><span>Tärkeät numerot</span></button>
@@ -1661,7 +1761,7 @@ const ready = ensureSeeded();
 
 async function ensureSeeded() {
   if (DB) { migrateExisting(); return; }
-  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [] };
+  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [] };
 
   // Elämän osa-alueet. Vaihda omiksesi – tämä on vain runko.
   const koti = { id: nextId(), name: 'Koti', icon: 'svg:building', color: '#0369a1', sort_order: 0, parent_id: null };
@@ -1831,6 +1931,9 @@ function migrateExisting() {
   if (!DB.announcements) { DB.announcements = []; changed = true; }
   if (!DB.terms) { DB.terms = []; changed = true; }
   if (!DB.links) { DB.links = []; changed = true; }
+  if (!DB.pantry) { DB.pantry = []; changed = true; }
+  if (!DB.pantryCatalog) { DB.pantryCatalog = {}; changed = true; }
+  if (!DB.shopping) { DB.shopping = []; changed = true; }
   DB.categories.forEach((c) => { if (typeof c.icon !== 'string') { c.icon = ''; changed = true; } });
   DB.categories.forEach((c) => { if (c.parent_id === undefined) { c.parent_id = null; changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.color !== 'string') { c.color = ''; changed = true; } });
@@ -1877,6 +1980,21 @@ function makeSnippet(text, q) {
   const start = Math.max(0, idx - 40);
   const end = Math.min(plain.length, idx + q.length + 60);
   return (start > 0 ? '…' : '') + plain.slice(start, end).trim() + (end < plain.length ? '…' : '');
+}
+
+// Varmuusvaraston kenttien siivous (vastaa koti-routes.js:n sääntöjä).
+const PANTRY_CATEGORIES = ['Ruoka', 'Juomavesi', 'Ensiapu ja lääkkeet', 'Paristot ja valo',
+  'Hygienia', 'Koiran tarvikkeet', 'Muu'];
+function pantryFields(d) {
+  const bb = String(d.best_before || '').slice(0, 10);
+  const q = parseInt(d.qty, 10);
+  return {
+    name: String(d.name || '').trim().slice(0, 200),
+    barcode: String(d.barcode || '').replace(/[^0-9A-Za-z\-.]/g, '').slice(0, 64),
+    category: PANTRY_CATEGORIES.includes(d.category) ? d.category : 'Muu',
+    qty: Number.isFinite(q) ? Math.min(Math.max(q, 1), 9999) : 1,
+    best_before: /^\d{4}-\d{2}-\d{2}$/.test(bb) ? bb : '',
+  };
 }
 
 // ---------- Store-rajapinta ----------
@@ -2197,6 +2315,83 @@ const Store = {
     },
     async reorder(ids) { await ready; applyReorder(DB.contacts, ids); save(DB); return { ok: true }; },
   },
+
+  // ---------- Varmuusvarasto (sama rajapinta kuin palvelimella) ----------
+  pantry: {
+    async list() {
+      await ready;
+      const items = clone(DB.pantry).sort((a, b) =>
+        (a.best_before === '') - (b.best_before === '') || a.best_before.localeCompare(b.best_before) || a.name.localeCompare(b.name, 'fi'));
+      return { categories: PANTRY_CATEGORIES, items };
+    },
+    async lookup(code) { await ready; const c = DB.pantryCatalog[code]; return c ? clone(c) : null; },
+    async create(data) {
+      await ready;
+      const f = pantryFields(data);
+      if (!f.name) throw new Error('Nimi puuttuu');
+      const it = { id: nextId(), ...f, created_at: nowISO(), created_by: '', updated_at: nowISO() };
+      DB.pantry.push(it);
+      if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
+      save(DB); return clone(it);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const it = DB.pantry.find((x) => x.id === id);
+      if (!it) throw new Error('Tuotetta ei löydy');
+      const f = pantryFields(data);
+      if (!f.name) throw new Error('Nimi puuttuu');
+      Object.assign(it, f, { updated_at: nowISO() });
+      if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
+      save(DB); return clone(it);
+    },
+    async useOne(id) {
+      await ready; id = Number(id);
+      const it = DB.pantry.find((x) => x.id === id);
+      if (!it) throw new Error('Tuotetta ei löydy');
+      if (it.qty <= 1) DB.pantry = DB.pantry.filter((x) => x.id !== id); else it.qty -= 1;
+      save(DB); return { id, qty: Math.max(0, it.qty) };
+    },
+    async remove(id) { await ready; id = Number(id); DB.pantry = DB.pantry.filter((x) => x.id !== id); save(DB); return { ok: true }; },
+  },
+
+  // ---------- Kauppalista ----------
+  shopping: {
+    async list() {
+      await ready;
+      const open = DB.shopping.filter((i) => !i.done_at).sort((a, b) => a.created_at.localeCompare(b.created_at));
+      const done = DB.shopping.filter((i) => i.done_at).sort((a, b) => b.done_at.localeCompare(a.done_at));
+      return clone([...open, ...done]);
+    },
+    async add(text, qty) {
+      await ready;
+      text = String(text || '').trim().slice(0, 200);
+      if (!text) throw new Error('Kirjoita tuote');
+      const dup = DB.shopping.find((i) => !i.done_at && i.text.toLowerCase() === text.toLowerCase());
+      if (dup) return { ...clone(dup), duplicate: true };
+      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
+      DB.shopping.push(it); save(DB); return clone(it);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const it = DB.shopping.find((x) => x.id === id);
+      if (!it) throw new Error('Riviä ei löydy');
+      if (data.text !== undefined) it.text = String(data.text).trim().slice(0, 200) || it.text;
+      if (data.qty !== undefined) it.qty = String(data.qty).trim().slice(0, 40);
+      if (data.done === true && !it.done_at) it.done_at = nowISO();
+      if (data.done === false) it.done_at = null;
+      save(DB); return clone(it);
+    },
+    async remove(id) { await ready; id = Number(id); DB.shopping = DB.shopping.filter((x) => x.id !== id); save(DB); return { ok: true }; },
+    async clearDone() {
+      await ready;
+      const before = DB.shopping.length;
+      DB.shopping = DB.shopping.filter((i) => !i.done_at);
+      save(DB); return { removed: before - DB.shopping.length };
+    },
+  },
+
+  // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
+  events: null,
 
   notes: {
     async list({ categoryId, limit } = {}) {
@@ -2681,6 +2876,570 @@ TULOSSA.forEach((k) => Dashboard.register({
   </script>
   <script>
 'use strict';
+/* ============================================================================
+   Varmuusvarasto + yhteinen kauppalista
+   ----------------------------------------------------------------------------
+   Näkymät #/varasto ja #/kauppalista sekä niiden etusivun kortit.
+   Ladataan dashboard.js:n ja cards.js:n JÄLKEEN mutta ENNEN app.js:ää
+   (Dashboard.register tarvitsee rungon; app.js:n apufunktioita kuten esc,
+   icon, toast ja $ käytetään vasta ajonaikaisesti, joten järjestys riittää).
+
+   Viivakoodin luku:
+     1. Kamera videona (getUserMedia). Vaatii HTTPS:n tai localhostin.
+     2. Tunnistus selaimen omalla BarcodeDetectorilla (Chrome/Android), tai
+        ZXing-kirjastolla (vendor/zxing.min.js, ladataan vasta tarvittaessa),
+        joka toimii myös iPhonen Safarissa.
+     3. Jos kamera ei aukea (esim. http-osoite), varalla valokuva: puhelin
+        avaa kameran, otat kuvan ja koodi luetaan kuvasta.
+   ========================================================================== */
+
+const Koti = (() => {
+  // ---------- Yhteiset apurit ----------
+  const DAY = 86400000;
+  function today0() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+  function daysLeft(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-').map(Number);
+    return Math.round((new Date(y, m - 1, d) - today0()) / DAY);
+  }
+  const fiDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${+d}.${+m}.${y}`; };
+  function level(dl) {
+    if (dl === null) return 'none';
+    if (dl < 0) return 'bad';
+    if (dl <= 30) return 'warn';
+    if (dl <= 90) return 'soon';
+    return 'ok';
+  }
+  function badgeText(dl) {
+    if (dl === null) return 'ei päiväystä';
+    if (dl < 0) return `vanhentunut ${-dl} pv`;
+    if (dl === 0) return 'vanhenee tänään';
+    if (dl <= 90) return `${dl} pv jäljellä`;
+    const kk = Math.round(dl / 30.4);
+    return kk < 24 ? `${kk} kk jäljellä` : `${String(Math.round(dl / 36.5) / 10).replace('.', ',')} v jäljellä`;
+  }
+  const canEdit = () => !Store.auth || !currentUser || currentUser.role !== 'viewer';
+  const onRoute = (name) => (location.hash.slice(2).split(/[/?]/)[0] || '') === name;
+
+  // Reaaliaikainen kuuntelu: yksi aktiivinen tilaus kerrallaan. Kun käyttäjä
+  // siirtyy pois näkymästä, seuraava tapahtuma lopettaa kuuntelun.
+  let unsub = null;
+  function listen(type, route, refresh) {
+    if (unsub) unsub();
+    unsub = null;
+    if (!Store.events) return;
+    let timer = null;
+    unsub = Store.events.on(type, () => {
+      if (!onRoute(route)) { if (unsub) unsub(); unsub = null; return; }
+      clearTimeout(timer);
+      timer = setTimeout(refresh, 150); // useampi muutos kerralla = yksi päivitys
+    });
+  }
+
+  // ======================================================================
+  // Kauppalista
+  // ======================================================================
+  let shopShowDone = false;
+
+  function shopRowHtml(it) {
+    const done = !!it.done_at;
+    const meta = done
+      ? `ostanut ${esc(it.done_by || '')}`
+      : (it.added_by ? `lisännyt ${esc(it.added_by)}` : '');
+    return `<li class="shop-row${done ? ' done' : ''}" data-id="${it.id}">
+      <button class="shop-check" data-shoptoggle="${it.id}" aria-pressed="${done}"
+        aria-label="${done ? 'Palauta ostettavaksi' : 'Merkitse ostetuksi'}: ${esc(it.text)}"
+        ${canEdit() ? '' : 'disabled'}>${done ? icon('verify') : ''}</button>
+      <div class="shop-body" data-shoptoggle="${it.id}">
+        <span class="shop-text">${esc(it.text)}</span>
+        ${it.qty ? `<span class="shop-qty mono">${esc(it.qty)}</span>` : ''}
+        ${meta ? `<span class="shop-meta">${meta}</span>` : ''}
+      </div>
+      <button class="icon-btn small editor-only" data-shopdel="${it.id}" title="Poista rivi"
+        aria-label="Poista ${esc(it.text)}">${icon('close')}</button>
+    </li>`;
+  }
+
+  async function viewShopping() {
+    const items = await Store.shopping.list();
+    const open = items.filter((i) => !i.done_at);
+    const done = items.filter((i) => i.done_at);
+    // Ehdotukset aiemmin ostetuista (nopea uudelleenlisäys).
+    const suggestions = [...new Set(done.map((i) => i.text))].slice(0, 40);
+    const live = Store.events ? '<span class="live-dot" title="Muutokset näkyvät heti kaikilla laitteilla"></span>Päivittyy reaaliajassa' : 'Demo: tallentuu vain tähän selaimeen';
+    content.innerHTML = `
+      <div class="koti-head">
+        <h2>${icon('cart', 'ic-lg')} Kauppalista</h2>
+        <span class="koti-live">${live}</span>
+      </div>
+      <form class="card shop-add editor-only" id="shopAddForm" autocomplete="off">
+        <input type="text" id="shopText" placeholder="Lisää tuote, esim. maito" list="shopSuggest" maxlength="200" />
+        <input type="text" id="shopQty" placeholder="Määrä" maxlength="40" class="shop-qty-in" />
+        <button class="btn" type="submit">Lisää</button>
+        <datalist id="shopSuggest">${suggestions.map((s) => `<option value="${esc(s)}">`).join('')}</datalist>
+      </form>
+      <div class="card shop-card">
+        <div class="spread"><h3 style="margin:0">Ostettavat (${open.length})</h3></div>
+        <ul class="shop-list" id="shopOpen">
+          ${open.map(shopRowHtml).join('') || '<li class="empty">Lista on tyhjä. Lisää ensimmäinen tuote yllä.</li>'}
+        </ul>
+      </div>
+      ${done.length ? `<div class="card shop-card">
+        <div class="spread">
+          <button class="linkish" id="shopDoneToggle" aria-expanded="${shopShowDone}">
+            Ostettu (${done.length}) ${shopShowDone ? '▴' : '▾'}</button>
+          <button class="btn small secondary editor-only" id="shopClearDone">Tyhjennä ostetut</button>
+        </div>
+        ${shopShowDone ? `<ul class="shop-list">${done.map(shopRowHtml).join('')}</ul>` : ''}
+      </div>` : ''}`;
+
+    const form = $('#shopAddForm');
+    if (form) form.onsubmit = async (e) => {
+      e.preventDefault();
+      const text = $('#shopText').value.trim();
+      if (!text) return toast('Kirjoita tuote', true);
+      try {
+        const r = await Store.shopping.add(text, $('#shopQty').value.trim());
+        if (r && r.duplicate) toast('Tuote on jo listalla');
+        await viewShopping();
+        const t = $('#shopText'); if (t) t.focus();
+      } catch (err) { toast(err.message, true); }
+    };
+    content.querySelectorAll('[data-shoptoggle]').forEach((el) => el.onclick = async () => {
+      if (!canEdit()) return;
+      const id = +el.dataset.shoptoggle;
+      const it = items.find((x) => x.id === id);
+      const row = el.closest('.shop-row');
+      if (row) row.classList.toggle('done'); // välitön palaute ennen palvelinta
+      try { await Store.shopping.update(id, { done: !it.done_at }); await viewShopping(); }
+      catch (err) { toast(err.message, true); viewShopping(); }
+    });
+    content.querySelectorAll('[data-shopdel]').forEach((b) => b.onclick = async () => {
+      try { await Store.shopping.remove(+b.dataset.shopdel); viewShopping(); }
+      catch (err) { toast(err.message, true); }
+    });
+    const tg = $('#shopDoneToggle');
+    if (tg) tg.onclick = () => { shopShowDone = !shopShowDone; viewShopping(); };
+    const clr = $('#shopClearDone');
+    if (clr) clr.onclick = async () => {
+      try { const r = await Store.shopping.clearDone(); toast(`Poistettu ${r.removed} ostettua`); viewShopping(); }
+      catch (err) { toast(err.message, true); }
+    };
+    listen('shopping', 'kauppalista', () => {
+      // Ei pyyhitä kesken olevaa kirjoitusta: päivitetään vain lista.
+      const t = $('#shopText'), q = $('#shopQty');
+      const keep = t ? { text: t.value, qty: q.value, focus: document.activeElement === t } : null;
+      viewShopping().then(() => {
+        if (!keep) return;
+        $('#shopText').value = keep.text; $('#shopQty').value = keep.qty;
+        if (keep.focus) $('#shopText').focus();
+      });
+    });
+  }
+
+  async function addToShopping(text) {
+    try {
+      const r = await Store.shopping.add(text, '');
+      toast(r && r.duplicate ? 'Tuote on jo kauppalistalla' : 'Lisätty kauppalistalle');
+    } catch (err) { toast(err.message, true); }
+  }
+
+  // ======================================================================
+  // Viivakoodin luku
+  // ======================================================================
+  const Scanner = (() => {
+    let stream = null, timer = null, stopped = true;
+
+    function loadZxing() {
+      if (window.ZXing) return Promise.resolve(window.ZXing);
+      if (Store.mode !== 'server') return Promise.reject(new Error('ZXing ei ole käytössä demoversiossa'));
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'vendor/zxing.min.js';
+        s.onload = () => (window.ZXing ? resolve(window.ZXing) : reject(new Error('ZXing ei latautunut')));
+        s.onerror = () => reject(new Error('ZXing ei latautunut'));
+        document.head.appendChild(s);
+      });
+    }
+
+    async function makeDecoder() {
+      // 1) Selaimen oma tunnistin, jos se osaa EAN-koodit.
+      if ('BarcodeDetector' in window) {
+        try {
+          const fmts = await window.BarcodeDetector.getSupportedFormats();
+          if (fmts.includes('ean_13')) {
+            const det = new window.BarcodeDetector({ formats: fmts.filter((f) => /ean|upc|code_128|code_39|itf|qr/.test(f)) });
+            return async (source) => {
+              const r = await det.detect(source);
+              return r && r.length ? r[0].rawValue : null;
+            };
+          }
+        } catch (_) { /* siirrytään ZXingiin */ }
+      }
+      // 2) ZXing (myös iPhone).
+      const Z = await loadZxing();
+      const hints = new Map();
+      hints.set(Z.DecodeHintType.TRY_HARDER, true);
+      hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.EAN_13, Z.BarcodeFormat.EAN_8,
+        Z.BarcodeFormat.UPC_A, Z.BarcodeFormat.UPC_E, Z.BarcodeFormat.CODE_128, Z.BarcodeFormat.CODE_39,
+        Z.BarcodeFormat.ITF]);
+      const reader = new Z.MultiFormatReader();
+      reader.setHints(hints);
+      return async (canvas) => {
+        try {
+          const lum = new Z.HTMLCanvasElementLuminanceSource(canvas);
+          return reader.decode(new Z.BinaryBitmap(new Z.HybridBinarizer(lum))).getText();
+        } catch (_) { return null; } finally { reader.reset(); }
+      };
+    }
+
+    // Kuvasta/videosta canvakselle (videosta keskialue, jossa koodi on).
+    function frame(src, crop) {
+      const w = src.videoWidth || src.naturalWidth, h = src.videoHeight || src.naturalHeight;
+      if (!w || !h) return null;
+      const c = document.createElement('canvas');
+      if (crop) {
+        const cw = Math.round(w * 0.9), ch = Math.round(h * 0.5);
+        const s = Math.min(1, 1280 / cw);
+        c.width = Math.round(cw * s); c.height = Math.round(ch * s);
+        c.getContext('2d').drawImage(src, (w - cw) / 2, (h - ch) / 2, cw, ch, 0, 0, c.width, c.height);
+      } else {
+        const s = Math.min(1, 1600 / Math.max(w, h));
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+      }
+      return c;
+    }
+
+    function stop() {
+      stopped = true;
+      clearTimeout(timer);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+      stream = null;
+    }
+
+    // Avaa kameran annettuun <video>-elementtiin ja kutsuu onCode(koodi) kun
+    // koodi löytyy. Heittää virheen, jos kamera ei ole käytettävissä.
+    async function start(video, onCode) {
+      stop();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('no-camera');
+      }
+      const decode = await makeDecoder();
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      video.srcObject = stream;
+      video.setAttribute('playsinline', '');
+      video.muted = true;
+      await video.play();
+      stopped = false;
+      const tick = async () => {
+        if (stopped) return;
+        let code = null;
+        try {
+          const c = frame(video, true);
+          if (c) code = await decode(c);
+        } catch (_) {}
+        if (stopped) return;
+        if (code) { stop(); if (navigator.vibrate) navigator.vibrate(60); onCode(code); return; }
+        timer = setTimeout(tick, 220);
+      };
+      tick();
+    }
+
+    // Varatie: valokuvasta.
+    async function fromFile(file) {
+      const decode = await makeDecoder();
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await new Promise((res, rej) => {
+          const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Kuvaa ei voitu avata')); i.src = url;
+        });
+        for (const crop of [false, true]) {
+          const c = frame(img, crop);
+          const code = c && await decode(c);
+          if (code) return code;
+        }
+        return null;
+      } finally { URL.revokeObjectURL(url); }
+    }
+
+    return { start, stop, fromFile };
+  })();
+
+  // ======================================================================
+  // Varmuusvarasto
+  // ======================================================================
+  const pantryUi = { filter: 'Kaikki', form: null, scanning: false, confirmDel: null };
+
+  function pantryItemHtml(it) {
+    const dl = daysLeft(it.best_before), lv = level(dl);
+    const acts = canEdit() ? (pantryUi.confirmDel === it.id
+      ? `<span class="muted">Poistetaanko?</span>
+         <button class="btn small danger" data-pdel="${it.id}">Poista</button>
+         <button class="btn small secondary" data-pnodel>Peruuta</button>`
+      : `<button class="btn small secondary" data-puse="${it.id}">Käytetty 1</button>
+         <button class="btn small secondary" data-pshop="${it.id}">${icon('cart')} Listalle</button>
+         <button class="btn small secondary" data-pedit="${it.id}">Muokkaa</button>
+         <button class="icon-btn small" data-paskdel="${it.id}" title="Poista" aria-label="Poista ${esc(it.name)}">${icon('trash')}</button>`)
+      : '';
+    return `<div class="pantry-item lv-${lv}">
+      <div class="spread pantry-top">
+        <div>
+          <div class="pantry-name">${esc(it.name)}</div>
+          <div class="pantry-meta">${esc(it.category)} · ${it.qty} kpl${it.best_before ? ' · pe ' + fiDate(it.best_before) : ''}</div>
+        </div>
+        <span class="pbadge lv-${lv}">${badgeText(dl)}</span>
+      </div>
+      ${acts ? `<div class="pantry-acts">${acts}</div>` : ''}
+    </div>`;
+  }
+
+  function pantryFormHtml(f, categories) {
+    return `<div class="card pantry-form" id="pantryForm">
+      <h3 style="margin-top:0">${f.id ? 'Muokkaa tuotetta' : 'Uusi tuote'}</h3>
+      <div class="field"><label for="pfName">Nimi</label>
+        <input type="text" id="pfName" maxlength="200" value="${esc(f.name)}" placeholder="esim. Hernekeitto 435 g" /></div>
+      <div class="pf-row">
+        <div class="field"><label for="pfBb">Parasta ennen</label>
+          <input type="date" id="pfBb" value="${esc(f.best_before)}" /></div>
+        <div class="field"><label for="pfQty">Määrä (kpl)</label>
+          <input type="number" id="pfQty" min="1" max="9999" inputmode="numeric" value="${esc(f.qty)}" /></div>
+      </div>
+      <div class="field"><label for="pfCat">Kategoria</label>
+        <select id="pfCat">${categories.map((c) => `<option${c === f.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+      <div class="field"><label for="pfCode">Viivakoodi</label>
+        <div class="pf-code"><input type="text" id="pfCode" inputmode="numeric" maxlength="64" value="${esc(f.barcode)}" placeholder="valinnainen" />
+        <button class="btn small secondary" id="pfScan" type="button">${icon('camera')} Skannaa</button></div></div>
+      <div class="row">
+        <button class="btn" id="pfSave">Tallenna</button>
+        <button class="btn secondary" id="pfCancel">Peruuta</button>
+      </div>
+    </div>`;
+  }
+
+  const scannerHtml = () => `<div class="card scanner" id="scanner">
+      <div class="scan-view"><video id="scanVideo" playsinline muted></video><div class="scan-frame"></div></div>
+      <p class="muted" id="scanMsg">Osoita viivakoodia kameralla. Pidä puhelin vakaana noin 10–20 cm päässä.</p>
+      <div class="row">
+        <button class="btn secondary" id="scanStop">Lopeta</button>
+        <label class="btn secondary" for="scanFile">Ota valokuva</label>
+        <input type="file" id="scanFile" accept="image/*" capture="environment" hidden />
+      </div>
+    </div>`;
+
+  function readForm() {
+    return {
+      id: pantryUi.form && pantryUi.form.id,
+      name: $('#pfName').value.trim(),
+      best_before: $('#pfBb').value,
+      qty: +$('#pfQty').value || 1,
+      category: $('#pfCat').value,
+      barcode: $('#pfCode').value.trim(),
+    };
+  }
+
+  // Koodi luettu → täytetään lomake (tuttu tuote nimineen).
+  async function onBarcode(code) {
+    pantryUi.scanning = false;
+    const keep = $('#pantryForm') ? readForm() : null;
+    const f = keep || { id: null, name: '', best_before: '', qty: 1, category: 'Ruoka', barcode: '' };
+    f.barcode = code;
+    let known = null;
+    try { known = await Store.pantry.lookup(code); } catch (_) {}
+    if (known) { if (!f.name) f.name = known.name; f.category = known.category; }
+    pantryUi.form = f;
+    await viewPantry();
+    toast(known ? `Tuttu tuote: ${known.name}` : 'Viivakoodi luettu. Anna tuotteelle nimi, se muistetaan jatkossa.');
+    const target = known ? $('#pfBb') : $('#pfName');
+    if (target) target.focus();
+  }
+
+  async function openScanner() {
+    if ($('#pantryForm')) pantryUi.form = readForm();
+    pantryUi.scanning = true;
+    await viewPantry();
+  }
+
+  async function viewPantry() {
+    Scanner.stop();
+    const { categories, items } = await Store.pantry.list();
+    let nExp = 0, nSoon = 0, total = 0;
+    items.forEach((it) => {
+      total += it.qty;
+      const dl = daysLeft(it.best_before);
+      if (dl !== null && dl < 0) nExp++; else if (dl !== null && dl <= 30) nSoon++;
+    });
+    const used = categories.filter((c) => items.some((it) => it.category === c));
+    if (pantryUi.filter !== 'Kaikki' && !used.includes(pantryUi.filter)) pantryUi.filter = 'Kaikki';
+    const list = items.filter((it) => pantryUi.filter === 'Kaikki' || it.category === pantryUi.filter);
+    const showActions = canEdit() && !pantryUi.form && !pantryUi.scanning;
+
+    content.innerHTML = `
+      <div class="koti-head"><h2>${icon('box', 'ic-lg')} Varmuusvarasto</h2></div>
+      <p class="muted">Kotivaran päiväysseuranta. Skannaa viivakoodi, lisää päiväys ja käytä vanhimmat ensin.</p>
+      <div class="pantry-stats">
+        <div class="pstat"><b>${total}</b><span>kpl varastossa</span></div>
+        <div class="pstat${nSoon ? ' warn' : ''}"><b>${nSoon}</b><span>vanhenee 30 pv sisällä</span></div>
+        <div class="pstat${nExp ? ' bad' : ''}"><b>${nExp}</b><span>vanhentunut</span></div>
+      </div>
+      ${showActions ? `<div class="pantry-actions">
+        <button class="btn" id="pScanBtn">${icon('camera')} Skannaa viivakoodi</button>
+        <button class="btn secondary" id="pAddBtn">${icon('add')} Lisää käsin</button>
+      </div>` : ''}
+      ${pantryUi.scanning ? scannerHtml() : ''}
+      ${pantryUi.form && !pantryUi.scanning ? pantryFormHtml(pantryUi.form, categories) : ''}
+      ${items.length ? `<div class="pchips">${['Kaikki', ...used].map((c) =>
+        `<button class="pchip${c === pantryUi.filter ? ' on' : ''}" data-pfilter="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+      <div id="pantryList">
+        ${list.map(pantryItemHtml).join('') || `<div class="card empty">${items.length
+          ? 'Ei tuotteita tässä kategoriassa.' : 'Varasto on tyhjä. Aloita skannaamalla ensimmäinen tuote.'}</div>`}
+      </div>`;
+
+    // --- Toiminnot ---
+    const scanBtn = $('#pScanBtn');
+    if (scanBtn) scanBtn.onclick = openScanner;
+    const addBtn = $('#pAddBtn');
+    if (addBtn) addBtn.onclick = () => {
+      pantryUi.form = { id: null, name: '', best_before: '', qty: 1, category: 'Ruoka', barcode: '' };
+      viewPantry().then(() => $('#pfName') && $('#pfName').focus());
+    };
+
+    if (pantryUi.scanning) {
+      const msg = $('#scanMsg');
+      $('#scanStop').onclick = () => { Scanner.stop(); pantryUi.scanning = false; viewPantry(); };
+      $('#scanFile').onchange = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        msg.textContent = 'Luetaan kuvaa…';
+        try {
+          const code = await Scanner.fromFile(file);
+          if (code) { Scanner.stop(); return onBarcode(code); }
+          msg.textContent = 'Viivakoodia ei löytynyt kuvasta. Kuvaa koodi lähempää ja suoraan edestä.';
+        } catch (err) { msg.textContent = 'Kuvan luku ei onnistunut: ' + err.message; }
+      };
+      Scanner.start($('#scanVideo'), onBarcode).catch((err) => {
+        const v = $('.scan-view'); if (v) v.hidden = true;
+        if (!msg) return;
+        msg.textContent = err && err.name === 'NotAllowedError'
+          ? 'Kameran käyttö estettiin. Salli kamera selaimen asetuksista tai ota valokuva.'
+          : (location.protocol !== 'https:' && location.hostname !== 'localhost')
+            ? 'Suora kamerakuva vaatii HTTPS-osoitteen. Ota sen sijaan valokuva viivakoodista.'
+            : 'Kamera ei avautunut. Ota sen sijaan valokuva viivakoodista.';
+      });
+    }
+
+    if ($('#pantryForm')) {
+      $('#pfScan').onclick = openScanner;
+      $('#pfCancel').onclick = () => { pantryUi.form = null; viewPantry(); };
+      $('#pfSave').onclick = async () => {
+        const f = readForm();
+        if (!f.name) return toast('Anna tuotteelle nimi', true);
+        try {
+          if (f.id) await Store.pantry.update(f.id, f); else await Store.pantry.create(f);
+          toast(f.id ? 'Päivitetty' : `Lisätty: ${f.name}`);
+          pantryUi.form = null;
+          viewPantry();
+        } catch (err) { toast(err.message, true); }
+      };
+    }
+
+    content.querySelectorAll('[data-pfilter]').forEach((b) => b.onclick = () => { pantryUi.filter = b.dataset.pfilter; viewPantry(); });
+    const byId = (id) => items.find((x) => x.id === +id);
+    content.querySelectorAll('[data-puse]').forEach((b) => b.onclick = async () => {
+      const it = byId(b.dataset.puse);
+      try {
+        await Store.pantry.useOne(it.id);
+        if (it.qty <= 1) toast(`${it.name} loppui varastosta`);
+        viewPantry();
+      } catch (err) { toast(err.message, true); }
+    });
+    content.querySelectorAll('[data-pshop]').forEach((b) => b.onclick = () => addToShopping(byId(b.dataset.pshop).name));
+    content.querySelectorAll('[data-pedit]').forEach((b) => b.onclick = () => {
+      const it = byId(b.dataset.pedit);
+      pantryUi.form = { id: it.id, name: it.name, best_before: it.best_before, qty: it.qty, category: it.category, barcode: it.barcode };
+      viewPantry().then(() => window.scrollTo({ top: 0 }));
+    });
+    content.querySelectorAll('[data-paskdel]').forEach((b) => b.onclick = () => { pantryUi.confirmDel = +b.dataset.paskdel; viewPantry(); });
+    content.querySelectorAll('[data-pnodel]').forEach((b) => b.onclick = () => { pantryUi.confirmDel = null; viewPantry(); });
+    content.querySelectorAll('[data-pdel]').forEach((b) => b.onclick = async () => {
+      try { await Store.pantry.remove(+b.dataset.pdel); pantryUi.confirmDel = null; toast('Poistettu'); viewPantry(); }
+      catch (err) { toast(err.message, true); }
+    });
+
+    // Toisen laitteen muutokset: päivitetään vain kun lomake tai kamera ei ole auki.
+    listen('pantry', 'varasto', () => { if (!pantryUi.form && !pantryUi.scanning) viewPantry(); });
+  }
+
+  // Kun käyttäjä poistuu varastosta kesken skannauksen, kamera sammuu.
+  window.addEventListener('hashchange', () => {
+    if (!onRoute('varasto')) { Scanner.stop(); pantryUi.scanning = false; pantryUi.form = null; pantryUi.confirmDel = null; }
+  });
+
+  // ======================================================================
+  // Etusivun kortit
+  // ======================================================================
+  Dashboard.register({
+    id: 'kauppalista',
+    title: 'Kauppalista',
+    slot: 'rail',
+    order: 5,
+    icon: 'cart',
+    headExtra: '<a class="d2-more" href="#/kauppalista">Avaa</a>',
+    load: () => Store.shopping.list(),
+    render: (items) => {
+      const open = items.filter((i) => !i.done_at);
+      const rows = open.slice(0, 8).map((i) => `<li><span>${esc(i.text)}</span>${i.qty ? `<span class="mono">${esc(i.qty)}</span>` : ''}</li>`).join('');
+      return `<div class="dash-shop">
+        ${open.length ? `<ul>${rows}</ul>${open.length > 8 ? `<div class="dash-more muted">+ ${open.length - 8} muuta</div>` : ''}`
+          : '<div class="dash-empty">Kauppalista on tyhjä.</div>'}
+        ${canEdit() ? `<form class="dash-shop-add" autocomplete="off">
+          <input type="text" placeholder="Lisää tuote…" maxlength="200" aria-label="Lisää tuote kauppalistalle" />
+          <button class="btn small" type="submit">Lisää</button></form>` : ''}
+      </div>`;
+    },
+    bind: (el) => {
+      const f = el.querySelector('.dash-shop-add');
+      if (!f) return;
+      f.onsubmit = async (e) => {
+        e.preventDefault();
+        const inp = f.querySelector('input');
+        const text = inp.value.trim();
+        if (!text) return;
+        await addToShopping(text);
+        if (onRoute('')) viewHome();
+      };
+    },
+  });
+
+  Dashboard.register({
+    id: 'varasto',
+    title: 'Varasto: vanhenee pian',
+    slot: 'rail',
+    order: 6,
+    icon: 'box',
+    headExtra: '<a class="d2-more" href="#/varasto">Avaa</a>',
+    load: () => Store.pantry.list(),
+    render: ({ items }) => {
+      const soon = items
+        .map((it) => ({ it, dl: daysLeft(it.best_before) }))
+        .filter((x) => x.dl !== null && x.dl <= 90)
+        .slice(0, 5);
+      if (!items.length) return '<div class="dash-empty">Varasto on tyhjä. <a href="#/varasto">Lisää tuotteita</a>.</div>';
+      if (!soon.length) return '<div class="dash-empty">Ei vanhenevia tuotteita seuraavaan 90 päivään.</div>';
+      return `<ul class="dash-pantry">${soon.map(({ it, dl }) =>
+        `<li><span>${esc(it.name)}</span><span class="pbadge lv-${level(dl)}">${badgeText(dl)}</span></li>`).join('')}</ul>`;
+    },
+  });
+
+  return { viewPantry, viewShopping, daysLeft, badgeText, level };
+})();
+
+  </script>
+  <script>
+'use strict';
 
 // ---------- Pieni apukirjasto ----------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -2772,6 +3531,8 @@ const ICON_PATHS = {
   shield: '<path d="M12 3l7 2.5V11c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V5.5z"/>',
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   search2: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
+  cart: '<path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+  box: '<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
 };
 function icon(name, cls) {
   const p = ICON_PATHS[name];
@@ -2951,6 +3712,17 @@ function applyUser(user) {
   if (logoutBtn) {
     logoutBtn.style.display = '';
     logoutBtn.onclick = async () => { await Store.auth.logout(); location.reload(); };
+  }
+  // Puhelimessa yläpalkissa ei ole tilaa nimelle ja uloskirjautumiselle:
+  // ne näytetään valikon (sivupalkin) alareunassa (koti.css piilottaa yläpalkin versiot).
+  const nav = document.querySelector('#sidebar nav');
+  if (nav && !$('#mobileLogout')) {
+    const b = document.createElement('button');
+    b.className = 'nav-link mobile-only';
+    b.id = 'mobileLogout';
+    b.innerHTML = `${icon('back')}<span>Kirjaudu ulos (${esc(user.name)})</span>`;
+    b.onclick = async () => { await Store.auth.logout(); location.reload(); };
+    nav.appendChild(b);
   }
   const nameBox = document.querySelector('.user');
   if (nameBox) nameBox.style.display = 'none';
@@ -3310,6 +4082,8 @@ async function router() {
   // (esim. poistetun sivun avaaminen).
   try {
     if (parts.length === 0) { setActiveNav('home'); return await viewHome(); }
+    if (parts[0] === 'kauppalista') { setActiveNav('shopping'); return await Koti.viewShopping(); }
+    if (parts[0] === 'varasto') { setActiveNav('pantry'); return await Koti.viewPantry(); }
     if (parts[0] === 'paivakirja') { setActiveNav('shiftlog'); return await viewShiftLog(); }
     if (parts[0] === 'numerot') { setActiveNav('contacts'); return await viewContacts(); }
     if (parts[0] === 'muistutukset') { setActiveNav('announcements'); return await viewAnnouncements(); }
@@ -4548,9 +5322,9 @@ function openLightbox(images, start) {
   bar.setAttribute('aria-label', 'Päävalikko');
   const items = [
     { nav: 'home', ic: 'home', label: 'Etusivu' },
-    { nav: 'shiftlog', ic: 'note', label: 'Päiväkirja' },
+    { nav: 'shopping', ic: 'cart', label: 'Kauppalista' },
     { act: 'search', ic: 'search2', label: 'Haku' },
-    { nav: 'announcements', ic: 'announce', label: 'Muistutukset' },
+    { nav: 'pantry', ic: 'box', label: 'Varasto' },
     { act: 'menu', ic: 'menu', label: 'Valikko' },
   ];
   bar.innerHTML = items.map((it) =>
@@ -4558,7 +5332,7 @@ function openLightbox(images, start) {
       ${icon(it.ic)}<span>${it.label}</span></button>`).join('');
   document.body.appendChild(bar);
   bar.querySelectorAll('[data-bnav]').forEach((b) => b.onclick = () => {
-    const routes = { home: '#/', shiftlog: '#/paivakirja', announcements: '#/muistutukset' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', announcements: '#/muistutukset' };
     location.hash = routes[b.dataset.bnav] || '#/';
     window.scrollTo({ top: 0 });
   });
@@ -4604,7 +5378,7 @@ document.addEventListener('click', async (e) => {
   if (cat) { location.hash = '#/kohde/' + cat.dataset.cat; return; }
   const nav = e.target.closest('[data-nav]');
   if (nav) {
-    const routes = { home: '#/', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
     location.hash = routes[nav.dataset.nav] || '#/';
     return;
   }

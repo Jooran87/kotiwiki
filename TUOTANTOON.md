@@ -1,188 +1,147 @@
-# Oma dashboardn vienti tuotantoon
+# Kotiwikin vienti omalle palvelimelle
 
-Tämä ohje kertoo, miten wiki viedään maaliin: mitä palvelimelle tehdään,
-miten käyttäjät hoidetaan ja miten päivitykset toimivat. Kohdat on merkitty
-tekijän mukaan: **[Sinä]**, **[ICT]** tai **[Yhdessä]**.
+Tässä ohjeessa wiki siirretään omalta koneelta pieneen virtuaalipalvelimeen
+Helsingin konesalissa, jotta se toimii puhelimella missä tahansa ja
+kauppalista päivittyy molemmille reaaliajassa.
 
----
-
-## 1. Kokonaiskuva – mitä maaliin vienti vaatii
-
-| Vaihe | Tekijä | Tila |
-|---|---|---|
-| Sovellus valmis ja testattu (253 testiä, 0 haavoittuvuutta) | – | ✅ Valmis |
-| Sisältö kirjoitettu omalla koneella | Sinä | 🔶 Työn alla |
-| Palvelinkone + verkko-osoite | ICT | ⬜ |
-| Asennus palvelimelle + datan siirto | Yhdessä | ⬜ |
-| Palvelu käynnistymään automaattisesti | ICT | ⬜ |
-| Kirjautuminen ja roolit (luku 5) | – | ✅ Rakennettu |
-| Automaattinen varmuuskopiointi | ICT | ⬜ |
-| Käyttöönotto: linkki porukalle + lyhyt esittely | Sinä | ⬜ |
+Kohdat on merkitty tekijän mukaan: **[Sinä]** = teet itse selaimessa,
+**[Claude Code]** = pyydä Claude Codea tekemään palvelimella SSH-yhteyden yli.
 
 ---
 
-## 2. Palvelinvaatimukset [ICT]
+## 1. Kokonaiskuva
 
-Wiki on kevyt – melkein mikä tahansa kone riittää:
-
-- **Käyttöjärjestelmä:** Windows Server tai Linux (kumpikin käy)
-- **Node.js LTS** (v20 tai v22; myös v24 toimii)
-- **Muisti:** sovellus käyttää ~100 Mt; 1 Gt vapaata on runsaasti
-- **Levy:** 10 Gt riittää pitkälle (tietokanta on megatavuja; liitteet vievät
-  eniten – 50 Mt/tiedosto maksimi)
-- **Verkko:** vain sisäverkko. **Ei saa julkaista internetiin ennen kuin
-  kirjautuminen (luku 5) on ratkaistu.**
-- Ei tietokantapalvelinta, ei Dockeria, ei pilvipalveluita – SQLite on
-  tiedosto sovelluksen omassa kansiossa.
-
----
-
-## 3. Asennus palvelimelle [Yhdessä]
-
-1. **[ICT]** Asenna Node.js LTS (nodejs.org, oletusasetukset)
-2. **[ICT]** Pura `elama-asennuspaketti.zip` esim. kansioon
-   `/opt/tyowiki` (Linux) tai `D:\tyowiki` (Windows)
-3. **[ICT]** Kansiosta: `npm install` (hakee kirjastot, vaatii verkon kerran)
-4. **[Sinä]** Siirrä kirjoittamasi sisältö omalta koneelta:
-   - Omalla Macilla: `npm run backup` → syntyy `backups/<aikaleima>/`
-   - Kopioi kansio palvelimelle (esim. USB/verkkolevy)
-   - Palvelimella: `node restore.js <kansio>` (kun palvelu ei ole käynnissä)
-5. Koekäynnistys: `npm start` → selaimella `http://palvelimen-ip:3000`
-6. Testit palvelimella (vapaaehtoinen mutta suositeltu): `npm test`
-
-**Osoite [ICT]:** pyydä DNS-nimi, esim. `tyowiki.firma.local`, jotta porukka
-pääsee osoitteella eikä IP-numerolla. Portin voi vaihtaa ympäristömuuttujalla
-`PORT` (esim. 80, jolloin osoitteeksi riittää pelkkä nimi).
-
----
-
-## 4. Palvelu käynnistymään automaattisesti [ICT]
-
-Palvelun pitää nousta itsestään koneen uudelleenkäynnistyksen jälkeen.
-
-### Linux (systemd)
-
-Tiedosto `/etc/systemd/system/tyowiki.service`:
-
-```ini
-[Unit]
-Description=Tyoohje-wiki
-After=network.target
-
-[Service]
-WorkingDirectory=/opt/tyowiki
-ExecStart=/usr/bin/node server.js
-Restart=always
-RestartSec=5
-Environment=PORT=80
-# Suositus: aja omalla palvelutunnuksella, ei roottina
-User=tyowiki
-
-[Install]
-WantedBy=multi-user.target
+```
+Puhelin / kone  ──HTTPS──▶  Caddy (portti 443, automaattinen sertifikaatti)
+                               │
+                               ▼  vain koneen sisällä
+                            Kotiwiki (Node.js, portti 3000) ── SQLite-tiedosto
 ```
 
-Käyttöönotto:
+- **Palvelin:** UpCloud Starter, Helsinki. 1 vCPU / 2 Gt / 20 Gt riittää
+  (wiki käyttää ~100 Mt muistia). Hinta noin 6–8 €/kk + alv.
+- **Osoite:** oma verkkotunnus (esim. `koti.omanimi.fi`), noin 10–15 €/vuosi.
+- **HTTPS:** Caddy hakee ja uusii Let's Encrypt -sertifikaatin itse.
+  HTTPS on pakollinen: ilman sitä salasanat kulkisivat selväkielisinä ja
+  puhelimen kamera ei avaudu suoraan viivakoodiskanneriin.
+- **Ei Dockeria eikä tietokantapalvelinta.** SQLite on yksi tiedosto.
+
+---
+
+## 2. Palvelimen luonti [Sinä]
+
+1. Luo tili osoitteessa upcloud.com ja lisää maksutapa.
+2. **Deploy server** → sijainti **Helsinki (fi-hel1 tai fi-hel2)** →
+   Starter-paketti → käyttöjärjestelmä **Ubuntu Server 24.04 LTS**.
+3. **SSH-avain:** liitä koneesi julkinen avain (`~/.ssh/id_ed25519.pub`;
+   jos sitä ei ole, Claude Code luo sen komennolla `ssh-keygen -t ed25519`).
+   Älä käytä salasanakirjautumista.
+4. Kirjaa ylös palvelimen julkinen IP-osoite.
+5. **Verkkotunnus:** lisää verkkotunnuksen DNS-asetuksiin A-tietue
+   `koti.omanimi.fi → palvelimen IP`. (Domainin voi ostaa esim. suoraan
+   Traficomin listaamalta .fi-välittäjältä.)
+
+---
+
+## 3. Asennus [Claude Code]
+
+Anna Claude Codelle palvelimen IP ja verkkotunnus ja pyydä: *"Asenna kotiwiki
+palvelimelle TUOTANTOON.md:n luvun 3 mukaan."* Vaiheet:
 
 ```bash
-sudo useradd -r -s /usr/sbin/nologin tyowiki
-sudo chown -R tyowiki:tyowiki /opt/tyowiki
-sudo systemctl enable --now tyowiki
-sudo systemctl status tyowiki     # tarkistus
+# Päivitykset ja palomuuri: auki vain SSH, HTTP ja HTTPS
+sudo apt update && sudo apt -y upgrade
+sudo apt -y install ufw unattended-upgrades git
+sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw --force enable
+
+# SSH vain avaimella
+sudo sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo systemctl restart ssh
+
+# Node.js 22 LTS
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt -y install nodejs
+
+# Oma palvelutunnus ja koodi (repo on yksityinen → lukuoikeus deploy-avaimella)
+sudo useradd -r -m -d /opt/kotiwiki -s /usr/sbin/nologin kotiwiki
+sudo -u kotiwiki mkdir -p /opt/kotiwiki/data /opt/kotiwiki/backups
+sudo -u kotiwiki git clone git@github.com:Jooran87/kotiwiki.git /opt/kotiwiki/app
+cd /opt/kotiwiki/app && sudo -u kotiwiki npm ci --omit=dev
+
+# Palvelu ja Caddy (tiedostot deploy/-kansiossa)
+sudo cp deploy/kotiwiki.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now kotiwiki
+sudo apt -y install caddy
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile   # vaihda verkkotunnus tiedostoon
+sudo systemctl reload caddy
 ```
 
-(Portti 80 vaatii joko rootin, `setcap`-oikeuden nodelle tai käänteisproxyn –
-ICT valitsee talon tavan. Portilla 3000 ei erityisoikeuksia tarvita.)
-
-### Windows
-
-Kaksi tapaa, kumpi ICT:lle tutumpi:
-- **Task Scheduler:** tehtävä "At startup", ohjelma `node`, argumentti
-  `server.js`, aloituskansio `D:\tyowiki`, "Run whether user is logged on or not"
-- **NSSM** (Non-Sucking Service Manager): tekee node-sovelluksesta oikean
-  Windows-palvelun parilla komennolla
+**Tärkeää:** `deploy/kotiwiki.service` asettaa `BEHIND_PROXY=1`. Silloin
+istuntoeväste lähetetään vain HTTPS:llä ja kirjautumisyritysten rajoitus
+laskee yritykset oikean IP-osoitteen mukaan (ilman sitä kaikki näyttäisivät
+tulevan Caddyn osoitteesta, ja hyökkääjä voisi lukita teidät molemmat ulos).
+Wiki kuuntelee vain osoitteessa 127.0.0.1, joten sitä ei pääse ohittamaan
+Caddyn ohi.
 
 ---
 
-## 5. Käyttäjät ja kirjautuminen [Sinä] – ✅ RAKENNETTU WIKIIN
+## 4. Käyttöönotto [Sinä]
 
-Wikissä on nyt **oma kirjautuminen**:
-
-- **Ensikäynnistys:** kun wiki avataan ensimmäistä kertaa (tyhjä käyttäjälista),
-  se pyytää luomaan **pääkäyttäjätilin** – luo omasi tässä
-- **Käyttäjien luonti:** ylläpitäjä luo tunnukset sivupalkin
-  **👥 Käyttäjät** -sivulta: nimi, tunnus, salasana ja rooli
-- **Roolit:** Ylläpitäjä (kaikki + käyttäjähallinta) ·
-  Muokkaaja (sisällön muokkaus) · Lukija (vain luku)
-- **Tekniikka:** salasanat scrypt-tiivisteinä, istunnot httpOnly-evästeellä
-  (30 vrk), kirjautumisyritysten rajoitus (5 yritystä → 60 s odotus).
-  Muokkausten tekijä tulee aina istunnosta – nimeä ei voi väärentää selaimesta
-- Salasanan vaihto: ylläpitäjä asettaa uuden Käyttäjät-sivulta
-  (vanhat istunnot kirjataan samalla ulos)
-
-**[ICT] lisäksi suositellaan:** palomuurirajaus sisäverkkoon ja HTTPS
-käänteisproxyn kautta, jos wikiä käytetään verkon yli laajemmin. Evästeet
-kulkevat sisäverkossa HTTP:llä – HTTPS parantaa tätä.
+1. Avaa `https://koti.omanimi.fi` → wiki pyytää luomaan **pääkäyttäjän**.
+   Tee tämä heti asennuksen jälkeen: ensimmäinen avaaja saa pääkäyttäjän.
+2. **Käyttäjät**-sivulta tunnus avovaimolle roolilla **Muokkaaja**.
+3. Puhelimessa: avaa osoite Safarissa → Jaa → **Lisää Koti-valikkoon**.
+   Wiki aukeaa sen jälkeen kuin sovellus.
+4. Kokeile: lisää kauppalistaan tuote yhdellä puhelimella, sen pitäisi
+   ilmestyä toiseen sekunnissa. Skannaa varastoon yksi tuote.
 
 ---
 
-## 6. Varmuuskopiot palvelimella [ICT]
+## 5. Varmuuskopiot [Claude Code]
 
-Ajastettu `backup.js` joka yö + kopiot eri levylle:
+Palvelimen levy ei ole varmuuskopio. Kaksi kerrosta:
 
-- **Linux (cron):** `15 3 * * * cd /opt/tyowiki && /usr/bin/node backup.js /varmuuskopiot/tyowiki`
-- **Windows (Task Scheduler):** päivittäin klo 03:15, ohjelma `node`,
-  argumentit `backup.js D:\varmuuskopiot\tyowiki`, aloituskansio wikin kansio
+1. **Yöllinen kopio palvelimelle** (pitää 30 uusinta):
+   ```
+   15 3 * * * cd /opt/kotiwiki/app && /usr/bin/node backup.js /opt/kotiwiki/backups
+   ```
+   (`sudo -u kotiwiki crontab -e`)
+2. **Kopio palvelimen ulkopuolelle**, esim. kotikoneen tai mökin NAS:n
+   ajastettu haku:
+   ```
+   rsync -az kotiwiki-palvelin:/opt/kotiwiki/backups/ ~/Varmuuskopiot/kotiwiki/
+   ```
+   Lisäksi UpCloudin oma levyvarmistus (Backups-välilehti) maksaa vähän ja
+   palauttaa koko palvelimen.
 
-Skripti pitää automaattisesti 30 uusinta kopiota ja siivoaa vanhat.
-Kohdekansio kannattaa ottaa mukaan talon yleiseen varmistuskiertoon.
-
-**Palautusharjoitus kerran:** `node restore.js <kopio>` testikansioon, jotta
-tiedetään että palautus osataan ennen kuin sitä oikeasti tarvitaan.
+**Palautusharjoitus kerran:** `node restore.js <kopio>` testikansioon.
 
 ---
 
-## 7. Versiopäivitykset – tarvitaanko niitä?
+## 6. Päivitykset
 
-**Lyhyt vastaus: wiki toimii sellaisenaan ilman pakollisia päivityksiä.**
-Ei pilviriippuvuuksia, ei lisenssejä, ei "vanhenevia" osia – se pyörii
-vuosia koskematta. Päivityksiä tarvitaan vain kahdesta syystä:
+Kun Claude Code on tehnyt uuden ominaisuuden ja se on GitHubissa:
 
-1. **Haluatte uuden ominaisuuden** (esim. kirjautuminen, "lue ja kuittaa")
-2. **Tietoturvapäivitys kirjastoihin** – suositus: ICT ajaa `npm audit`
-   puolen vuoden välein; jos löytyy korjattavaa, `npm update` + `npm test`
-
-### Päivityksen kulku (sama aina, data säilyy)
-
-```
-1. npm run backup                  # varmuuskopio ENNEN päivitystä
-2. Pysäytä palvelu
-3. Nimeä vanha kansio talteen (tyowiki-vanha), pura uusi paketti tilalle
-4. Kopioi data-kansio vanhasta uuteen
-5. npm install
-6. npm test                        # 253 testiä – kaikki vihreää?
-7. Käynnistä palvelu
+```bash
+cd /opt/kotiwiki/app
+sudo -u kotiwiki node backup.js /opt/kotiwiki/backups   # ensin kopio
+sudo -u kotiwiki git pull
+sudo -u kotiwiki npm ci --omit=dev
+sudo systemctl restart kotiwiki
 ```
 
-Tietokannan rakennemuutokset ajautuvat automaattisesti käynnistyksessä
-(migraatiot) – dataan ei kosketa käsin. Jos jokin menee pieleen, palataan
-vanhaan kansioon ja varmuuskopioon.
-
-**Node.js:n päivitys:** LTS-versio noin kerran vuodessa ICT:n normaalissa
-huoltoikkunassa; aja `npm install` ja `npm test` sen jälkeen.
+Tietokannan rakennemuutokset ajautuvat käynnistyksessä automaattisesti.
+Käyttöjärjestelmän tietoturvapäivitykset asentuvat itsestään
+(unattended-upgrades). `npm audit` kannattaa ajaa puolen vuoden välein.
 
 ---
 
-## 8. Käyttöönoton tarkistuslista
+## 7. Tietoturvan tarkistuslista
 
-- [ ] [ICT] Palvelin + Node.js + asennus (luku 3)
-- [ ] [Sinä] Sisältö siirretty backup/restore-polulla
-- [ ] [ICT] Palvelu automaattikäynnistykseen (luku 4)
-- [ ] [ICT] DNS-nimi ja palomuurirajaus sisäverkkoon
-- [ ] [Sinä] Pääkäyttäjätili luotu ensikäynnistyksessä + tunnukset porukalle (luku 5)
-- [ ] [ICT] Yövarmuuskopio ajastettu + palautus testattu (luku 6)
-- [ ] [Sinä] Tiedote porukalle: osoite, lyhyt käyttöohje, offline-version
-      lataus puhelimiin (📴-nappi)
-- [ ] [Sinä] Ensimmäinen "wikin ylläpitäjä" nimetty (sisällön omistajuus)
-
-Kun lista on kuitattu, projekti on maalissa. 🏁
+- [ ] Repo GitHubissa **yksityinen** (Settings → Change visibility)
+- [ ] SSH vain avaimella, palomuurissa auki vain 22, 80 ja 443
+- [ ] Wiki kuuntelee vain 127.0.0.1:3000, ulospäin näkyy vain Caddy
+- [ ] `BEHIND_PROXY=1` palvelussa (Secure-eväste + oikea IP rajoitukseen)
+- [ ] Pääkäyttäjä luotu heti asennuksen jälkeen, salasanat vähintään 12 merkkiä
+- [ ] Yövarmuuskopio + kopio palvelimen ulkopuolelle + palautus kokeiltu
+- [ ] Data (`data/`, `backups/`) ei koskaan GitHubissa (`.gitignore` hoitaa)
