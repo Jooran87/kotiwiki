@@ -1,0 +1,31 @@
+{
+  "name": "elama-dashboard",
+  "version": "1.0.0",
+  "description": "Oma dashboard: muistutukset, ohjeet ja päivän tiedot yhdellä silmäyksellä.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js",
+    "test": "node tests/api.test.js && node tests/backup.test.js && node tests/ui.test.js",
+    "backup": "node backup.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "mammoth": "^1.12.0",
+    "multer": "^2.2.0",
+    "pdf-parse": "^1.1.4",
+    "word-extractor": "^1.0.4"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.1"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
+    "brace-expansion": "^5.0.8"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+# Tietokanta ja ladatut tiedostot ovat käyttödataa – ei versionhallintaan.
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/uploads/
+backups/
+data_ennen_palautusta_*/

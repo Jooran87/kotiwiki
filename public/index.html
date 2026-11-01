@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fi" data-design="2a">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oma dashboard</title>
+  <script src="theme-boot.js"></script>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="design2a.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button id="menuToggle" class="icon-btn" title="Valikko" aria-label="Valikko">☰</button>
+    <div class="brand" data-nav="home">
+      <span class="brand-mark">O</span>
+      <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
+    </div>
+    <form id="searchForm" class="search">
+      <input id="searchInput" type="search" placeholder="Hae ohjeista, huomioista ja tiedostoista…" autocomplete="off" />
+    </form>
+    <div id="clock" class="clock" title="Päivämäärä, kello ja viikkonumero"></div>
+  <button id="themeToggle" class="icon-btn" title="Tumma tila">🌙</button>
+    <span id="userChip" class="user-chip" style="display:none"></span>
+    <button id="logoutBtn" class="btn small secondary" style="display:none">Kirjaudu ulos</button>
+    <div class="user">
+      <label>Nimesi:</label>
+      <input id="authorInput" type="text" placeholder="Etunimi" />
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar">
+      <nav>
+        <button class="nav-link" data-nav="home" data-icon="home"><span>Etusivu</span></button>
+        <button class="nav-link" data-nav="announcements" data-icon="announce"><span>Muistutukset</span></button>
+        <button class="nav-link" data-nav="shiftlog" data-icon="note"><span>Päiväkirja</span></button>
+        <button class="nav-link" data-nav="contacts" data-icon="contact"><span>Tärkeät numerot</span></button>
+        <button class="nav-link" data-nav="terms" data-icon="terms"><span>Termipankki</span></button>
+        <button class="nav-link" data-nav="links" data-icon="link"><span>Linkit</span></button>
+        <button class="nav-link" data-nav="trash" data-icon="trash"><span>Roskakori</span></button>
+        <button class="nav-link" data-nav="users" id="usersNav" data-icon="users" style="display:none"><span>Käyttäjät</span></button>
+        <button class="nav-link" id="offlineBtn" data-icon="offline" title="Lataa puhelimeen – toimii ilman verkkoa"><span>Offline-versio</span></button>
+      </nav>
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <span>Ohjeet</span>
+          <span class="sidebar-title-actions">
+            <button id="toggleSubcatsBtn" class="icon-btn small" title="Piilota alakategoriat">▾</button>
+            <button id="addCategoryBtn" class="icon-btn small" title="Lisää kategoria">＋</button>
+          </span>
+        </div>
+        <ul id="categoryList" class="category-list"></ul>
+      </div>
+    </aside>
+
+    <main id="content" class="content">
+      <!-- Näkymät renderöidään tähän -->
+    
+      <div class="card empty" id="jsNotice">
+        Ladataan…<br/><br/>
+        <strong>Jos tämä teksti ei katoa</strong>, avaamasi esikatselu ei suorita
+        JavaScriptiä (näin käy esim. iPhonen Tiedostot-sovelluksen esikatselussa).<br/>
+        👉 Avaa tämä tiedosto tietokoneen selaimessa (Chrome, Edge, Firefox).<br/>
+        📱 Puhelimeen tarkoitettu versio on <strong>elama-offline.html</strong> –
+        sen sisältö näkyy myös esikatselussa.
+      </div>
+    </main>
+
+    <aside id="rail" class="rail"></aside>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="offline-template.js"></script>
+  <script src="store-api.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="cards.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

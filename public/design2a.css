@@ -1,0 +1,450 @@
+/* ============================================================================
+   Suunta 2a – wikin ulkoasu (Claude Designin handoffin mukaan)
+   ----------------------------------------------------------------------------
+   VALITTU SUUNTA. data-design="2a" on kiinteästi index.html:n <html>-tagissa
+   (ei JS-riippuvuutta), joten nämä säännöt ovat aina voimassa. Attribuutti on
+   säilytetty valitsimissa, jotta 2a:n omat säännöt erottuvat styles.css:n
+   perustyyleistä – älä poista sitä ilman että käyt kaikki selektorit läpi.
+
+   Poikkeamat handoffin arvoihin (perusteltuja, ei tyylivalintoja). Handoff
+   lupaa kaikille tekstiväreille >= 4,5:1, mutta mitattuna kolme jäi alle:
+   - --tx3  tumma  #6A727E (3,5:1) -> #8993A3 (4,6–5,5:1)
+   - --tx3  vaalea #868E9A (3,3:1) -> #696F78 (4,6–5,1:1)
+   - --brand vaalea #E2540C (3,8:1) -> #C4470A (5,3:1)
+   - --warn  vaalea #A86A06 (4,4:1) -> #8A5605 (6,1:1)
+   Näillä ladotaan 10,5–11,5 px metatekstiä, joten raja on oikeasti tarpeen.
+   Muut arvot ovat handoffista sellaisenaan.
+   ========================================================================== */
+
+/* ---- Fontit (paketoitu mukaan: toimii ilman internetiä, OFL-1.1) ---- */
+@font-face { font-family: 'Inter Tight'; font-style: normal; font-weight: 400;
+  font-display: swap; src: url('fonts/inter-tight-400.woff2') format('woff2'); }
+@font-face { font-family: 'Inter Tight'; font-style: normal; font-weight: 500;
+  font-display: swap; src: url('fonts/inter-tight-500.woff2') format('woff2'); }
+@font-face { font-family: 'Inter Tight'; font-style: normal; font-weight: 600;
+  font-display: swap; src: url('fonts/inter-tight-600.woff2') format('woff2'); }
+@font-face { font-family: 'Inter Tight'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('fonts/inter-tight-700.woff2') format('woff2'); }
+@font-face { font-family: 'Plex Mono'; font-style: normal; font-weight: 400;
+  font-display: swap; src: url('fonts/plex-mono-400.woff2') format('woff2'); }
+@font-face { font-family: 'Plex Mono'; font-style: normal; font-weight: 500;
+  font-display: swap; src: url('fonts/plex-mono-500.woff2') format('woff2'); }
+@font-face { font-family: 'Plex Mono'; font-style: normal; font-weight: 600;
+  font-display: swap; src: url('fonts/plex-mono-600.woff2') format('woff2'); }
+@font-face { font-family: 'Plex Mono'; font-style: normal; font-weight: 700;
+  font-display: swap; src: url('fonts/plex-mono-700.woff2') format('woff2'); }
+
+/* ---- Tokenit: tumma teema (2a:n oletus) ---- */
+:root[data-design="2a"][data-theme="dark"] {
+  --app: #121418;
+  --panel: #191C22;
+  --panel2: #1F232A;
+  --panel3: #262B33;
+  --line: rgba(255,255,255,.085);
+  --line2: rgba(255,255,255,.16);
+  --tx: #E9EBEF;
+  --tx2: #9AA2AE;
+  --tx3: #8993A3;          /* korotettu (oli #6A727E, 3,5:1) – riittää myös --panel3:lla */
+  --brand: #FF6A1F;
+  --crit: #F2555A;
+  --critbg: rgba(242,85,90,.13);
+  --critbg-hov: rgba(242,85,90,.19);
+  --warn: #F6B23C;
+  --warnbg: rgba(246,178,60,.13);
+  --ok: #4FB26A;
+  --sel: rgba(255,255,255,.06);
+  --act: var(--brand);
+  --acttx: #20120A;
+  --topbar-h: 56px;   /* 2a:n yläpalkki on matalampi kuin perusilmeen 57 px */
+}
+
+/* ---- Tokenit: vaalea teema ---- */
+:root[data-design="2a"][data-theme="light"] {
+  --app: #F3F4F6;
+  --panel: #FFFFFF;
+  --panel2: #F7F8FA;
+  --panel3: #EEF0F3;
+  --line: rgba(15,20,30,.10);
+  --line2: rgba(15,20,30,.20);
+  --tx: #15181D;
+  --tx2: #59616D;
+  --tx3: #696F78;          /* tummennettu (oli #868E9A, 3,3:1) – riittää myös --app:lla */
+  --brand: #C4470A;        /* tummennettu (oli #E2540C, 3,8:1) */
+  --crit: #C8262C;
+  --critbg: rgba(200,38,44,.08);
+  --critbg-hov: rgba(200,38,44,.13);
+  --warn: #8A5605;         /* tummennettu (oli #A86A06, 4,4:1) */
+  --warnbg: rgba(246,178,60,.16);
+  --ok: #2F7D46;
+  --sel: rgba(15,20,30,.05);
+  --act: var(--brand);
+  --acttx: #FFFFFF;
+  --topbar-h: 56px;
+}
+
+/* ---- Perusta ---- */
+:root[data-design="2a"] body {
+  background: var(--app);
+  color: var(--tx);
+  font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+:root[data-design="2a"] .mono,
+:root[data-design="2a"] .d2-mono { font-family: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* Ei varjoja eikä lasitusta – hierarkia tehdään viivoilla ja typografialla. */
+:root[data-design="2a"] .topbar,
+:root[data-design="2a"] .sidebar,
+:root[data-design="2a"] .card,
+:root[data-design="2a"] .cat-card {
+  background: var(--panel);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow: none;
+  border-color: var(--line);
+}
+:root[data-design="2a"] .content { background: var(--app); }
+
+/* ---- Yläpalkki ja sivupalkki: kiinteät mitat vain työpöydällä ----
+   Alle 781 px styles.css tekee sivupalkista off-canvasin ja kutistaa
+   yläpalkin. Jos 2a:n mitat pätisivät siellä, yläpalkki työntyisi ruudun
+   ulkopuolelle ja sivu vierisi vaakasuunnassa. */
+@media (min-width: 781px) {
+:root[data-design="2a"] .topbar {
+  height: 56px; padding: 0 20px; gap: 20px;
+  border-bottom: 1px solid var(--line);
+}
+:root[data-design="2a"] .brand-mark {
+  width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
+  color: #fff; font-size: 15px; font-weight: 700;
+}
+:root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+:root[data-design="2a"] .brand-text small { color: var(--tx3); }
+:root[data-design="2a"] #searchInput {
+  height: 34px; max-width: 520px; border-radius: 7px;
+  background: var(--panel2); border: 1px solid var(--line2); color: var(--tx);
+}
+/* Kello 2a:n typografialla: numerot monospacena kuten muutkin luvut */
+:root[data-design="2a"] .clock-time {
+  font-family: 'Plex Mono', monospace; font-size: 14px; font-weight: 700; color: var(--tx);
+}
+:root[data-design="2a"] .clock-date {
+  font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3);
+}
+:root[data-design="2a"] .clock-week {
+  font-family: 'Plex Mono', monospace; font-size: 14px; font-weight: 700; letter-spacing: .04em;
+  color: var(--brand); background: none;
+  border: 1px solid var(--brand); border-radius: 5px; padding: 3px 9px;
+}
+
+/* ---- Sivupalkki (232 px, ryhmitelty) ---- */
+:root[data-design="2a"] .sidebar {
+  width: 232px; padding: 18px 12px; border-right: 1px solid var(--line);
+}
+:root[data-design="2a"] .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+:root[data-design="2a"] .nav-link {
+  height: 32px; border-radius: 6px; font-size: 13px; font-weight: 400;
+  color: var(--tx2); gap: 9px;
+}
+:root[data-design="2a"] .nav-link:hover { background: var(--sel); }
+:root[data-design="2a"] .nav-link.active {
+  background: var(--sel); color: var(--tx); font-weight: 600; font-size: 13.5px;
+  box-shadow: inset 2px 0 0 var(--brand);
+}
+:root[data-design="2a"] .sidebar-title {
+  font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: .1em; color: var(--tx3); padding: 0 8px 8px;
+}
+/* Kategoriariveillä ohut väritikku emojin/ikonin tilalla */
+:root[data-design="2a"] .category-list .cat-btn { height: 31px; font-size: 13px; border-radius: 6px; }
+:root[data-design="2a"] .category-list .cat-btn.has-accent {
+  border-left: none; padding-left: 10px; border-radius: 6px;
+}
+:root[data-design="2a"] .cat-ico {
+  width: 3px; height: 14px; border-radius: 2px; flex: none;
+  background: var(--cat-accent, var(--tx3)); overflow: hidden;
+}
+:root[data-design="2a"] .cat-ico .ic,
+:root[data-design="2a"] .cat-ico .cat-emoji { display: none; }
+:root[data-design="2a"] .category-list .cat-btn.subcat { height: 28px; padding-left: 22px; font-size: 12.5px; }
+}
+:root[data-design="2a"] .count-badge {
+  background: none; font-family: 'Plex Mono', monospace; font-size: 11px;
+  font-weight: 400; color: var(--tx3);
+}
+/* Kapealla näytöllä yläpalkki saa rivittyä ja haku kutistua. */
+@media (max-width: 780px) {
+  :root[data-design="2a"] .topbar { border-bottom: 1px solid var(--line); }
+  :root[data-design="2a"] #searchInput { background: var(--panel2); border: 1px solid var(--line2); color: var(--tx); }
+  :root[data-design="2a"] .sidebar { border-right: 1px solid var(--line); }
+}
+
+/* ---- Sivun typografinen ylätunniste ---- */
+.d2-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 14px; border-bottom: 2px solid var(--tx); margin-bottom: 24px; gap: 20px;
+}
+.d2-eyebrow {
+  font-family: 'Plex Mono', monospace; font-weight: 700; font-size: 10.5px;
+  letter-spacing: .12em; color: var(--brand); text-transform: uppercase;
+}
+.d2-title { font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -.03em; margin: 9px 0 0; }
+.d2-stats { display: flex; gap: 22px; flex: none; }
+.d2-stat { text-align: right; position: relative; padding-left: 22px; }
+.d2-stat + .d2-stat::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 1px; height: 30px; background: var(--line);
+}
+.d2-stat b { display: block; font-family: 'Plex Mono', monospace; font-weight: 700; font-size: 21px; line-height: 1; }
+.d2-stat b.crit { color: var(--crit); }
+.d2-stat span {
+  display: block; font-family: 'Plex Mono', monospace; font-size: 10.5px;
+  letter-spacing: .06em; color: var(--tx3); margin-top: 5px; text-transform: uppercase;
+}
+
+/* ---- Yleinen 2a-kortti ---- */
+.d2-card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+.d2-cardhead {
+  display: flex; align-items: center; gap: 8px; padding: 11px 16px;
+  background: var(--panel2); border-bottom: 1px solid var(--line);
+}
+.d2-cardhead h3 { margin: 0; font-size: 13px; font-weight: 700; }
+.d2-cardhead .d2-count { font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 500; color: var(--tx3); }
+.d2-cardhead .d2-more { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--tx2); text-decoration: none; }
+.d2-cardhead .d2-more:hover { color: var(--tx); }
+.d2-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--crit); flex: none; }
+
+/* ---- Osion otsikkorivi (Kategoriat / TOP 10 / Viimeksi päivitetyt) ---- */
+.d2-sec { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+.d2-sec h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.d2-sec .d2-rule { flex: 1; height: 1px; background: var(--line); }
+.d2-sec .d2-meta { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); }
+
+/* ---- Poikkeukset ---- */
+/* Koko rivi on klikattava (JS), joten se saa myös osoitinkäden ja
+   hover-korostuksen – muuten klikattavuutta ei arvaisi. */
+.d2-notice {
+  display: flex; position: relative; border-top: 1px solid var(--line);
+  cursor: pointer; transition: background-color 120ms ease;
+}
+.d2-notice:first-of-type { border-top: none; }
+.d2-notice:hover { background: var(--sel); }
+.d2-notice.crit { background: var(--critbg); }
+.d2-notice.crit:hover { background: var(--critbg-hov); }
+/* Näkyvää painiketta ei ole, joten alue on itse fokusoitava. Renkaan on
+   oltava selvä: tämä on ainoa näppäimistövihje tiedotteen avaamisesta. */
+.d2-notice:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.d2-stripe { width: 44px; flex: none; opacity: .5;
+  background: repeating-linear-gradient(135deg, var(--crit) 0 1.5px, transparent 1.5px 7px); }
+.d2-notice.warn .d2-stripe { opacity: .35;
+  background: repeating-linear-gradient(135deg, var(--warn) 0 1.5px, transparent 1.5px 7px); }
+.d2-noticebody { padding: 15px 18px 15px 16px; flex: 1; min-width: 0; }
+.d2-noticetitle { font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
+.d2-notice.warn .d2-noticetitle { font-size: 15px; line-height: 1.35; }
+.d2-badge {
+  display: inline-block; font-family: 'Plex Mono', monospace; font-size: 9.5px; font-weight: 600;
+  letter-spacing: .09em; padding: 4px 6px; border-radius: 3px; margin-left: 9px;
+  vertical-align: middle; text-transform: uppercase; white-space: nowrap;
+}
+.d2-badge.now { background: var(--crit); color: #fff; }
+.d2-badge.soon { color: var(--warn); border: 1px solid var(--warn); }
+.d2-noticetext {
+  font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--tx2);
+  max-width: 76ch; margin: 7px 0 0; text-wrap: pretty;
+}
+.d2-notice.warn .d2-noticetext { font-size: 13.5px; line-height: 1.55; }
+/* Ilman painiketta jalka on pelkkä metarivi – tiiviimpi väli riittää. */
+.d2-noticefoot { display: flex; align-items: center; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+.d2-noticemeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; color: var(--tx3); }
+
+/* ---- Kategoriaruudukko ---- */
+.d2-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.d2-cat {
+  border: 1px solid var(--line); border-radius: 9px; overflow: hidden;
+  text-decoration: none; color: inherit; display: block; position: relative;
+  padding: 15px 16px; background: var(--panel);
+  transition: background-color 120ms ease;
+}
+.d2-cat::before {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
+  background: var(--cat-accent, var(--tx3));
+}
+.d2-cat:hover { background: var(--sel); }
+.d2-catrow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.d2-catname { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.d2-catnum { font-family: 'Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--cat-accent, var(--tx3)); }
+.d2-catdesc { font-size: 12.5px; line-height: 1.5; color: var(--tx2); margin-top: 6px; }
+.d2-cat.all {
+  border-style: dashed; border-color: var(--line2);
+  background: repeating-linear-gradient(135deg, var(--sel) 0 6px, transparent 6px 12px);
+}
+.d2-cat.all::before { display: none; }
+.d2-cat.all .d2-catname { color: var(--tx2); }
+
+/* ---- TOP-lista ---- */
+.d2-toprow {
+  display: flex; align-items: center; gap: 14px; padding: 11px 16px;
+  border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0;
+  width: 100%; text-align: left; cursor: pointer; color: inherit;
+  transition: background-color 120ms ease;
+}
+.d2-toprow:last-child { border-bottom: none; }
+.d2-toprow:hover { background: var(--sel); }
+.d2-rank { font-family: 'Plex Mono', monospace; font-weight: 700; font-size: 12.5px; width: 18px; flex: none; }
+.d2-toprow.low .d2-rank { font-weight: 600; font-size: 12px; color: var(--tx3); }
+.d2-tick { width: 3px; height: 16px; border-radius: 2px; flex: none; background: var(--cat-accent, var(--tx3)); }
+.d2-topname { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d2-toprow.low .d2-topname { font-weight: 500; }
+.d2-bar { width: 150px; height: 5px; border-radius: 3px; background: var(--panel3); flex: none; overflow: hidden; }
+.d2-bar i { display: block; height: 100%; background: var(--tx2); border-radius: 3px; }
+.d2-toprow.low .d2-bar i { background: var(--tx3); }
+.d2-views { font-family: 'Plex Mono', monospace; font-size: 11.5px; font-weight: 500; width: 26px; text-align: right; flex: none; color: var(--tx2); }
+
+/* ---- Viimeksi päivitetyt ---- */
+.d2-recent { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.d2-rec {
+  border: 1px solid var(--line); border-radius: 9px; background: var(--panel); padding: 13px 15px;
+  text-align: left; cursor: pointer; width: 100%; color: inherit;
+  transition: background-color 120ms ease;
+}
+.d2-rec:hover { background: var(--sel); }
+.d2-rectop { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.d2-recname { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
+.d2-recdate { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); flex: none; }
+.d2-recmeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; margin-top: 6px; color: var(--cat-accent, var(--tx3)); text-transform: uppercase; }
+
+/* ---- Oikea kaista: numerot ---- */
+.d2-num { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+.d2-num + .d2-num { border-top: 1px solid var(--line); margin: 0 14px; padding: 10px 0; }
+.d2-num.emergency {
+  background: var(--critbg); border-left: 6px solid var(--crit);
+  border-bottom: 1px solid var(--line); padding: 12px 14px; margin: 0;
+}
+.d2-numname { flex: 1; min-width: 0; }
+.d2-numname b { display: block; font-size: 13px; font-weight: 600; line-height: 1.3; }
+.d2-num.emergency .d2-numname b { color: var(--tx2); }
+.d2-numname span { display: block; font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); margin-top: 2px; }
+.d2-numtel { font-family: 'Plex Mono', monospace; font-size: 15px; font-weight: 600; text-decoration: none; color: var(--tx); white-space: nowrap; }
+.d2-num.emergency .d2-numtel { font-size: 30px; font-weight: 700; color: var(--crit); letter-spacing: .02em; }
+
+/* ---- Oikea kaista: vuoroloki ---- */
+.d2-logbox { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.d2-logbox textarea {
+  width: 100%; min-height: 52px; resize: vertical; padding: 9px 10px;
+  border: 1px solid var(--line2); border-radius: 7px; background: var(--panel2);
+  color: var(--tx); font: 400 12.5px/1.4 'Inter Tight', sans-serif;
+}
+.d2-logbox textarea::placeholder { color: var(--tx3); }
+.d2-logfoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 9px; }
+/* Vihje saa kutistua ja katketa, painike ei koskaan. */
+.d2-logfoot .d2-noticemeta { min-width: 0; font-size: 10.5px; line-height: 1.3; }
+.d2-btn {
+  font-size: 12px; font-weight: 600; padding: 8px 14px; border-radius: 6px;
+  background: var(--act); color: var(--acttx); border: none; cursor: pointer;
+  white-space: nowrap; flex: none;
+}
+.d2-btn:hover { filter: brightness(1.06); }
+.d2-btn.ghost {
+  background: var(--panel); color: var(--tx2); border: 1px solid var(--line2);
+  font-size: 11.5px; padding: 8px 11px;
+}
+.d2-entry { display: flex; gap: 11px; padding: 11px 14px; border-top: 1px solid var(--line); }
+.d2-entry .d2-tick { height: auto; align-self: stretch; width: 2px; }
+.d2-entryhead { display: flex; align-items: baseline; gap: 8px; }
+.d2-entryhead b { font-size: 12px; font-weight: 600; }
+.d2-entryhead time { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); }
+.d2-entrytext { font-size: 12.5px; line-height: 1.5; color: var(--tx2); margin-top: 4px; }
+
+/* ---- Etusivun asettelu ---- */
+.d2-home { display: flex; gap: 24px; align-items: flex-start; }
+.d2-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.d2-rail { width: 312px; flex: none; display: flex; flex-direction: column; gap: 18px; }
+:root[data-design="2a"] .content { padding: 26px 28px; }
+
+/* Focus: näppäimistönavigaation on toimittava päivystyskäytössä */
+:root[data-design="2a"] a:focus-visible,
+:root[data-design="2a"] button:focus-visible,
+:root[data-design="2a"] input:focus-visible,
+:root[data-design="2a"] textarea:focus-visible,
+:root[data-design="2a"] select:focus-visible {
+  outline: 2px solid var(--brand); outline-offset: 2px;
+}
+
+/* ---- Responsiivisuus ---- */
+@media (max-width: 1279px) {
+  /* align-items: flex-start kutistaisi pystysuunnassa sarakkeet sisällön
+     levyisiksi (max-content) ja sivu vierisi vaakaan – stretch pakottaa ne
+     säiliön levyisiksi. */
+  .d2-home { flex-direction: column; align-items: stretch; }
+  .d2-rail { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .d2-rail > * { flex: 1; min-width: 280px; }
+}
+@media (max-width: 1023px) {
+  .d2-cats { grid-template-columns: repeat(2, 1fr); }
+  :root[data-design="2a"] .content { padding: 18px 16px; }
+  .d2-title { font-size: 24px; }
+}
+@media (max-width: 700px) {
+  .d2-cats, .d2-recent { grid-template-columns: 1fr; }
+  .d2-head { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .d2-stats { gap: 16px; }
+  .d2-bar { display: none; }
+  /* Kosketuskohteiden vähimmäiskorkeus */
+  .d2-toprow, .d2-num { min-height: 44px; }
+}
+
+/* Tulostus: 2a-kortit paperille ilman taustavärejä */
+@media print {
+  :root[data-design="2a"] .d2-rail, :root[data-design="2a"] .d2-stripe { display: none; }
+  .d2-card, .d2-cat, .d2-rec { border: 1px solid #bbb; background: #fff; }
+}
+
+/* ============================================================================
+   Dashboardin kortit (dashboard.js + cards.js)
+   ========================================================================== */
+.dash-card { margin: 0; }
+.dash-slot { padding: 0; }
+/* Luuranko: pitää asettelun paikallaan kunnes data saapuu */
+.dash-skel { height: 62px; margin: 14px 16px;
+  background: linear-gradient(90deg, var(--panel2) 25%, var(--panel3) 37%, var(--panel2) 63%);
+  background-size: 400% 100%; border-radius: 6px; animation: dash-shimmer 1.2s ease infinite; }
+@keyframes dash-shimmer { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .dash-skel { animation: none; } }
+
+.dash-empty, .dash-err, .dash-todo { padding: 14px 16px; font-size: 13px; color: var(--tx2); }
+.dash-err { color: var(--crit); display: flex; align-items: center; gap: 7px; }
+.dash-todo strong { display: block; font-size: 13px; color: var(--tx2); margin-bottom: 4px; }
+.dash-todo p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--tx3); }
+
+/* Kortin piilotusnappi: näkyy vasta kun kortti on osoitettuna */
+.dash-hide { margin-left: 8px; background: none; border: none; cursor: pointer;
+  color: var(--tx3); padding: 2px; opacity: 0; transition: opacity .12s; }
+.dash-card:hover .dash-hide, .dash-hide:focus-visible { opacity: 1; }
+.dash-hide:hover { color: var(--crit); }
+
+/* Päivä-kortti */
+.dash-day { padding: 16px; }
+.dash-day-main { font-size: 34px; font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+.dash-day-sub { font-size: 13px; color: var(--tx2); margin-top: 6px; }
+.dash-rows-title { font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--tx3); margin-bottom: 6px; }
+.dash-row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0;
+  border-top: 1px solid var(--line); font-size: 13px; }
+.dash-row-label { color: var(--tx2); }
+.dash-row-value { font-family: 'Plex Mono', monospace; color: var(--tx); }
+
+/* Listarivi (muistutukset) */
+.dash-item { display: flex; gap: 10px; padding: 11px 16px; text-decoration: none;
+  color: inherit; border-top: 1px solid var(--line); transition: background-color 120ms ease; }
+.dash-item:first-child { border-top: none; }
+.dash-item:hover { background: var(--sel); }
+.dash-item-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tx3);
+  flex: none; margin-top: 6px; }
+.dash-item-dot.on { background: var(--crit); }
+.dash-item-body { min-width: 0; }
+.dash-item-body strong { display: block; font-size: 13.5px; font-weight: 600; }
+.dash-item-text { display: block; font-size: 12.5px; line-height: 1.5; color: var(--tx2); margin-top: 3px; }
+.dash-item-meta { display: block; font-size: 11px; color: var(--tx3); margin-top: 4px; }
+
+/* Kortin sisällöt käyttävät samoja paloja kuin muukin ulkoasu */
+.dash-slot .d2-cats, .dash-slot .d2-recent { padding: 14px 16px; }
+.dash-slot .d2-logbox { border-bottom: none; }
