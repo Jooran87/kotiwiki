@@ -374,21 +374,44 @@ async function main() {
     await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
     ok('kauppalistaan lisätään tuotteita', (await mob.$$('#shopOpen .shop-row')).length === 2);
     ok('määrä näkyy rivillä', (await mob.textContent('#shopOpen')).includes('2 l'));
+    const secHeads = () => mob.$$eval('#shopOpen .shop-sec', (els) => els.map((e) => e.textContent));
+    ok('ostettavat ryhmitellään osastoittain kaupan kiertojärjestyksessä',
+      JSON.stringify(await secHeads()) === JSON.stringify(['Leipä', 'Maito ja kylmätuotteet']), JSON.stringify(await secHeads()));
+    ok('osaston tuotteet ovat oman otsikkonsa alla',
+      (await mob.$$eval('#shopOpen > li', (els) => els.map((e) => e.className.split(' ')[0]))).join(',') === 'shop-sec,shop-row,shop-sec,shop-row');
     ok('lisäyksen jälkeen kenttä tyhjenee ja on valmis seuraavaan',
       (await mob.inputValue('#shopText')) === '' && await mob.evaluate(() => document.activeElement.id === 'shopText'));
     await mob.fill('#shopText', 'maito');
     await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
     ok('sama tuote ei tuplaannu (kirjainkoko ei ratkaise)', (await mob.$$('#shopOpen .shop-row')).length === 2);
-    await mob.click('#shopOpen .shop-row:first-child .shop-check'); await mob.waitForTimeout(300);
+    await mob.click('#shopOpen .shop-row .shop-check'); await mob.waitForTimeout(300);
     ok('ruksattu tuote siirtyy ostettuihin', (await mob.$$('#shopOpen .shop-row')).length === 1
       && (await mob.textContent('#shopDoneToggle')).includes('Ostettu (1)'));
     await mob.click('#shopDoneToggle'); await mob.waitForTimeout(250);
     await mob.click('.shop-row.done .shop-check'); await mob.waitForTimeout(300);
     ok('ostetun voi palauttaa listalle', (await mob.$$('#shopOpen .shop-row')).length === 2);
-    await mob.click('#shopOpen .shop-row:first-child .shop-check'); await mob.waitForTimeout(300);
+    await mob.click('#shopOpen .shop-row .shop-check'); await mob.waitForTimeout(300);
     await mob.click('#shopClearDone'); await mob.waitForTimeout(300);
     ok('tyhjennä ostetut poistaa ruksitut', (await mob.$$('.shop-row.done')).length === 0
       && (await mob.$$('#shopOpen .shop-row')).length === 1);
+    // Osaston vaihto käsin: valinta muistetaan seuraavalla kerralla.
+    await mob.fill('#shopText', 'Jäätelö');
+    await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
+    const shopSec = (name) => mob.evaluate(async (n) =>
+      ((await Store.shopping.list()).find((i) => i.text.toLowerCase() === n && !i.done_at) || {}).section, name);
+    ok('pakaste päätyy pakasteisiin', await shopSec('jäätelö') === 'Pakasteet');
+    await mob.selectOption('.shop-row:has-text("Jäätelö") [data-shopsec]', 'Muu'); await mob.waitForTimeout(300);
+    ok('osaston vaihtonappi näkyy kuvakkeena ja on kosketeltavan kokoinen', await mob.evaluate(() => {
+      const l = document.querySelector('.shop-move'), r = l.getBoundingClientRect();
+      return r.width >= 30 && r.height >= 30 && !!l.querySelector('svg') && l.querySelector('svg').getBoundingClientRect().width > 10;
+    }));
+    ok('osaston voi vaihtaa riviltä', await shopSec('jäätelö') === 'Muu'
+      && (await secHeads()).includes('Muu') && !(await secHeads()).includes('Pakasteet'));
+    await mob.click('.shop-row:has-text("Jäätelö") [data-shopdel]'); await mob.waitForTimeout(300);
+    await mob.fill('#shopText', 'jäätelö');
+    await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
+    ok('käsin valittu osasto muistetaan', await shopSec('jäätelö') === 'Muu');
+    await mob.click('.shop-row:has-text("jäätelö") [data-shopdel]'); await mob.waitForTimeout(300);
     ok('XSS: tuotteen nimi escapetaan', await (async () => {
       await mob.fill('#shopText', '<img src=x onerror="window.__xss=1">');
       await mob.press('#shopText', 'Enter'); await mob.waitForTimeout(300);
@@ -422,11 +445,17 @@ async function main() {
     ok('pian vanheneva merkitään', (await mob.textContent('.pantry-item.lv-warn')).includes('10 pv jäljellä'));
     ok('tilastot laskevat kappaleet ja varoitukset',
       JSON.stringify(await mob.$$eval('.pstat b', (els) => els.map((e) => e.textContent))) === '["7","1","1"]');
+    ok('varasto ehdottaa vanhenevia tuotteita kauppalistalle',
+      (await mob.textContent('#pantryToBuy')).includes('Ostettavaa: 2 tuotetta'));
     // Käytetty 1: määrä vähenee, viimeinen poistaa
     await mob.click('.pantry-item.lv-warn [data-puse]'); await mob.waitForTimeout(300);
     ok('käytetty 1 vähentää määrää', (await mob.textContent('.pantry-item.lv-warn')).includes('1 kpl'));
     await mob.click('.pantry-item.lv-bad [data-puse]'); await mob.waitForTimeout(300);
     ok('viimeisen käyttö poistaa tuotteen', (await mob.$$('.pantry-item.lv-bad')).length === 0);
+    ok('loppunut tuote tarjotaan kauppalistalle', (await mob.textContent('#pantryRanOut')).includes('Näkkileipä'));
+    await mob.click('#ranOutAdd'); await mob.waitForTimeout(300);
+    ok('loppunut tuote siirtyy kauppalistalle yhdellä napautuksella oikeaan osastoon',
+      await shopSec('näkkileipä') === 'Leipä' && (await mob.$$('#pantryRanOut')).length === 0);
     // Kauppalistalle varastosta
     await mob.click('.pantry-item.lv-warn [data-pshop]'); await mob.waitForTimeout(300);
     ok('varastosta lisätään kauppalistalle', await mob.evaluate(async () =>
@@ -445,8 +474,78 @@ async function main() {
     ok('vahvistettu poisto poistaa', (await mob.$$('.pantry-item')).length === 2);
     ok('varasto ei aiheuta vaakavieritystä puhelimessa',
       await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    ok('ehdotus poistuu, kun tuote on jo kauppalistalla', (await mob.$$('#pantryToBuy')).length === 0);
+
+    // Tavoitemäärä: alle tavoitteen jäävä tuote ehdotetaan kauppalistalle
+    await mob.click('.pantry-item:has-text("Vesi 5 l") [data-pedit]'); await mob.waitForTimeout(300);
+    await mob.fill('#pfTarget', '5');
+    await mob.click('#pfSave'); await mob.waitForTimeout(300);
+    ok('tavoitemäärä näkyy tuotteella', (await mob.textContent('.pantry-item:has-text("Vesi 5 l")')).includes('tavoite 5'));
+    ok('alle tavoitteen jäävä tuote ehdotetaan ostettavaksi', (await mob.textContent('#pantryToBuy')).includes('Ostettavaa: 1 tuote.'));
+    await mob.click('.bn-item[data-bnav="shopping"]'); await mob.waitForTimeout(400);
+    const sugText = await mob.textContent('#shopSuggestCard');
+    ok('kauppalista näyttää ehdotuksen syineen ja puuttuvan määrän',
+      sugText.includes('Vesi 5 l') && sugText.includes('2 kpl') && sugText.includes('varastossa 3, tavoite 5'), sugText);
+    await mob.click('[data-sugadd="0"]'); await mob.waitForTimeout(300);
+    ok('ehdotus lisätään listalle määrineen juomaosastolle', await mob.evaluate(async () =>
+      (await Store.shopping.list()).some((i) => i.text === 'Vesi 5 l' && i.qty === '2 kpl' && i.section === 'Juomat' && !i.done_at)));
+    ok('lisätty ehdotus poistuu ehdotuksista', (await mob.$$('#shopSuggestCard')).length === 0);
+    await mob.click('.bn-item[data-bnav="pantry"]'); await mob.waitForTimeout(400);
+    for (let i = 0; i < 3; i++) { await mob.click('.pantry-item:has-text("Vesi 5 l") [data-puse]'); await mob.waitForTimeout(250); }
+    const outRow = await mob.textContent('.pantry-item:has-text("Vesi 5 l")');
+    ok('tavoitteellinen tuote jää näkyviin loppuneena', outRow.includes('0 kpl') && outRow.includes('loppu')
+      && (await mob.$$('.pantry-item:has-text("Vesi 5 l") [data-puse]')).length === 0, outRow);
+    await addPantry('vesi 5 l', 400, 2, '');
+    ok('uusi erä korvaa loppu-rivin ja perii tavoitteen', await mob.evaluate(async () => {
+      const rows = (await Store.pantry.list()).items.filter((i) => i.name.toLowerCase() === 'vesi 5 l');
+      return rows.length === 1 && rows[0].qty === 2 && rows[0].target_qty === 5;
+    }));
+
+    // ===== Toistuvat kotityöt (sandbox) =====
+    ok('sivuvalikossa on Kotityöt', (await mob.$$('.nav-link[data-nav="chores"]')).length === 1);
+    await mob.evaluate(() => { location.hash = '#/kotityot'; }); await mob.waitForTimeout(400);
+    ok('kotityöt listataan eräpäivän mukaan, myöhässä oleva ensin', (await mob.$$('.chore')).length === 3
+      && (await mob.textContent('.chore:first-child')).includes('myöhässä 4 pv'));
+    ok('kotitöiden tilastot', JSON.stringify(await mob.$$eval('.pstat b', (els) => els.map((e) => e.textContent))) === '["3","1","1"]');
+    const fiIn = (n, unit) => mob.evaluate(([n2, u]) => {
+      const [y, m, d] = KotiShared.addInterval(KotiShared.todayISO(), n2, u).split('-');
+      return `${+d}.${+m}.${y}`;
+    }, [n, unit]);
+    await mob.click('.chore.lv-bad [data-cdone]'); await mob.waitForTimeout(300);
+    const doneRow = await mob.textContent('.chore:has-text("liesituulettimen")');
+    ok('tehdyksi merkitty siirtyy toistovälin päähän tästä päivästä', (await mob.$$('.chore.lv-bad')).length === 0
+      && doneRow.includes('seuraava ' + await fiIn(3, 'month')) && doneRow.includes('viimeksi ' + await fiIn(0, 'day')), doneRow);
+    await mob.click('#cAddBtn'); await mob.waitForTimeout(250);
+    await mob.click('#cfSave'); await mob.waitForTimeout(200);
+    ok('kotityö ilman nimeä ei tallennu', (await mob.$$('#choreForm')).length === 1);
+    await mob.fill('#cfTitle', '<img src=x onerror="window.__xss2=1">');
+    await mob.fill('#cfEvery', '2');
+    await mob.selectOption('#cfUnit', 'week');
+    await mob.fill('#cfNote', '<b>lihava</b>');
+    await mob.click('#cfSave'); await mob.waitForTimeout(300);
+    const newRow = await mob.textContent('.chore:has-text("<img")');
+    ok('uusi kotityö lisätään ja seuraava kerta lasketaan toistovälistä', (await mob.$$('.chore')).length === 4
+      && newRow.includes('2 viikon välein') && newRow.includes('14 pv päästä'), newRow);
+    ok('XSS: kotityön nimi ja lisätieto escapetaan', !(await mob.evaluate(() => window.__xss2))
+      && newRow.includes('<b>lihava</b>') && (await mob.$$('.chore img, .chore b')).length === 0);
+    await mob.click('.chore:has-text("<img") [data-cedit]'); await mob.waitForTimeout(300);
+    await mob.fill('#cfDue', isoIn(-1));
+    await mob.click('#cfSave'); await mob.waitForTimeout(300);
+    ok('seuraavan kerran voi asettaa käsin', (await mob.textContent('.chore:has-text("<img")')).includes('myöhässä 1 pv'));
+    await mob.click('.chore:has-text("<img") [data-caskdel]'); await mob.waitForTimeout(200);
+    ok('kotityön poisto kysyy vahvistuksen', (await mob.$$('[data-cdel]')).length === 1 && (await mob.$$('.chore')).length === 4);
+    await mob.click('[data-cdel]'); await mob.waitForTimeout(300);
+    ok('vahvistettu poisto poistaa kotityön', (await mob.$$('.chore')).length === 3);
+    ok('kotityöt ei aiheuta vaakavieritystä puhelimessa',
+      await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+
     // Etusivun kortit
     await mob.click('.bn-item[data-bnav="home"]'); await mob.waitForTimeout(600);
+    ok('etusivun kotityökortti näyttää kahden viikon sisällä erääntyvät',
+      (await mob.$$('.dash-chores li')).length === 1 && (await mob.textContent('.dash-chores')).includes('Testaa palovaroittimet'));
+    await mob.click('[data-choredone]'); await mob.waitForTimeout(600);
+    ok('kotityön voi kuitata suoraan etusivulta', (await mob.$$('.dash-chores li')).length === 0
+      && (await mob.textContent('[data-slot="kotityot"]')).includes('Ei tehtävää kahden viikon sisällä'));
     ok('etusivulla kauppalistakortti', (await mob.textContent('#dashRoot')).includes('Hernekeitto'));
     ok('etusivulla vanhenevat tuotteet', (await mob.$$('.dash-pantry li')).length === 1);
     await mob.fill('.dash-shop-add input', 'Kahvi');

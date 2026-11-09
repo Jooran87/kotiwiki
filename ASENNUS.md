@@ -12,12 +12,12 @@ siirtää ne myöhemmin palvelimelle (ohje alempana).
 ## 2. Pura ja asenna wiki
 
 1. Pura `elama-asennuspaketti.zip` haluamaasi paikkaan,
-   esim. `C:\tyowiki` tai Tiedostot-kansioon
+   esim. `C:\kotiwiki` tai Tiedostot-kansioon
 2. Avaa komentorivi purettuun kansioon:
    - **Windows:** avaa kansio Resurssienhallinnassa, kirjoita osoitepalkkiin
      `cmd` ja paina Enter
    - **Mac:** avaa Pääte (⌘ + välilyönti → kirjoita "Pääte" tai "Terminal").
-     Kirjoita `cd ` (välilyönti perään) ja **vedä tyowiki-kansio Finderista
+     Kirjoita `cd ` (välilyönti perään) ja **vedä kotiwiki-kansio Finderista
      Pääte-ikkunaan** → polku täydentyy → paina Enter
 3. Aja komennot:
 
@@ -61,9 +61,9 @@ Artikkelisi, kategoriat, termit ja liitteet siirtyvät sellaisenaan.
 ## Päivitys uuteen versioon (kirjoittamasi sisältö säilyy)
 
 1. Sammuta wiki (`Ctrl + C` Päätteessä)
-2. Nimeä vanha kansio uudelleen, esim. `tyowiki-vanha`
-3. Pura uusi paketti → syntyy uusi `tyowiki`-kansio
-4. **Kopioi `data`-kansio** vanhasta uuteen: `tyowiki-vanha/data` → `tyowiki/data`
+2. Nimeä vanha kansio uudelleen, esim. `kotiwiki-vanha`
+3. Pura uusi paketti → syntyy uusi `kotiwiki`-kansio
+4. **Kopioi `data`-kansio** vanhasta uuteen: `kotiwiki-vanha/data` → `kotiwiki/data`
 5. Uudessa kansiossa: `npm install` ja `npm start`
 6. Kun kaikki toimii, vanhan kansion voi poistaa
 

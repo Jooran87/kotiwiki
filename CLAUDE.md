@@ -10,7 +10,7 @@ Muut: README.md (ominaisuudet), ASENNUS.md (oma kone),
 TUOTANTOON.md (UpCloud-palvelin + Caddy + varmuuskopiot).
 
 Nyrkkisäännöt:
-- `npm test` vihreänä ennen committia (311 testiä)
+- `npm test` vihreänä ennen committia (388 testiä)
 - Käyttöliittymämuutoksen jälkeen `node sandbox/build-single.js` ja
   committaa syntynyt sandbox/elama-sandbox.html
 - Uusi ominaisuus molempiin storeihin (store-api.js ja sandbox/store-local.js)

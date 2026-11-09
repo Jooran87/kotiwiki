@@ -394,6 +394,126 @@ async function main() {
     evText = '';
     await jsend('POST', '/api/pantry', { name: 'Paristot AA', category: 'Paristot ja valo' });
     ok('varaston muutos lähettää pantry-tapahtuman', await waitFor('event: pantry'));
+
+    // --- Kauppalistan osastot (kaupan kiertojärjestys) ---
+    const K = require('../public/koti-shared');
+    ok('osasto arvataan nimestä', s2x.section === 'Leipä' && again.section === 'Maito ja kylmätuotteet',
+      `${s2x.section} / ${again.section}`);
+    const sPar = await jsend('POST', '/api/shopping', { text: 'paristot aa' });
+    ok('varastosta tuttu tuote saa osaston varaston kategoriasta', sPar.section === 'Koti ja siivous', sPar.section);
+    const sDog = await jsend('POST', '/api/shopping', { text: 'Kanaherkku', category: 'Koiran tarvikkeet' });
+    ok('varaston kategoria vihjeenä ohittaa nimiarvauksen', sDog.section === 'Lemmikit', sDog.section);
+    const sBad = await jsend('PUT', `/api/shopping/${sDog.id}`, { section: 'Keksitty<script>' });
+    ok('tuntematon osasto hylätään', sBad.section === 'Lemmikit');
+    const sIce = await jsend('POST', '/api/shopping', { text: 'Jäätelö' });
+    ok('pakaste tunnistetaan', sIce.section === 'Pakasteet', sIce.section);
+    const sMoved = await jsend('PUT', `/api/shopping/${sIce.id}`, { section: 'Muu' });
+    ok('osaston voi vaihtaa', sMoved.section === 'Muu');
+    await fetch(`${B}/api/shopping/${sIce.id}`, { method: 'DELETE', headers: H() });
+    const sIce2 = await jsend('POST', '/api/shopping', { text: 'JÄÄTELÖ' });
+    ok('käsin valittu osasto muistetaan (ääkköset ja kirjainkoko)', sIce2.section === 'Muu', sIce2.section);
+    const sDupA = await jsend('POST', '/api/shopping', { text: 'jäätelö' });
+    ok('ääkkösellinen tuote ei tuplaannu kirjainkoon takia', sDupA.duplicate === true && sDupA.id === sIce2.id);
+    ok('lukija ei voi vaihtaa osastoa (403)',
+      await status('PUT', `/api/shopping/${sIce2.id}`, { section: 'Leipä' }, V_COOKIE) === 403);
+    ok('osastojen arvaus: yhdyssanan loppuosa ratkaisee',
+      K.guessSection('appelsiinimehu') === 'Juomat' && K.guessSection('maitosuklaa') === 'Makeiset ja naposteltavat'
+      && K.guessSection('tonnikala') === 'Kuivatuotteet ja säilykkeet' && K.guessSection('tuntematon härpäke') === 'Muu');
+
+    // --- Varaston tavoitemäärä ---
+    const tA = await jsend('POST', '/api/pantry', { name: 'Säilykevesi', category: 'Juomavesi', qty: 2, target_qty: 4, best_before: '2028-01-01' });
+    ok('tavoitemäärä tallentuu', tA.target_qty === 4 && tA.qty === 2);
+    const tB = await jsend('POST', '/api/pantry', { name: 'SÄILYKEVESI', category: 'Juomavesi', qty: 1 });
+    ok('uusi erä perii tuotteen tavoitteen', tB.target_qty === 4);
+    await jsend('PUT', `/api/pantry/${tA.id}`, { name: 'Säilykevesi', category: 'Juomavesi', qty: 2, target_qty: 6 });
+    const pantryById = async (id) => (await jget('/api/pantry')).items.find((i) => i.id === id);
+    ok('tavoitteen muutos koskee tuotteen kaikkia eriä', (await pantryById(tB.id)).target_qty === 6);
+    await jsend('POST', `/api/pantry/${tA.id}/use`, {});
+    const tGone = await jsend('POST', `/api/pantry/${tA.id}/use`, {});
+    ok('erä poistuu loppuessaan, kun tuotetta on toisessa erässä', tGone.removed === true);
+    const tZero = await jsend('POST', `/api/pantry/${tB.id}/use`, {});
+    ok('viimeinen erä jää muistiin määrällä 0, kun tavoite on asetettu',
+      tZero.qty === 0 && !tZero.removed && tZero.best_before === '' && tZero.target_qty === 6, JSON.stringify(tZero));
+    const tZero2 = await jsend('POST', `/api/pantry/${tB.id}/use`, {});
+    ok('loppunutta tuotetta ei voi käyttää miinukselle', tZero2.qty === 0);
+    const tC = await jsend('POST', '/api/pantry', { name: 'Säilykevesi', category: 'Juomavesi', qty: 3 });
+    const tRows = (await jget('/api/pantry')).items.filter((i) => K.nameKey(i.name) === 'säilykevesi');
+    ok('uusi erä korvaa loppu-rivin ja säilyttää tavoitteen', tRows.length === 1 && tRows[0].id === tC.id && tC.target_qty === 6);
+    const tJunk = await jsend('POST', '/api/pantry', { name: 'Roska', qty: 0, target_qty: 'abc' });
+    ok('virheellinen tavoite siivotaan nollaksi eikä määrä voi olla 0 ilman tavoitetta', tJunk.target_qty === 0 && tJunk.qty === 1);
+    const tBig = await jsend('PUT', `/api/pantry/${tJunk.id}`, { name: 'Roska', qty: 1, target_qty: 99999999 });
+    ok('tavoitemäärällä on yläraja', tBig.target_qty === 9999);
+    const tRen = await jsend('PUT', `/api/pantry/${tJunk.id}`, { name: 'säilykevesi', qty: 1 });
+    ok('toiseksi tuotteeksi nimetty rivi perii tavoitteen eikä nollaa sitä muilta',
+      tRen.target_qty === 6 && (await pantryById(tC.id)).target_qty === 6);
+    await jsend('PUT', `/api/pantry/${tC.id}`, { name: 'Säilykevesi', category: 'Juomavesi', qty: 3, target_qty: 0 });
+    ok('tavoitteen voi poistaa, ja se poistuu tuotteen kaikilta eriltä', (await pantryById(tJunk.id)).target_qty === 0);
+
+    // --- Toistuvat kotityöt ---
+    const today = K.todayISO();
+    ok('kotityöt aluksi tyhjä', (await jget('/api/chores')).length === 0);
+    ok('kotityöt vaativat kirjautumisen', await status('GET', '/api/chores', null, '') === 401);
+    ok('kotityö ilman nimeä hylätään', await status('POST', '/api/chores', { title: '  ' }) === 400);
+    evText = '';
+    const c1 = await jsend('POST', '/api/chores', { title: 'Puhdista suodatin', every_n: 3, unit: 'month', next_due: '2026-01-15', note: 'liesituuletin' });
+    ok('kotityö luodaan', c1.id && c1.every_n === 3 && c1.unit === 'month' && c1.next_due === '2026-01-15'
+      && c1.note === 'liesituuletin' && c1.last_done_at === '');
+    ok('kotityön luoja tulee istunnosta', c1.created_by === 'Testi Admin');
+    ok('kotityön muutos lähettää chores-tapahtuman', await waitFor('event: chores'));
+    const c2 = await jsend('POST', '/api/chores', { title: "Robert'); DROP TABLE chores;--", every_n: -3, unit: 'vuosisata', next_due: '2026-02-30' });
+    ok('virheellinen toistoväli ja päivä korvataan oletuksilla',
+      c2.every_n === 1 && c2.unit === 'month' && c2.next_due === K.addInterval(today, 1, 'month'), JSON.stringify(c2));
+    const cList = await jget('/api/chores');
+    ok('SQL-injektio tallentuu tekstinä ja lista järjestyy eräpäivän mukaan',
+      cList.length === 2 && cList[0].id === c1.id && cList[1].title.includes('DROP TABLE'));
+    const cDone = await jsend('POST', `/api/chores/${c1.id}/done`, { date: today });
+    ok('kuittaus laskee seuraavan kerran kuittauspäivästä',
+      cDone.last_done_at === today && cDone.next_due === K.addInterval(today, 3, 'month'), JSON.stringify(cDone));
+    ok('kuittaaja tulee istunnosta', cDone.last_done_by === 'Testi Admin');
+    const cDone2 = await jsend('POST', `/api/chores/${c1.id}/done`, { date: '2020-01-01' });
+    ok('selaimen epäuskottava päivä korvataan palvelimen päivällä', cDone2.last_done_at === today);
+    const cUpd = await jsend('PUT', `/api/chores/${c1.id}`, { title: 'Puhdista suodattimet', every_n: 2, unit: 'week', next_due: '2027-03-01' });
+    ok('kotityötä voi muokata', cUpd.title === 'Puhdista suodattimet' && cUpd.every_n === 2 && cUpd.unit === 'week'
+      && cUpd.next_due === '2027-03-01' && cUpd.last_done_at === today);
+    ok('olemattoman kotityön muokkaus ja kuittaus 404', await status('PUT', '/api/chores/99999', { title: 'x' }) === 404
+      && await status('POST', '/api/chores/99999/done', {}) === 404);
+    ok('lukija näkee kotityöt', await status('GET', '/api/chores', null, V_COOKIE) === 200);
+    ok('lukija ei voi lisätä, kuitata eikä poistaa kotityötä (403)',
+      await status('POST', '/api/chores', { title: 'x' }, V_COOKIE) === 403
+      && await status('POST', `/api/chores/${c1.id}/done`, {}, V_COOKIE) === 403
+      && await status('DELETE', `/api/chores/${c1.id}`, null, V_COOKIE) === 403);
+    await fetch(`${B}/api/chores/${c2.id}`, { method: 'DELETE', headers: H() });
+    ok('kotityön voi poistaa', (await jget('/api/chores')).length === 1);
+    ok('päivälaskenta: kuun loppu ja karkausvuosi', K.addInterval('2026-01-31', 1, 'month') === '2026-02-28'
+      && K.addInterval('2024-02-29', 1, 'year') === '2025-02-28' && K.addInterval('2026-12-30', 2, 'week') === '2027-01-13'
+      && K.addInterval('2026-11-30', 3, 'month') === '2027-02-28');
+    // Tietoturva: uudet reitit
+    ok('kotitöiden kirjoitusreitit vaativat kirjautumisen (401)',
+      await status('POST', '/api/chores', { title: 'x' }, '') === 401
+      && await status('PUT', `/api/chores/${c1.id}`, { title: 'x' }, '') === 401
+      && await status('POST', `/api/chores/${c1.id}/done`, {}, '') === 401
+      && await status('DELETE', `/api/chores/${c1.id}`, null, '') === 401);
+    const xssTitle = '<script>alert(1)</script><img src=x onerror=alert(2)>';
+    const cX = await jsend('POST', '/api/chores', { title: xssTitle, note: 'x'.repeat(5000), unit: { $ne: null }, every_n: [9] });
+    ok('kotityön kentät rajataan ja oudot tyypit siivotaan', cX.title === xssTitle && cX.note.length === 500
+      && cX.unit === 'month' && cX.every_n === 9, JSON.stringify(cX).slice(0, 200));
+    const cXres = await fetch(`${B}/api/chores`, { headers: H() });
+    ok('kotityöt palautetaan JSON:na (ei HTML:nä) ja nosniff-otsakkeella',
+      (cXres.headers.get('content-type') || '').startsWith('application/json')
+      && cXres.headers.get('x-content-type-options') === 'nosniff');
+    ok('pitkä kotityön nimi katkaistaan', (await jsend('PUT', `/api/chores/${cX.id}`, { title: 'y'.repeat(5000) })).title.length === 200);
+    ok('taulukko pyynnön runkona ei kaada palvelinta',
+      await fetch(`${B}/api/chores`, { method: 'POST', headers: H(J), body: '[1,2]' }).then((r) => r.status) === 400);
+    ok('rikkinäinen JSON ei kaada palvelinta',
+      [400, 500].includes(await fetch(`${B}/api/chores`, { method: 'POST', headers: H(J), body: '{"title":' }).then((r) => r.status))
+      && await status('GET', '/api/chores') === 200);
+    ok('SQL-injektio id-parametrissa ei vaikuta', await status('DELETE', '/api/chores/1%20OR%201=1') === 200
+      && (await jget('/api/chores')).length === 2);
+    await fetch(`${B}/api/chores/${cX.id}`, { method: 'DELETE', headers: H() });
+    ok('osaston päättely ei hyväksy olion sisäisiä avaimia', K.guessSection('x', 'constructor') === 'Muu'
+      && K.guessSection('x', '__proto__') === 'Muu'
+      && (await jsend('POST', '/api/shopping', { text: 'Outo vempain', category: 'constructor' })).section === 'Muu');
+    ok('jaettu sääntötiedosto tarjoillaan selaimelle', await status('GET', '/koti-shared.js', null, '') === 200);
     ctrl.abort();
     for (const r of await jget('/api/shopping')) await fetch(`${B}/api/shopping/${r.id}`, { method: 'DELETE', headers: H() });
     ok('kauppalistan rivit voi poistaa', (await jget('/api/shopping')).length === 0);

@@ -1,4 +1,4 @@
-// Oma dashboard -palvelin (pohjana Palmian työohje-wiki).
+// Kotiwikin palvelin: dashboard, ohjewiki, kauppalista, varasto ja kotityöt.
 // Tarjoilee selainkäyttöliittymän (public/) ja REST-rajapinnan.
 // Käynnistys: node server.js  (portti oletuksena 3000, säädettävissä PORT-muuttujalla)
 const path = require('path');
@@ -488,17 +488,6 @@ app.delete('/api/trash/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// Suosituimmat ohjeet (katselukertojen mukaan). Määriteltävä ennen :id-reittiä.
-app.get('/api/pages/popular', (req, res) => {
-  const lim = Math.min(parseInt(req.query.limit, 10) || 10, 50);
-  const rows = db.prepare(
-    `SELECT p.id, p.title, p.category_id, p.views, c.name AS category_name
-     FROM pages p LEFT JOIN categories c ON c.id = p.category_id
-     WHERE p.views > 0 AND p.deleted_at IS NULL ORDER BY p.views DESC, p.title LIMIT ?`
-  ).all(lim);
-  res.json(rows);
-});
-
 app.get('/api/pages/:id', (req, res) => {
   const page = db.prepare('SELECT * FROM pages WHERE id = ?').get(req.params.id);
   if (!page) return res.status(404).json({ error: 'Sivua ei löydy' });
@@ -656,7 +645,7 @@ app.post('/api/announcements', (req, res) => {
 
 app.put('/api/announcements/:id', (req, res) => {
   const existing = db.prepare('SELECT * FROM announcements WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Tiedotetta ei löydy' });
+  if (!existing) return res.status(404).json({ error: 'Muistutusta ei löydy' });
   const title = req.body.title !== undefined ? (req.body.title || '').trim() : existing.title;
   if (!title) return res.status(400).json({ error: 'Otsikko puuttuu' });
   const content = req.body.content !== undefined ? req.body.content : existing.content;

@@ -107,7 +107,7 @@ const ready = ensureSeeded();
 
 async function ensureSeeded() {
   if (DB) { migrateExisting(); return; }
-  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [] };
+  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [], shopSections: {}, chores: [] };
 
   // Elämän osa-alueet. Vaihda omiksesi – tämä on vain runko.
   const koti = { id: nextId(), name: 'Koti', icon: 'svg:building', color: '#0369a1', sort_order: 0, parent_id: null };
@@ -253,6 +253,15 @@ Merkitse päättymispäivät muistutuksiin.`, 'Minä', 'sopimus, vakuutus, kilpa
     { id: nextId(), title: 'Sähkösopimus päättyy syksyllä', content: 'Kilpailuta ennen automaattista jatkumista.', pinned: 0, created_at: nowISO(), created_by: 'Minä', updated_at: nowISO() }
   );
 
+  // Esimerkkejä toistuvista kotitöistä (yksi myöhässä, jotta kuittaus näkyy demossa).
+  const today = KotiShared.todayISO();
+  const chore = (title, every_n, unit, days, note) => DB.chores.push({
+    id: nextId(), title, note: note || '', every_n, unit, next_due: KotiShared.addInterval(today, days, 'day'),
+    last_done_at: '', last_done_by: '', created_at: nowISO(), created_by: 'Minä' });
+  chore('Puhdista liesituulettimen suodatin', 3, 'month', -4);
+  chore('Testaa palovaroittimet', 1, 'month', 6);
+  chore('Vaihda palovaroittimen paristo', 1, 'year', 120, '9 V paristo');
+
   save(DB);
 }
 
@@ -280,6 +289,10 @@ function migrateExisting() {
   if (!DB.pantry) { DB.pantry = []; changed = true; }
   if (!DB.pantryCatalog) { DB.pantryCatalog = {}; changed = true; }
   if (!DB.shopping) { DB.shopping = []; changed = true; }
+  if (!DB.shopSections) { DB.shopSections = {}; changed = true; }
+  if (!DB.chores) { DB.chores = []; changed = true; }
+  DB.pantry.forEach((it) => { if (typeof it.target_qty !== 'number') { it.target_qty = 0; changed = true; } });
+  DB.shopping.forEach((it) => { if (!K.cleanSection(it.section)) { it.section = sectionFor(it.text); changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.icon !== 'string') { c.icon = ''; changed = true; } });
   DB.categories.forEach((c) => { if (c.parent_id === undefined) { c.parent_id = null; changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.color !== 'string') { c.color = ''; changed = true; } });
@@ -328,19 +341,22 @@ function makeSnippet(text, q) {
   return (start > 0 ? '…' : '') + plain.slice(start, end).trim() + (end < plain.length ? '…' : '');
 }
 
-// Varmuusvaraston kenttien siivous (vastaa koti-routes.js:n sääntöjä).
-const PANTRY_CATEGORIES = ['Ruoka', 'Juomavesi', 'Ensiapu ja lääkkeet', 'Paristot ja valo',
-  'Hygienia', 'Koiran tarvikkeet', 'Muu'];
-function pantryFields(d) {
-  const bb = String(d.best_before || '').slice(0, 10);
-  const q = parseInt(d.qty, 10);
-  return {
-    name: String(d.name || '').trim().slice(0, 200),
-    barcode: String(d.barcode || '').replace(/[^0-9A-Za-z\-.]/g, '').slice(0, 64),
-    category: PANTRY_CATEGORIES.includes(d.category) ? d.category : 'Muu',
-    qty: Number.isFinite(q) ? Math.min(Math.max(q, 1), 9999) : 1,
-    best_before: /^\d{4}-\d{2}-\d{2}$/.test(bb) ? bb : '',
-  };
+// Varaston, kauppalistan ja kotitöiden säännöt tulevat samasta tiedostosta
+// kuin palvelimella (public/koti-shared.js), joten ne eivät voi erkaantua.
+const K = KotiShared;
+// Saman tuotteen muut rivit (sama nimi, eri päiväys).
+const pantrySiblings = (name, exceptId) =>
+  DB.pantry.filter((r) => r.id !== exceptId && K.nameKey(r.name) === K.nameKey(name));
+// Osasto uudelle kauppalistan riville (sama järjestys kuin palvelimella).
+function sectionFor(text, pantryCategory) {
+  const key = K.nameKey(text);
+  if (K.cleanSection(DB.shopSections[key])) return DB.shopSections[key];
+  let cat = K.PANTRY_CATEGORIES.includes(pantryCategory) ? pantryCategory : '';
+  if (!cat) {
+    const known = [...Object.values(DB.pantryCatalog), ...DB.pantry].find((r) => K.nameKey(r.name) === key);
+    if (known) cat = known.category;
+  }
+  return K.guessSection(text, cat);
 }
 
 // ---------- Store-rajapinta ----------
@@ -413,13 +429,6 @@ const Store = {
           .map(pick);
       }
       return clone(rows).sort((a, b) => a.title.localeCompare(b.title)).map(pick);
-    },
-    async popular(limit = 10) {
-      await ready;
-      return clone(DB.pages).filter((p) => (p.views || 0) > 0 && !p.deleted_at)
-        .sort((a, b) => b.views - a.views || a.title.localeCompare(b.title))
-        .slice(0, limit)
-        .map((p) => ({ id: p.id, title: p.title, category_id: p.category_id, views: p.views, category_name: catName(p.category_id) }));
     },
     async get(id, { track } = {}) {
       await ready; id = Number(id);
@@ -623,7 +632,7 @@ const Store = {
     async update(id, data) {
       await ready; id = Number(id);
       const a = DB.announcements.find((x) => x.id === id);
-      if (!a) throw new Error('Tiedotetta ei löydy');
+      if (!a) throw new Error('Muistutusta ei löydy');
       if (data.title !== undefined) {
         const t = (data.title || '').trim();
         if (!t) throw new Error('Otsikko puuttuu');
@@ -668,13 +677,18 @@ const Store = {
       await ready;
       const items = clone(DB.pantry).sort((a, b) =>
         (a.best_before === '') - (b.best_before === '') || a.best_before.localeCompare(b.best_before) || a.name.localeCompare(b.name, 'fi'));
-      return { categories: PANTRY_CATEGORIES, items };
+      return { categories: K.PANTRY_CATEGORIES, items };
     },
     async lookup(code) { await ready; const c = DB.pantryCatalog[code]; return c ? clone(c) : null; },
     async create(data) {
       await ready;
-      const f = pantryFields(data);
+      const f = K.pantryFields(data);
       if (!f.name) throw new Error('Nimi puuttuu');
+      const same = pantrySiblings(f.name);
+      // Uusi erä perii tuotteen tavoitteen ja korvaa "loppu"-muistilapun.
+      if (!f.target_qty) f.target_qty = Math.max(0, ...same.map((r) => r.target_qty));
+      DB.pantry = DB.pantry.filter((r) => !(same.includes(r) && r.qty === 0));
+      same.forEach((r) => { r.target_qty = f.target_qty; });
       const it = { id: nextId(), ...f, created_at: nowISO(), created_by: '', updated_at: nowISO() };
       DB.pantry.push(it);
       if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
@@ -684,18 +698,32 @@ const Store = {
       await ready; id = Number(id);
       const it = DB.pantry.find((x) => x.id === id);
       if (!it) throw new Error('Tuotetta ei löydy');
-      const f = pantryFields(data);
+      const f = K.pantryFields(data);
       if (!f.name) throw new Error('Nimi puuttuu');
+      const same = pantrySiblings(f.name, id);
+      // Nimen vaihto toiseksi tuotteeksi: rivi perii uuden tuotteensa tavoitteen.
+      if (!f.target_qty && K.nameKey(it.name) !== K.nameKey(f.name)) {
+        f.target_qty = Math.max(0, ...same.map((r) => r.target_qty));
+      }
       Object.assign(it, f, { updated_at: nowISO() });
+      same.forEach((r) => { r.target_qty = f.target_qty; });
       if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
       save(DB); return clone(it);
     },
+    // Viimeinen kappale poistaa rivin, paitsi jos tuotteella on tavoitemäärä
+    // eikä muita eriä ole: silloin rivi jää määrällä 0 muistuttamaan ostamisesta.
     async useOne(id) {
       await ready; id = Number(id);
       const it = DB.pantry.find((x) => x.id === id);
       if (!it) throw new Error('Tuotetta ei löydy');
-      if (it.qty <= 1) DB.pantry = DB.pantry.filter((x) => x.id !== id); else it.qty -= 1;
-      save(DB); return { id, qty: Math.max(0, it.qty) };
+      if (it.qty > 1) it.qty -= 1;
+      else if (it.target_qty > 0 && !pantrySiblings(it.name, id).length) { it.qty = 0; it.best_before = ''; }
+      else {
+        DB.pantry = DB.pantry.filter((x) => x.id !== id);
+        save(DB); return { id, qty: 0, removed: true };
+      }
+      it.updated_at = nowISO();
+      save(DB); return clone(it);
     },
     async remove(id) { await ready; id = Number(id); DB.pantry = DB.pantry.filter((x) => x.id !== id); save(DB); return { ok: true }; },
   },
@@ -708,13 +736,14 @@ const Store = {
       const done = DB.shopping.filter((i) => i.done_at).sort((a, b) => b.done_at.localeCompare(a.done_at));
       return clone([...open, ...done]);
     },
-    async add(text, qty) {
+    async add(text, qty, category) {
       await ready;
       text = String(text || '').trim().slice(0, 200);
       if (!text) throw new Error('Kirjoita tuote');
-      const dup = DB.shopping.find((i) => !i.done_at && i.text.toLowerCase() === text.toLowerCase());
+      const dup = DB.shopping.find((i) => !i.done_at && K.nameKey(i.text) === K.nameKey(text));
       if (dup) return { ...clone(dup), duplicate: true };
-      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
+      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), section: sectionFor(text, category),
+        added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
       DB.shopping.push(it); save(DB); return clone(it);
     },
     async update(id, data) {
@@ -723,6 +752,9 @@ const Store = {
       if (!it) throw new Error('Riviä ei löydy');
       if (data.text !== undefined) it.text = String(data.text).trim().slice(0, 200) || it.text;
       if (data.qty !== undefined) it.qty = String(data.qty).trim().slice(0, 40);
+      // Käsin vaihdettu osasto muistetaan tälle tuotteelle.
+      const section = K.cleanSection(data.section);
+      if (section && section !== it.section) { it.section = section; DB.shopSections[K.nameKey(it.text)] = section; }
       if (data.done === true && !it.done_at) it.done_at = nowISO();
       if (data.done === false) it.done_at = null;
       save(DB); return clone(it);
@@ -734,6 +766,40 @@ const Store = {
       DB.shopping = DB.shopping.filter((i) => !i.done_at);
       save(DB); return { removed: before - DB.shopping.length };
     },
+  },
+
+  // ---------- Toistuvat kotityöt ----------
+  chores: {
+    async list() {
+      await ready;
+      return clone(DB.chores).sort((a, b) => a.next_due.localeCompare(b.next_due) || a.title.localeCompare(b.title, 'fi'));
+    },
+    async create(data) {
+      await ready;
+      const f = K.choreFields(data, K.todayISO());
+      if (!f.title) throw new Error('Anna tehtävälle nimi');
+      const c = { id: nextId(), ...f, last_done_at: '', last_done_by: '', created_at: nowISO(), created_by: '' };
+      DB.chores.push(c); save(DB); return clone(c);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const c = DB.chores.find((x) => x.id === id);
+      if (!c) throw new Error('Tehtävää ei löydy');
+      const f = K.choreFields(data, K.todayISO());
+      if (!f.title) throw new Error('Anna tehtävälle nimi');
+      Object.assign(c, f);
+      save(DB); return clone(c);
+    },
+    async done(id, date) {
+      await ready; id = Number(id);
+      const c = DB.chores.find((x) => x.id === id);
+      if (!c) throw new Error('Tehtävää ei löydy');
+      const day = K.doneDate(date, K.todayISO());
+      c.last_done_at = day; c.last_done_by = '';
+      c.next_due = K.addInterval(day, c.every_n, c.unit);
+      save(DB); return clone(c);
+    },
+    async remove(id) { await ready; id = Number(id); DB.chores = DB.chores.filter((x) => x.id !== id); save(DB); return { ok: true }; },
   },
 
   // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.

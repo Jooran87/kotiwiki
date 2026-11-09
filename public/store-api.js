@@ -61,7 +61,6 @@ const Store = {
 
   pages: {
     list: (categoryId) => api('/api/pages' + (categoryId ? '?category_id=' + categoryId : '')),
-    popular: (limit = 10) => api('/api/pages/popular?limit=' + limit),
     get: (id, { track } = {}) => api('/api/pages/' + id + (track ? '?track=1' : '')).then(withAttachmentUrls),
     create: (data) => api('/api/pages', jsonBody('POST', data)),
     update: (id, data) => api('/api/pages/' + id, jsonBody('PUT', data)),
@@ -138,20 +137,30 @@ const Store = {
     remove: (id) => api('/api/pantry/' + id, { method: 'DELETE' }),
   },
 
-  // Yhteinen kauppalista.
+  // Yhteinen kauppalista. add: category on varaston kategoria vihjeeksi
+  // osaston päättelyyn (valinnainen).
   shopping: {
     list: () => api('/api/shopping'),
-    add: (text, qty) => api('/api/shopping', jsonBody('POST', { text, qty: qty || '' })),
+    add: (text, qty, category) => api('/api/shopping', jsonBody('POST', { text, qty: qty || '', category })),
     update: (id, data) => api('/api/shopping/' + id, jsonBody('PUT', data)),
     remove: (id) => api('/api/shopping/' + id, { method: 'DELETE' }),
     clearDone: () => api('/api/shopping/clear-done', { method: 'POST' }),
+  },
+
+  // Toistuvat kotityöt. done: date on selaimen päivä (YYYY-MM-DD).
+  chores: {
+    list: () => api('/api/chores'),
+    create: (data) => api('/api/chores', jsonBody('POST', data)),
+    update: (id, data) => api('/api/chores/' + id, jsonBody('PUT', data)),
+    done: (id, date) => api('/api/chores/' + id + '/done', jsonBody('POST', { date })),
+    remove: (id) => api('/api/chores/' + id, { method: 'DELETE' }),
   },
 
   // Reaaliaikaiset muutokset muilta laitteilta (Server-Sent Events).
   // on('shopping', fn) palauttaa funktion, jolla kuuntelun voi lopettaa.
   events: (() => {
     let es = null;
-    const handlers = { pantry: new Set(), shopping: new Set() };
+    const handlers = { pantry: new Set(), shopping: new Set(), chores: new Set() };
     function ensure() {
       if (es || typeof EventSource === 'undefined') return;
       es = new EventSource('/api/events');
@@ -161,7 +170,7 @@ const Store = {
         if (es && es.readyState === 2) {
           es = null;
           setTimeout(() => {
-            if (handlers.pantry.size || handlers.shopping.size) ensure();
+            if (Object.values(handlers).some((set) => set.size)) ensure();
           }, 10000);
         }
       };
@@ -176,7 +185,6 @@ const Store = {
         ensure();
         return () => handlers[type].delete(fn);
       },
-      close() { if (es) { es.close(); es = null; } },
     };
   })(),
 

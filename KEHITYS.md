@@ -19,8 +19,10 @@ public/
 sandbox/
   store-local.js     Datakerros sandboxille (localStorage + IndexedDB, EI authia)
   build-single.js    Kokoaa yhden tiedoston sandboxin (elama-sandbox.html)
-koti-routes.js       Varasto + kauppalista + reaaliaikaiset tapahtumat (SSE)
-public/koti.js       Varaston ja kauppalistan näkymät, viivakoodiskanneri, kortit
+koti-routes.js       Varasto + kauppalista + kotityöt + reaaliaikaiset tapahtumat (SSE)
+public/koti.js       Varaston, kauppalistan ja kotitöiden näkymät, viivakoodiskanneri, kortit
+public/koti-shared.js ★ Kodin toimintojen SÄÄNNÖT (osastot, päivälaskenta, kenttien siivous):
+                     sama tiedosto palvelimella (require), selaimessa ja sandboxissa
 public/koti.css      Niiden ulkoasu (2a-tokenit)
 public/vendor/       zxing.min.js (Apache-2.0), ladataan vain skannatessa
 deploy/              systemd-palvelu ja Caddyfile omalle palvelimelle
@@ -43,8 +45,8 @@ Pohjaprojektin etusivu oli kiinteä; tässä se on **korttirekisteri**.
 - `public/cards.js` – kortit. Uusi kortti = yksi `register`-kutsu, etusivun
   koodiin ei kosketa.
 - `viewHome()` (app.js) piirtää vain otsikon ja kutsuu `Dashboard.render()`.
-- Skriptijärjestys on **dashboard.js → cards.js → koti.js → app.js** sekä index.html:ssä
-  että build-single.js:ssä. Väärä järjestys kaataa käynnistyksen.
+- Skriptijärjestys on **koti-shared.js → store → dashboard.js → cards.js → koti.js → app.js**
+  sekä index.html:ssä että build-single.js:ssä. Väärä järjestys kaataa käynnistyksen.
 
 **load ja render on erotettu tarkoituksella:** kaikkien korttien datat haetaan
 `Promise.all`-rinnakkaisuudella, joten hidas lähde ei jarruta muita, ja
@@ -62,14 +64,45 @@ Selain ei ota yhteyttä ulos. Uusi lähde:
 `GET /api/dashboard` → kortin `load`. Näin CSP pysyy tiukkana, avaimet
 palvelimella, ja lähteen ollessa alhaalla voidaan näyttää viimeisin arvo.
 
-## Varmuusvarasto ja kauppalista
+## Varmuusvarasto, kauppalista ja kotityöt
+
+- **Yhteiset säännöt: `public/koti-shared.js`.** Kaikki, mikä pitää olla
+  täsmälleen samoin palvelimella ja sandboxissa (kenttien siivous, osaston
+  arvaus, kotityön seuraavan päivän laskenta), on tässä yhdessä tiedostossa.
+  Siinä ei saa olla tietokantaa, DOMia eikä verkkoa. Uusi sääntö tänne, ei
+  kahteen storeen erikseen.
+- **Nimien vertailu aina `nameKey()`llä** (JavaScriptin `toLowerCase`).
+  SQLiten `lower()` ei tunne ääkkösiä, joten "JÄÄTELÖ" ja "jäätelö" olisivat
+  SQL-vertailussa eri tuote.
+- **Tavoitemäärä (`pantry_items.target_qty`, 0 = ei tavoitetta) kuuluu
+  tuotteelle, ei riville.** Saman nimiset erät pidetään samassa tavoitteessa
+  (`syncTarget`), uusi erä perii tavoitteen. Määrä 0 on sallittu vain
+  tavoitteellisella tuotteella: viimeisen kappaleen käyttö jättää silloin
+  "loppu"-rivin muistilapuksi (muuten rivi poistuu kuten ennen), ja seuraava
+  saman niminen lisäys korvaa sen.
+- **Ostoehdotukset lasketaan selaimessa** (`pantrySuggestions` koti.js:ssä)
+  varaston ja kauppalistan datasta: alle tavoitteen tai vanhenee 30 pv
+  sisällä, eikä tuote ole jo listalla. Ei omaa palvelinreittiä.
+- **Kauppalistan osasto (`shopping_items.section`)** on yksi
+  `KotiShared.SECTIONS`-listan arvoista; listan järjestys = kaupan
+  kiertojärjestys. Uuden rivin osasto (`sectionFor`): 1) käyttäjän aiemmin
+  tälle tuotteelle valitsema (`shopping_sections`, sandboxissa
+  `DB.shopSections`), 2) varaston kategoria, jos tuote on varastosta tuttu,
+  3) arvaus nimestä (`KEYWORDS`: yhdyssanan loppuosa ratkaisee). Arvaus saa
+  mennä pieleen, koska käsin tehty korjaus muistetaan.
+- **Kotityöt (`chores`)**: `next_due` ja `last_done_at` ovat `YYYY-MM-DD`.
+  Kuittaus (`POST /api/chores/:id/done`) asettaa seuraavan kerran
+  kuittauspäivästä toistovälin päähän (`addInterval`: kuun loppu ja
+  karkausvuosi käsitelty). Selain lähettää oman päivänsä; palvelin hyväksyy
+  sen vain, jos ero palvelimen päivään on enintään vuorokausi
+  (aikavyöhyke-ero), muuten käytetään palvelimen päivää.
 
 - **Palvelin:** `koti-routes.js` liitetään server.js:ssä portin JÄLKEEN,
   joten kirjautuminen ja roolit (lukija = vain GET) koskevat sitä
   automaattisesti. Taulut `pantry_items`, `pantry_catalog` (viivakoodi →
   nimi + kategoria) ja `shopping_items` luodaan db.js:n migraatiossa.
 - **Reaaliaikaisuus:** `GET /api/events` on SSE-virta. Jokainen kirjoitus
-  kutsuu `broadcast('pantry' | 'shopping')`; selain hakee listan uudelleen.
+  kutsuu `broadcast('pantry' | 'shopping' | 'chores')`; selain hakee listan uudelleen.
   Ei kirjastoja. Keep-alive 25 s välein (`unref`, ei pidä testiajoa
   hengissä). Caddyssa `flush_interval -1`, muuten virta puskuroituu.
 - **Selain:** `Store.events.on(tyyppi, fn)` (store-api.js). Sandboxissa
@@ -116,14 +149,14 @@ pitää Noden piilossa Caddyn takana.
    seed-dataan – tee näin vain kun uusi seed-sisältö on demolle tärkeä).
 5. **Ulkoasu-/logiikkamuutoksen jälkeen aina** `node sandbox/build-single.js`
    ja committaa syntynyt elama-sandbox.html.
-6. **`npm test` vihreänä (311 testiä) ennen jokaista committia.** Testit ajavat
+6. **`npm test` vihreänä (388 testiä) ennen jokaista committia.** Testit ajavat
    palvelimen eristetyssä ELAMA_DATA_DIR-hakemistossa – eivät koske oikeaa dataa.
 7. **Tekijätieto tulee AINA istunnosta** (`req.user.name`) – älä koskaan luota
    selaimen author-kenttään.
 8. **CSP kieltää inline-skriptit** palvelinversiossa – uusi JS vain erillisiin
    tiedostoihin (vrt. theme-boot.js). /offline-reitillä on oma löysempi CSP,
    koska se on itsenäinen dokumentti.
-9. Asennuspaketti käyttäjälle: zip tyowiki-kansiosta ILMAN node_modules/data/
+9. Asennuspaketti käyttäjälle: zip kotiwiki-kansiosta ILMAN node_modules/data/
    backups -kansioita.
 
 ## Sudenkuopat (älä astu uudelleen)
@@ -170,7 +203,7 @@ pitää Noden piilossa Caddyn takana.
 ## Alakategoriat (monta tasoa)
 
 - `categories.parent_id` (NULL = pääkategoria). **Mielivaltainen syvyys**
-  (esim. Hälytyskeskus → Hälytysjärjestelmien ohjeet → DSC/Ajax/HHL).
+  (esim. Koti → Laitteet ja huolto → Keittiö).
 - **Silmukan esto:** uudeksi yläkategoriaksi ei kelpaa kategoria itse eikä sen
   aleneva – `descendantIds()` (server.js) / `localDescendantIds()` (sandbox);
   UI:n yläkategoriavalitsin jättää nämä pois.
@@ -197,7 +230,7 @@ pitää Noden piilossa Caddyn takana.
 ## Roskakori (pehmeä poisto)
 
 - `pages.deleted_at` / `deleted_by` (NULL = näkyvä ohje). **Kaikki sivukyselyt
-  suodattavat `deleted_at IS NULL`** – listaus, haku, suosituimmat, offline-
+  suodattavat `deleted_at IS NULL`**: listaus, haku, offline-
   tuloste ja kategorioiden `page_count`. Uutta kyselyä lisätessä MUISTA tämä.
 - Poisto = `UPDATE ... SET deleted_at`. Liitteet ja versiohistoria säilyvät
   koskemattomina, joten palautus (`POST /api/pages/:id/restore`) on täydellinen.
@@ -254,27 +287,26 @@ kokeiluvaiheen kytkin on poistettu.
 - Avoimet reitit: /api/auth-status, /api/login, /api/setup (vain kun 0
   käyttäjää), /api/logout, staattiset tiedostot
 
-## Työjono (priorisoitu, ei aloitettu)
+## Työjono (ei aloitettu)
 
-1. **Lue ja kuittaa** tiedotteille – kuka on nähnyt tärkeän tiedotteen
-   (taulu announcement_reads, kuittausnappi, lukijalista ylläpitäjälle)
-2. **Vanhentuneiden vahvistusten kooste** – lista ohjeista joiden
-   ✔-vahvistus puuttuu tai on yli 180 pv (data on jo kannassa)
-3. **Vuorolokin arkisto** – päivämääräsuodatus + sivutus kun huomioita on satoja
-4. **Liitelouhinta taustalle** – iso PDF viivyttää nyt latausvastausta
-5. **HTTPS-ohje ICT:lle** käänteisproxyllä (evästeet + Secure-lippu)
-6. Myöhemmin jos tarve: FTS5-haku (nyk. LIKE riittää satoihin artikkeleihin,
-   mitattu 3–4 ms @ 309 sivua), OCR skannatuille PDF:ille
+1. **Ulkoiset lähteet etusivulle**: sää, sähkön hinta, uutiset, Euribor
+   (paikanpitäjät ovat cards.js:n lopussa, ohje README:ssä)
+2. **Laiterekisteri**: kodinkoneiden takuut, kuitit ja huoltohistoria
+   (wikin liitteet ja haku toimivat tähän valmiiksi)
+3. **Reseptit ja viikon ruokalista**: ainekset kauppalistalle yhdellä napilla
+4. **Liitelouhinta taustalle**: iso PDF viivyttää nyt latausvastausta
+5. Myöhemmin jos tarve: FTS5-haku (nyk. LIKE riittää satoihin artikkeleihin,
+   mitattu noin 4 ms, kun sivuja oli 309), OCR skannatuille PDF:ille
 
 ## Komennot
 
 ```bash
 npm start                      # palvelin (PORT=xxxx vaihtaa portin)
-npm test                       # 311 testiä eristetyssä ympäristössä
+npm test                       # 388 testiä eristetyssä ympäristössä
 npm run backup                 # varmuuskopio backups/-kansioon
 node sandbox/build-single.js   # kokoa jaettava sandbox-tiedosto
 node reindex.js                # liitteiden hakuindeksin uudelleenajo
 ```
 
 Dokumentit: README.md (ominaisuudet ja käyttö) · ASENNUS.md (oma kone) ·
-TUOTANTOON.md (palvelin, ICT-tehtävät) · tämä tiedosto (kehittäjät).
+TUOTANTOON.md (palvelin) · tämä tiedosto (kehittäjät).
