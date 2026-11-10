@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oma dashboard (Sandbox)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiNlYTZhMWUiLz48dGV4dCB4PSIzMiIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCxIZWx2ZXRpY2Esc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjgwMCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UDwvdGV4dD48L3N2Zz4=" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiNjNDQ3MGEiLz48cGF0aCBkPSJNMTMgMzAuNSAzMiAxM2wxOSAxNy41TTE4LjUgMjd2MjRoMjdWMjciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSIyOS42IiBjeT0iNDMiIHJ4PSI1LjIiIHJ5PSIzLjkiIHRyYW5zZm9ybT0icm90YXRlKC0yMiAyOS42IDQzKSIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik0zNC4zIDQyVjI4LjVjNC4yLjggNi40IDMuNiA1LjYgNy42IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K" />
   <script>
     /* Teema ennen renderöintiä, ettei sivu välähdä väärällä värillä */
     (function(){try{var t=localStorage.getItem('elama_theme');
@@ -903,6 +903,12 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 :root[data-design="2a"] .content { background: var(--app); }
 
+/* Logomerkki: koti ja nuotti. Kuvio on upotettu SVG, joka perii värin:
+   --acttx on vaaleassa teemassa valkoinen ja tummassa tumma, joten kuvio
+   erottuu oranssista pohjasta molemmissa (4,9:1 ja 6,4:1). */
+:root[data-design="2a"] .brand-mark { color: var(--acttx); }
+:root[data-design="2a"] .brand-mark svg { display: block; width: 100%; height: 100%; }
+
 /* ---- Yläpalkki ja sivupalkki: kiinteät mitat vain työpöydällä ----
    Alle 781 px styles.css tekee sivupalkista off-canvasin ja kutistaa
    yläpalkin. Jos 2a:n mitat pätisivät siellä, yläpalkki työntyisi ruudun
@@ -914,7 +920,6 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 :root[data-design="2a"] .brand-mark {
   width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
-  color: #fff; font-size: 15px; font-weight: 700;
 }
 :root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 :root[data-design="2a"] .brand-text small { color: var(--tx3); }
@@ -1354,7 +1359,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   <header class="topbar">
     <button id="menuToggle" class="icon-btn" title="Valikko" aria-label="Valikko">☰</button>
     <div class="brand" data-nav="home">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>
     <span class="sandbox-badge" title="Demo: data tallentuu vain tähän selaimeen">Sandbox</span>
@@ -3645,7 +3650,7 @@ function authScreen(inner) {
   document.documentElement.dataset.auth = 'out';
   content.innerHTML = `<div class="auth-wrap"><div class="card auth-card">
     <div class="brand" style="justify-content:center; margin-bottom:14px">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>${inner}</div></div>`;
 }
