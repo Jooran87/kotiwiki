@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oma dashboard (Sandbox)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiNlYTZhMWUiLz48dGV4dCB4PSIzMiIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCxIZWx2ZXRpY2Esc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjgwMCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UDwvdGV4dD48L3N2Zz4=" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiNjNDQ3MGEiLz48cGF0aCBkPSJNMTMgMzAuNSAzMiAxM2wxOSAxNy41TTE4LjUgMjd2MjRoMjdWMjciIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIzLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSIyOS42IiBjeT0iNDMiIHJ4PSI1LjIiIHJ5PSIzLjkiIHRyYW5zZm9ybT0icm90YXRlKC0yMiAyOS42IDQzKSIgZmlsbD0iI2ZmZmZmZiIvPjxwYXRoIGQ9Ik0zNC4zIDQyVjI4LjVjNC4yLjggNi40IDMuNiA1LjYgNy42IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMi44IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K" />
   <script>
     /* Teema ennen renderöintiä, ettei sivu välähdä väärällä värillä */
     (function(){try{var t=localStorage.getItem('elama_theme');
@@ -20,7 +20,7 @@
   --text: #1c2430;
   --muted: #6b7686;
   --hover: #eef2f7;
-  --brand: #ea6a1e;        /* Palmia-oranssi: täytöt, napit, logomerkki */
+  --brand: #ea6a1e;        /* oranssi pääväri: täytöt, napit, logomerkki */
   --brand-dark: #cf5a12;   /* hover */
   --brand-ink: #b8500e;    /* tekstit/linkit – tummempi kontrastin vuoksi */
   --brand-soft: #fdeadd;   /* pehmeä oranssi taustatäplä */
@@ -95,7 +95,6 @@ body {
   font-size: 15px;
 }
 
-
 /* Topbar */
 .topbar {
   display: flex; align-items: center; gap: 14px;
@@ -104,9 +103,8 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky; top: 0; z-index: 20;
 }
-.logo { font-size: 18px; margin: 0; cursor: pointer; white-space: nowrap; }
 
-/* Brändi (Palmia / Hälytyskeskus) */
+/* Brändi (yläpalkin logomerkki ja nimi) */
 .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; white-space: nowrap; }
 .brand-mark {
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
@@ -546,16 +544,6 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 .cat-card.has-accent { border-top: 3px solid var(--cat-accent); padding-top: 12px; }
 .cat-card.has-accent:hover { border-color: var(--cat-accent); }
 
-/* Kiinnitetty tiedote: huomiobanneri sivun ylälaidassa */
-.pin-banner {
-  display: block; background: var(--brand); color: var(--acttx, #fff);
-  border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
-  text-decoration: none; box-shadow: 0 4px 14px rgba(234, 106, 30, .28);
-}
-.pin-banner strong { margin-right: 8px; }
-.pin-banner span { opacity: .93; }
-.pin-banner:hover { filter: brightness(1.06); }
-
 /* Vuorohuomion pikakirjoitus (etusivu + oikean reunan palsta) */
 .note-quick { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 12px; }
 .note-quick textarea { min-height: 56px; }
@@ -573,18 +561,6 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 .rail:empty { display: none !important; }
 .rail-note { border-top: 1px solid var(--border); padding: 8px 0; font-size: 14px; overflow-wrap: anywhere; }
 .rail-note .muted { font-size: 12px; }
-
-/* Ranked list (suosituimmat) */
-.rank-list { list-style: none; margin: 0; padding: 0; counter-reset: rank; }
-.rank-list li { border-bottom: 1px solid var(--border); counter-increment: rank; }
-.rank-list li:last-child { border-bottom: none; }
-.rank-list li.empty { counter-increment: none; }
-.rank-list .page-link { position: relative; padding-left: 34px; }
-.rank-list li:not(.empty) .page-link::before {
-  content: counter(rank); position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-  width: 22px; height: 22px; line-height: 22px; text-align: center; font-size: 12px; font-weight: 700;
-  background: var(--brand-soft); color: var(--brand-ink); border-radius: 50%;
-}
 
 /* Contacts */
 .contact-list { list-style: none; margin: 0; padding: 0; }
@@ -677,19 +653,6 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 /* Tiedote- ja huomiokortit lasikortin päällä: kevyt läpikuultava kerros */
 .ann, .note { background: var(--glass-highlight); }
 .ann.pinned { background: var(--brand-soft); }
-/* Tiedotekortti: värillinen liquid glass -kehys, joka erottuu ohjeista */
-.ann-card {
-  border: 1px solid var(--pin-border);
-  border-top: 3px solid var(--brand);
-  padding-top: 13px;
-  background:
-    linear-gradient(180deg, var(--brand-soft) 0%, transparent 82px),
-    var(--glass-bg);
-}
-.ann-card h3 { color: var(--brand-ink); }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .ann-card { background: linear-gradient(180deg, var(--brand-soft) 0%, transparent 82px), var(--panel); }
-}
 /* Vanhat selaimet ilman backdrop-filteriä: kiinteät paneelit */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .topbar, .sidebar, .card, .cat-card { background: var(--panel); }
@@ -897,8 +860,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
 }
-:root[data-design="2a"] .mono,
-:root[data-design="2a"] .d2-mono { font-family: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+:root[data-design="2a"] .mono { font-family: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* Ei varjoja eikä lasitusta – hierarkia tehdään viivoilla ja typografialla. */
 :root[data-design="2a"] .topbar,
@@ -912,6 +874,12 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 :root[data-design="2a"] .content { background: var(--app); }
 
+/* Logomerkki: koti ja nuotti. Kuvio on upotettu SVG, joka perii värin:
+   --acttx on vaaleassa teemassa valkoinen ja tummassa tumma, joten kuvio
+   erottuu oranssista pohjasta molemmissa (4,9:1 ja 6,4:1). */
+:root[data-design="2a"] .brand-mark { color: var(--acttx); }
+:root[data-design="2a"] .brand-mark svg { display: block; width: 100%; height: 100%; }
+
 /* ---- Yläpalkki ja sivupalkki: kiinteät mitat vain työpöydällä ----
    Alle 781 px styles.css tekee sivupalkista off-canvasin ja kutistaa
    yläpalkin. Jos 2a:n mitat pätisivät siellä, yläpalkki työntyisi ruudun
@@ -923,7 +891,6 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 :root[data-design="2a"] .brand-mark {
   width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
-  color: var(--acttx); font-size: 15px; font-weight: 700;
 }
 :root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 :root[data-design="2a"] .brand-text small { color: var(--tx3); }
@@ -1003,7 +970,6 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   width: 1px; height: 30px; background: var(--line);
 }
 .d2-stat b { display: block; font-family: 'Plex Mono', monospace; font-weight: 700; font-size: 21px; line-height: 1; }
-.d2-stat b.crit { color: var(--crit); }
 .d2-stat span {
   display: block; font-family: 'Plex Mono', monospace; font-size: 10.5px;
   letter-spacing: .06em; color: var(--tx3); margin-top: 5px; text-transform: uppercase;
@@ -1016,52 +982,10 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   background: var(--panel2); border-bottom: 1px solid var(--line);
 }
 .d2-cardhead h3 { margin: 0; font-size: 13px; font-weight: 700; }
-.d2-cardhead .d2-count { font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 500; color: var(--tx3); }
 .d2-cardhead .d2-more { margin-left: auto; font-size: 11.5px; font-weight: 500; color: var(--tx2); text-decoration: none; }
 .d2-cardhead .d2-more:hover { color: var(--tx); }
-.d2-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--crit); flex: none; }
 
-/* ---- Osion otsikkorivi (Kategoriat / TOP 10 / Viimeksi päivitetyt) ---- */
-.d2-sec { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
-.d2-sec h3 { margin: 0; font-size: 14px; font-weight: 700; }
-.d2-sec .d2-rule { flex: 1; height: 1px; background: var(--line); }
-.d2-sec .d2-meta { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); }
-
-/* ---- Poikkeukset ---- */
-/* Koko rivi on klikattava (JS), joten se saa myös osoitinkäden ja
-   hover-korostuksen – muuten klikattavuutta ei arvaisi. */
-.d2-notice {
-  display: flex; position: relative; border-top: 1px solid var(--line);
-  cursor: pointer; transition: background-color 120ms ease;
-}
-.d2-notice:first-of-type { border-top: none; }
-.d2-notice:hover { background: var(--sel); }
-.d2-notice.crit { background: var(--critbg); }
-.d2-notice.crit:hover { background: var(--critbg-hov); }
-/* Näkyvää painiketta ei ole, joten alue on itse fokusoitava. Renkaan on
-   oltava selvä: tämä on ainoa näppäimistövihje tiedotteen avaamisesta. */
-.d2-notice:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
-.d2-stripe { width: 44px; flex: none; opacity: .5;
-  background: repeating-linear-gradient(135deg, var(--crit) 0 1.5px, transparent 1.5px 7px); }
-.d2-notice.warn .d2-stripe { opacity: .35;
-  background: repeating-linear-gradient(135deg, var(--warn) 0 1.5px, transparent 1.5px 7px); }
-.d2-noticebody { padding: 15px 18px 15px 16px; flex: 1; min-width: 0; }
-.d2-noticetitle { font-size: 17px; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
-.d2-notice.warn .d2-noticetitle { font-size: 15px; line-height: 1.35; }
-.d2-badge {
-  display: inline-block; font-family: 'Plex Mono', monospace; font-size: 9.5px; font-weight: 600;
-  letter-spacing: .09em; padding: 4px 6px; border-radius: 3px; margin-left: 9px;
-  vertical-align: middle; text-transform: uppercase; white-space: nowrap;
-}
-.d2-badge.now { background: var(--crit); color: #fff; }
-.d2-badge.soon { color: var(--warn); border: 1px solid var(--warn); }
-.d2-noticetext {
-  font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--tx2);
-  max-width: 76ch; margin: 7px 0 0; text-wrap: pretty;
-}
-.d2-notice.warn .d2-noticetext { font-size: 13.5px; line-height: 1.55; }
-/* Ilman painiketta jalka on pelkkä metarivi – tiiviimpi väli riittää. */
-.d2-noticefoot { display: flex; align-items: center; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+/* ---- Pienet metatekstit korteissa ---- */
 .d2-noticemeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; color: var(--tx3); }
 
 /* ---- Kategoriaruudukko ---- */
@@ -1087,25 +1011,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 .d2-cat.all::before { display: none; }
 .d2-cat.all .d2-catname { color: var(--tx2); }
-
-/* ---- TOP-lista ---- */
-.d2-toprow {
-  display: flex; align-items: center; gap: 14px; padding: 11px 16px;
-  border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0;
-  width: 100%; text-align: left; cursor: pointer; color: inherit;
-  transition: background-color 120ms ease;
-}
-.d2-toprow:last-child { border-bottom: none; }
-.d2-toprow:hover { background: var(--sel); }
-.d2-rank { font-family: 'Plex Mono', monospace; font-weight: 700; font-size: 12.5px; width: 18px; flex: none; }
-.d2-toprow.low .d2-rank { font-weight: 600; font-size: 12px; color: var(--tx3); }
 .d2-tick { width: 3px; height: 16px; border-radius: 2px; flex: none; background: var(--cat-accent, var(--tx3)); }
-.d2-topname { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.d2-toprow.low .d2-topname { font-weight: 500; }
-.d2-bar { width: 150px; height: 5px; border-radius: 3px; background: var(--panel3); flex: none; overflow: hidden; }
-.d2-bar i { display: block; height: 100%; background: var(--tx2); border-radius: 3px; }
-.d2-toprow.low .d2-bar i { background: var(--tx3); }
-.d2-views { font-family: 'Plex Mono', monospace; font-size: 11.5px; font-weight: 500; width: 26px; text-align: right; flex: none; color: var(--tx2); }
 
 /* ---- Viimeksi päivitetyt ---- */
 .d2-recent { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -1164,10 +1070,6 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   white-space: nowrap; flex: none;
 }
 .d2-btn:hover { filter: brightness(1.06); }
-.d2-btn.ghost {
-  background: var(--panel); color: var(--tx2); border: 1px solid var(--line2);
-  font-size: 11.5px; padding: 8px 11px;
-}
 .d2-entry { display: flex; gap: 11px; padding: 11px 14px; border-top: 1px solid var(--line); }
 .d2-entry .d2-tick { height: auto; align-self: stretch; width: 2px; }
 .d2-entryhead { display: flex; align-items: baseline; gap: 8px; }
@@ -1208,14 +1110,13 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   .d2-cats, .d2-recent { grid-template-columns: 1fr; }
   .d2-head { flex-direction: column; align-items: flex-start; gap: 12px; }
   .d2-stats { gap: 16px; }
-  .d2-bar { display: none; }
   /* Kosketuskohteiden vähimmäiskorkeus */
-  .d2-toprow, .d2-num { min-height: 44px; }
+  .d2-num { min-height: 44px; }
 }
 
 /* Tulostus: 2a-kortit paperille ilman taustavärejä */
 @media print {
-  :root[data-design="2a"] .d2-rail, :root[data-design="2a"] .d2-stripe { display: none; }
+  :root[data-design="2a"] .d2-rail { display: none; }
   .d2-card, .d2-cat, .d2-rec { border: 1px solid #bbb; background: #fff; }
 }
 
@@ -1310,6 +1211,18 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .shop-row.done .shop-text { text-decoration: line-through; color: var(--tx3, var(--muted)); font-weight: 500; }
 .linkish { background: none; border: none; padding: 0; font: inherit; font-weight: 650; color: inherit; cursor: pointer; }
 
+/* Osaston otsikko ostettavien listassa (kaupan kiertojärjestys). */
+.shop-sec { padding: 14px 0 4px; font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--tx2, var(--muted)); border-top: 1px solid var(--line, var(--border)); }
+.shop-sec:first-child { border-top: none; padding-top: 4px; }
+.shop-sec + .shop-row { border-top: none; }
+.shop-hint { font-size: 12px; }
+/* Osaston vaihto: näkyvissä on vain kuvake, sen päällä läpinäkyvä valintalista. */
+.shop-move { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; min-height: 32px; }
+.shop-move select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+.sug-body { cursor: default; }
+
 /* ---------- Varasto ---------- */
 .pantry-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
 .pstat { background: var(--panel); border: 1px solid var(--line, var(--border)); border-radius: 10px; padding: 10px; text-align: center; }
@@ -1319,6 +1232,14 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .pstat.bad b { color: var(--crit, #c8262c); }
 .pantry-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 12px; }
 .pantry-actions .btn { justify-content: center; display: inline-flex; align-items: center; gap: 6px; padding: 12px; }
+.pantry-actions.one { grid-template-columns: 1fr; }
+.pf-hint { font-size: 12px; margin-top: 4px; }
+/* Huomautusrivi: loppunut tuote ja ostoehdotukset. */
+.pantry-note { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  padding: 12px; margin-bottom: 12px; border-left: 4px solid var(--warn, #8a5605); }
+.pantry-note .btn { display: inline-flex; align-items: center; gap: 4px; }
+.pantry-note .ic { width: 15px; height: 15px; }
+.chore-note { font-size: 13px; margin-top: 4px; overflow-wrap: anywhere; }
 .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .pf-code { display: flex; gap: 8px; }
 .pf-code input { flex: 1; min-width: 0; }
@@ -1353,10 +1274,11 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .scanner .row { margin-top: 8px; }
 
 /* ---------- Etusivun kortit ---------- */
-.dash-shop ul, .dash-pantry { list-style: none; margin: 0; padding: 4px 16px; }
-.dash-shop li, .dash-pantry li { display: flex; justify-content: space-between; gap: 10px; align-items: center;
+.dash-shop ul, .dash-pantry, .dash-chores { list-style: none; margin: 0; padding: 4px 16px; }
+.dash-shop li, .dash-pantry li, .dash-chores li { display: flex; justify-content: space-between; gap: 10px; align-items: center;
   padding: 7px 0; border-top: 1px solid var(--line, var(--border)); font-size: 13.5px; }
-.dash-shop li:first-child, .dash-pantry li:first-child { border-top: none; }
+.dash-shop li:first-child, .dash-pantry li:first-child, .dash-chores li:first-child { border-top: none; }
+.dash-chore-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .dash-shop .dash-more { padding: 0 16px 6px; font-size: 12px; }
 .dash-shop-add { display: flex; gap: 6px; padding: 8px 16px 14px; }
 .dash-shop-add input { flex: 1; min-width: 0; font-size: 16px; }
@@ -1366,6 +1288,29 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   .shop-add input[type="text"]#shopText { flex-basis: 100%; }
   .shop-add .shop-qty-in { flex: 1; }
 }
+
+/* ---------- Sääkortti (cards.js) ---------- */
+.wx { padding: 14px 16px 12px; }
+.wx-ic { width: 22px; height: 22px; flex: none; color: var(--tx2, var(--muted)); }
+.wx-ic.wx-big { width: 46px; height: 46px; color: var(--tx, inherit); }
+.wx-now { display: flex; align-items: center; gap: 14px; }
+.wx-temp { font-size: 30px; font-weight: 700; line-height: 1; }
+.wx-desc { font-size: 13px; color: var(--tx2, var(--muted)); margin-top: 5px; }
+.wx-meta { font-size: 12.5px; color: var(--tx2, var(--muted)); margin-top: 10px; }
+.wx-hours { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--line, var(--border)); text-align: center; }
+.wx-h { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; min-width: 0; }
+.wx-h .mono { color: var(--tx3, var(--muted)); font-size: 11px; }
+.wx-h b { font-size: 13.5px; }
+.wx-rain { font-size: 10.5px; color: var(--tx2, var(--muted)); white-space: nowrap; }
+.wx-days { list-style: none; margin: 12px 0 0; padding: 4px 0 0; border-top: 1px solid var(--line, var(--border)); }
+.wx-days li { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+.wx-day { width: 58px; flex: none; }
+.wx-days .wx-rain { flex: 1; font-size: 11.5px; }
+.wx-range { flex: none; }
+.wx-warn { margin-top: 10px; padding: 8px 10px; border-radius: 6px; font-size: 12px; line-height: 1.45;
+  background: var(--warnbg, #fff3d6); color: var(--warn, #8a5605); }
+.wx-foot { margin-top: 10px; font-size: 10.5px; line-height: 1.4; color: var(--tx3, var(--muted)); }
 
 /* ---------- Puhelimen yläpalkki kirjautuneena ----------
    Nimi + "Kirjaudu ulos" eivät mahdu 390 px leveyteen kellon ja haun kanssa,
@@ -1387,7 +1332,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   <header class="topbar">
     <button id="menuToggle" class="icon-btn" title="Valikko" aria-label="Valikko">☰</button>
     <div class="brand" data-nav="home">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>
     <span class="sandbox-badge" title="Demo: data tallentuu vain tähän selaimeen">Sandbox</span>
@@ -1407,6 +1352,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
         <button class="nav-link" data-nav="shopping" data-icon="cart"><span>Kauppalista</span></button>
         <button class="nav-link" data-nav="pantry" data-icon="box"><span>Varmuusvarasto</span></button>
         <button class="nav-link" data-nav="announcements" data-icon="announce"><span>Muistutukset</span></button>
+        <button class="nav-link" data-nav="chores" data-icon="repeat"><span>Kotityöt</span></button>
         <button class="nav-link" data-nav="shiftlog" data-icon="note"><span>Päiväkirja</span></button>
         <button class="nav-link" data-nav="contacts" data-icon="contact"><span>Tärkeät numerot</span></button>
         <button class="nav-link" data-nav="terms" data-icon="terms"><span>Termipankki</span></button>
@@ -1685,6 +1631,213 @@ ${anns.length ? `<section>
 
   </script>
   <script>
+/* ============================================================================
+   Kodin toimintojen yhteiset säännöt (varasto, kauppalista, kotityöt)
+   ----------------------------------------------------------------------------
+   Sama tiedosto ajetaan KOLMESSA paikassa, jotta säännöt eivät pääse
+   erkanemaan toisistaan:
+     - palvelimella (koti-routes.js: require)
+     - selaimessa palvelinversiossa (koti.js käyttää osastolistaa)
+     - sandboxissa (store-local.js tekee samat tarkistukset kuin palvelin)
+   Täällä on vain puhdasta logiikkaa: ei tietokantaa, ei DOMia, ei verkkoa.
+   ========================================================================== */
+(function (root) {
+  'use strict';
+
+  const PANTRY_CATEGORIES = ['Ruoka', 'Juomavesi', 'Ensiapu ja lääkkeet', 'Paristot ja valo',
+    'Hygienia', 'Koiran tarvikkeet', 'Muu'];
+
+  // Kaupan osastot SIINÄ JÄRJESTYKSESSÄ, jossa kauppa tyypillisesti kierretään.
+  // Kauppalista ryhmitellään tämän mukaan.
+  const SECTIONS = ['Hedelmät ja vihannekset', 'Leipä', 'Liha ja kala', 'Maito ja kylmätuotteet',
+    'Kuivatuotteet ja säilykkeet', 'Juomat', 'Makeiset ja naposteltavat', 'Pakasteet',
+    'Hygienia ja terveys', 'Koti ja siivous', 'Lemmikit', 'Muu'];
+  const OTHER = 'Muu';
+
+  // Varaston kategoria kertoo osaston suoraan, kun se on yksiselitteinen.
+  // 'Ruoka' on liian laaja (leipä, säilyke, pakaste...), joten siinä nimi
+  // ratkaisee ensin ja tämä on vasta varavaihtoehto.
+  const PANTRY_TO_SECTION = {
+    'Ruoka': 'Kuivatuotteet ja säilykkeet',
+    'Juomavesi': 'Juomat',
+    'Ensiapu ja lääkkeet': 'Hygienia ja terveys',
+    'Paristot ja valo': 'Koti ja siivous',
+    'Hygienia': 'Hygienia ja terveys',
+    'Koiran tarvikkeet': 'Lemmikit',
+  };
+  const WEAK_PANTRY = ['Ruoka', 'Muu'];
+
+  // Osaston arvaus tuotteen nimestä. Rivi: [osasto, etusija, sanavartalot].
+  // Suurempi etusija voittaa aina (esim. "koiran makkara" on lemmikkiosastolla).
+  // Arvaus saa mennä joskus pieleen: käyttäjän tekemä korjaus muistetaan.
+  const KEYWORDS = [
+    ['Lemmikit', 2, ['koiran', 'kissan', 'kissanhiekka', 'raksu', 'puruluu', 'lemmik']],
+    ['Koti ja siivous', 2, ['pakastepussi', 'tiskisieni', 'suodatinpussi', 'leivinpaperi']],
+    ['Pakasteet', 1, ['pakaste', 'jäätelö', 'kalapuiko', 'ranskalais', 'pizza', 'jääpal']],
+    ['Hedelmät ja vihannekset', 0, ['banaani', 'omena', 'omeno', 'appelsiini', 'mandariini', 'sitruuna',
+      'päärynä', 'rypäle', 'mansik', 'mustik', 'vadelm', 'marja', 'marjo', 'meloni', 'avokado', 'kiivi',
+      'tomaatti', 'tomaati', 'kurkku', 'kurkut', 'salaatti', 'porkkan', 'peruna', 'perunoi', 'sipuli',
+      'paprika', 'kaali', 'sieni', 'sienet', 'herkkusien', 'yrtti', 'basilika', 'persilja', 'tilli',
+      'inkivääri', 'chili', 'kesäkurpitsa', 'munakoiso', 'pinaatti', 'lanttu', 'punajuur', 'hedelmä',
+      'vihannes']],
+    ['Leipä', 0, ['leipä', 'leivät', 'leipiä', 'sämpylä', 'patonki', 'rieska', 'pulla', 'korppu',
+      'karjalanpiirak', 'croissant', 'tortilla']],
+    ['Liha ja kala', 0, ['liha', 'lihat', 'kana', 'broileri', 'possu', 'nauta', 'naudan', 'makkara',
+      'nakki', 'nakit', 'pekoni', 'kinkku', 'leikkele', 'kala', 'lohi', 'lohta', 'silakka', 'katkarapu',
+      'kalkkuna', 'lihapulla', 'lihapyöryk', 'meetvursti', 'salami']],
+    ['Maito ja kylmätuotteet', 0, ['maito', 'maido', 'piimä', 'kerma', 'jogurt', 'viili', 'rahka',
+      'juusto', 'voi', 'margariini', 'levite', 'kananmun', 'muna', 'munat', 'munia', 'tofu',
+      'kaurajuoma', 'vanukas', 'smetana']],
+    ['Kuivatuotteet ja säilykkeet', 0, ['pasta', 'makaroni', 'spagetti', 'riisi', 'jauho', 'sokeri',
+      'suola', 'kahvi', 'tee', 'kaakao', 'mysli', 'muro', 'murot', 'hiutale', 'puuro', 'säilyke',
+      'tonnikala', 'keitto', 'papu', 'pavut', 'linssi', 'öljy', 'etikka', 'ketsuppi', 'sinappi',
+      'majoneesi', 'mauste', 'pippuri', 'hillo', 'hunaja', 'pähkinä', 'rusina', 'nuudeli', 'kastike',
+      'murska', 'liemi', 'leivinjauhe', 'hiiva', 'kaneli', 'vanilja']],
+    ['Juomat', 0, ['mehu', 'mehut', 'limu', 'limsa', 'limonadi', 'vesi', 'vettä', 'vichy', 'olut',
+      'olutta', 'kalja', 'siideri', 'lonkero', 'viini', 'juoma', 'cola', 'kola', 'smoothie', 'glögi']],
+    ['Makeiset ja naposteltavat', 0, ['karkki', 'karkit', 'karkkia', 'suklaa', 'sipsi', 'lastu', 'keksi',
+      'popcorn', 'purukumi', 'pastilli', 'lakritsi', 'salmiakki', 'makeinen', 'makeiset', 'naksu']],
+    ['Hygienia ja terveys', 0, ['shampoo', 'sampoo', 'hoitoaine', 'saippua', 'hammastahna', 'hammasharj',
+      'deodorantti', 'voide', 'laastari', 'lääke', 'vitamiini', 'terveysside', 'tamponi', 'vaippa',
+      'vaipat', 'partaterä', 'partavaahto', 'suihkugeeli', 'käsidesi', 'vanulappu', 'pumpuli',
+      'huulirasva', 'burana', 'ibuprofeeni', 'parasetamoli']],
+    ['Koti ja siivous', 0, ['pesuaine', 'tiskiaine', 'tiskitabletti', 'pyykinpesu', 'huuhteluaine',
+      'paperi', 'roskapussi', 'pussi', 'pussit', 'folio', 'kelmu', 'paristo', 'patteri', 'lamppu',
+      'kynttilä', 'tulitik', 'sytytin', 'puhdistusaine', 'tiskiharja', 'pyykkipoika']],
+  ];
+
+  const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+  // Vertailuavain nimille: SQLiten lower() ei osaa ääkkösiä, joten vertailu
+  // tehdään aina tällä (ÄITI ja äiti ovat sama tuote).
+  const nameKey = (v) => String(v == null ? '' : v).trim().toLowerCase();
+
+  const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  // Kelvollinen YYYY-MM-DD tai tyhjä. Olematon päivä (30.2.) hylätään.
+  function cleanDate(v) {
+    const s = str(v, 10);
+    if (!ISO_DATE.test(s)) return '';
+    const d = new Date(s + 'T00:00:00Z');
+    return !isNaN(d) && d.toISOString().slice(0, 10) === s ? s : '';
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  // Kuluva päivä laitteen omassa aikavyöhykkeessä.
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  // Päivien ero (b - a) kahden YYYY-MM-DD-päivän välillä.
+  function dayDiff(a, b) {
+    return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000);
+  }
+
+  function intIn(v, min, max, fallback) {
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? Math.min(Math.max(n, min), max) : fallback;
+  }
+
+  // ---------- Varasto ----------
+  // Määrä saa olla 0 vain, kun tuotteella on tavoitemäärä: silloin rivi jää
+  // muistiin "loppu"-tilassa ja muistuttaa ostamisesta.
+  function pantryFields(body) {
+    body = body || {};
+    const target = intIn(body.target_qty, 0, 9999, 0);
+    return {
+      name: str(body.name, 200),
+      barcode: str(body.barcode, 64).replace(/[^0-9A-Za-z\-.]/g, ''),
+      category: PANTRY_CATEGORIES.includes(body.category) ? body.category : OTHER,
+      qty: intIn(body.qty, target > 0 ? 0 : 1, 9999, 1),
+      best_before: cleanDate(body.best_before),
+      target_qty: target,
+    };
+  }
+
+  // ---------- Kauppalistan osastot ----------
+  const cleanSection = (v) => (SECTIONS.includes(v) ? v : '');
+
+  function keywordSection(text) {
+    const words = nameKey(text).split(/[^a-zåäö]+/).filter(Boolean);
+    let best = null, bestScore = -1;
+    for (const [section, prio, stems] of KEYWORDS) {
+      for (const stem of stems) {
+        for (const w of words) {
+          const at = w.lastIndexOf(stem);
+          if (at === -1) continue;
+          const tail = w.length - at - stem.length;
+          // Suomen yhdyssanassa pääsana on lopussa (appelsiiniMEHU), joten
+          // sanan loppuun osuva vartalo painaa eniten. Taivutuspääte sallitaan.
+          const atEnd = tail <= 2;
+          // Lyhyt vartalo (voi, tee) kelpaa vain kokonaisena sanana.
+          if (stem.length <= 3 && !(at === 0 && atEnd)) continue;
+          const score = prio * 10000 + (atEnd ? 1000 : 0) + stem.length;
+          if (score > bestScore) { bestScore = score; best = section; }
+        }
+      }
+    }
+    return best;
+  }
+
+  // Osasto tuotteen nimestä ja (jos tiedossa) varaston kategoriasta.
+  function guessSection(text, pantryCategory) {
+    // Vain tunnettu kategoria kelpaa avaimeksi (ei esim. "constructor").
+    const fromPantry = PANTRY_CATEGORIES.includes(pantryCategory) ? PANTRY_TO_SECTION[pantryCategory] : undefined;
+    if (fromPantry && !WEAK_PANTRY.includes(pantryCategory)) return fromPantry;
+    return keywordSection(text) || fromPantry || OTHER;
+  }
+
+  // ---------- Toistuvat kotityöt ----------
+  const CHORE_UNITS = ['day', 'week', 'month', 'year'];
+
+  // Lisää päivämäärään n yksikköä. Kuukausissa ja vuosissa päivä pysyy
+  // samana, ja liian lyhyessä kuussa käytetään kuun viimeistä päivää
+  // (31.1. + 1 kk = 28.2. tai 29.2.).
+  function addInterval(iso, n, unit) {
+    const [y, m, d] = iso.split('-').map(Number);
+    let t;
+    if (unit === 'day' || unit === 'week') {
+      t = new Date(Date.UTC(y, m - 1, d + n * (unit === 'week' ? 7 : 1)));
+    } else {
+      const months = (m - 1) + n * (unit === 'year' ? 12 : 1);
+      const ty = y + Math.floor(months / 12), tm = ((months % 12) + 12) % 12;
+      const last = new Date(Date.UTC(ty, tm + 1, 0)).getUTCDate();
+      t = new Date(Date.UTC(ty, tm, Math.min(d, last)));
+    }
+    return t.toISOString().slice(0, 10);
+  }
+
+  // Kotityön kentät siivottuna. Jos seuraavaa päivää ei anneta, se lasketaan
+  // tästä päivästä toistovälin päähän.
+  function choreFields(body, today) {
+    body = body || {};
+    const unit = CHORE_UNITS.includes(body.unit) ? body.unit : 'month';
+    const every = intIn(body.every_n, 1, 999, 1);
+    return {
+      title: str(body.title, 200),
+      note: str(body.note, 500),
+      every_n: every,
+      unit,
+      next_due: cleanDate(body.next_due) || addInterval(today, every, unit),
+    };
+  }
+
+  // Kuittauspäivä: selaimen ilmoittama päivä kelpaa, jos se on korkeintaan
+  // vuorokauden päässä palvelimen päivästä (aikavyöhyke-ero), muuten
+  // käytetään palvelimen päivää.
+  function doneDate(clientDate, today) {
+    const d = cleanDate(clientDate);
+    return d && Math.abs(dayDiff(today, d)) <= 1 ? d : today;
+  }
+
+  const api = {
+    PANTRY_CATEGORIES, SECTIONS, CHORE_UNITS,
+    nameKey, cleanDate, todayISO, dayDiff, pantryFields,
+    cleanSection, guessSection, addInterval, choreFields, doneDate,
+  };
+  root.KotiShared = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(typeof self !== 'undefined' ? self : this);
+
+  </script>
+  <script>
 'use strict';
 // Datakerros SANDBOX-VERSIOLLE: ei palvelinta, kaikki selaimessa.
 // - Rakenteinen data (kohteet, sivut, huomiot, liitteiden tiedot) localStorageen
@@ -1693,7 +1846,14 @@ ${anns.length ? `<section>
 // TARKOITUS: ulkoasun hiominen ja demo ilman asennusta. Data on vain tässä
 // selaimessa; tyhjennä selaimen tallennustila nollataksesi.
 
-const LS_KEY = 'elama_sandbox_v1';
+// v2: demoon lisättiin varaston ja kauppalistan esimerkkidata.
+const LS_KEY = 'elama_sandbox_v2';
+
+// Varaston, kauppalistan ja kotitöiden säännöt tulevat samasta tiedostosta
+// kuin palvelimella (public/koti-shared.js), joten ne eivät voi erkaantua.
+// Määriteltävä ENNEN alustusta (ensureSeeded): vanhan datan täydennys
+// käyttää näitä heti latauksessa.
+const K = KotiShared;
 
 // ---------- localStorage-malli ----------
 function load() {
@@ -1794,7 +1954,7 @@ const ready = ensureSeeded();
 
 async function ensureSeeded() {
   if (DB) { migrateExisting(); return; }
-  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [] };
+  DB = { seq: 0, categories: [], pages: [], notes: [], attachments: [], contacts: [], revisions: [], announcements: [], terms: [], links: [], pantry: [], pantryCatalog: {}, shopping: [], shopSections: {}, chores: [] };
 
   // Elämän osa-alueet. Vaihda omiksesi – tämä on vain runko.
   const koti = { id: nextId(), name: 'Koti', icon: 'svg:building', color: '#0369a1', sort_order: 0, parent_id: null };
@@ -1940,6 +2100,37 @@ Merkitse päättymispäivät muistutuksiin.`, 'Minä', 'sopimus, vakuutus, kilpa
     { id: nextId(), title: 'Sähkösopimus päättyy syksyllä', content: 'Kilpailuta ennen automaattista jatkumista.', pinned: 0, created_at: nowISO(), created_by: 'Minä', updated_at: nowISO() }
   );
 
+  // Esimerkkejä toistuvista kotitöistä (yksi myöhässä, jotta kuittaus näkyy demossa).
+  const today = K.todayISO();
+  const inDays = (days) => K.addInterval(today, days, 'day');
+  const chore = (title, every_n, unit, days, note) => DB.chores.push({
+    id: nextId(), title, note: note || '', every_n, unit, next_due: inDays(days),
+    last_done_at: '', last_done_by: '', created_at: nowISO(), created_by: 'Minä' });
+  chore('Puhdista liesituulettimen suodatin', 3, 'month', -4);
+  chore('Testaa palovaroittimet', 1, 'month', 6);
+  chore('Vaihda palovaroittimen paristo', 1, 'year', 120, '9 V paristo');
+
+  // Esimerkkivarasto: mukana vanhentunut, pian vanheneva ja kaksi alle
+  // tavoitemäärän olevaa tuotetta, jotta ostoehdotukset näkyvät heti.
+  const pantry = (name, category, qty, days, target_qty, barcode) => {
+    DB.pantry.push({ id: nextId(), name, barcode: barcode || '', category, qty, target_qty: target_qty || 0,
+      best_before: days === null ? '' : inDays(days), created_at: nowISO(), created_by: 'Minä', updated_at: nowISO() });
+    if (barcode) DB.pantryCatalog[barcode] = { barcode, name, category };
+  };
+  pantry('Vesi 1,5 l', 'Juomavesi', 8, 400, 20);
+  pantry('Hernekeitto 435 g', 'Ruoka', 4, 12, 0, '6408430000258');
+  pantry('Tonnikala', 'Ruoka', 6, 700);
+  pantry('Näkkileipä', 'Ruoka', 2, 200);
+  pantry('Särkylääke', 'Ensiapu ja lääkkeet', 1, -5);
+  pantry('Paristot AA', 'Paristot ja valo', 2, null, 8);
+
+  // Esimerkkikauppalista usealta osastolta + yksi jo ostettu.
+  const shop = (text, qty, done) => DB.shopping.push({
+    id: nextId(), text, qty: qty || '', section: K.guessSection(text), added_by: 'Minä', created_at: nowISO(),
+    done_at: done ? nowISO() : null, done_by: done ? 'Minä' : '' });
+  shop('Maito', '2 l'); shop('Banaanit'); shop('Ruisleipä'); shop('Jauheliha', '400 g');
+  shop('Kahvi'); shop('Pakastepizza', '2 kpl'); shop('Tiskiaine'); shop('Kananmunat', '', true);
+
   save(DB);
 }
 
@@ -1967,6 +2158,10 @@ function migrateExisting() {
   if (!DB.pantry) { DB.pantry = []; changed = true; }
   if (!DB.pantryCatalog) { DB.pantryCatalog = {}; changed = true; }
   if (!DB.shopping) { DB.shopping = []; changed = true; }
+  if (!DB.shopSections) { DB.shopSections = {}; changed = true; }
+  if (!DB.chores) { DB.chores = []; changed = true; }
+  DB.pantry.forEach((it) => { if (typeof it.target_qty !== 'number') { it.target_qty = 0; changed = true; } });
+  DB.shopping.forEach((it) => { if (!K.cleanSection(it.section)) { it.section = sectionFor(it.text); changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.icon !== 'string') { c.icon = ''; changed = true; } });
   DB.categories.forEach((c) => { if (c.parent_id === undefined) { c.parent_id = null; changed = true; } });
   DB.categories.forEach((c) => { if (typeof c.color !== 'string') { c.color = ''; changed = true; } });
@@ -2015,18 +2210,45 @@ function makeSnippet(text, q) {
   return (start > 0 ? '…' : '') + plain.slice(start, end).trim() + (end < plain.length ? '…' : '');
 }
 
-// Varmuusvaraston kenttien siivous (vastaa koti-routes.js:n sääntöjä).
-const PANTRY_CATEGORIES = ['Ruoka', 'Juomavesi', 'Ensiapu ja lääkkeet', 'Paristot ja valo',
-  'Hygienia', 'Koiran tarvikkeet', 'Muu'];
-function pantryFields(d) {
-  const bb = String(d.best_before || '').slice(0, 10);
-  const q = parseInt(d.qty, 10);
+// Saman tuotteen muut rivit (sama nimi, eri päiväys).
+const pantrySiblings = (name, exceptId) =>
+  DB.pantry.filter((r) => r.id !== exceptId && K.nameKey(r.name) === K.nameKey(name));
+// Osasto uudelle kauppalistan riville (sama järjestys kuin palvelimella).
+function sectionFor(text, pantryCategory) {
+  const key = K.nameKey(text);
+  if (K.cleanSection(DB.shopSections[key])) return DB.shopSections[key];
+  let cat = K.PANTRY_CATEGORIES.includes(pantryCategory) ? pantryCategory : '';
+  if (!cat) {
+    const known = [...Object.values(DB.pantryCatalog), ...DB.pantry].find((r) => K.nameKey(r.name) === key);
+    if (known) cat = known.category;
+  }
+  return K.guessSection(text, cat);
+}
+
+// Esimerkkisää samassa muodossa kuin palvelimen sources/saa.js tuottaa.
+function demoWeather() {
+  const now = new Date();
+  now.setMinutes(0, 0, 0);
+  const symbols = [7, 7, 6, 4, 2, 4, 6, 7, 31, 31, 32, 7];
+  const hours = [];
+  for (let i = 0; i < 24; i++) {
+    const t = new Date(now.getTime() + i * 3600000);
+    const night = t.getHours() < 7 || t.getHours() > 17;
+    const sym = symbols[Math.floor(i / 2) % symbols.length];
+    hours.push({
+      time: t.toISOString(), date: K.addInterval(K.todayISO(), Math.floor((now.getHours() + i) / 24), 'day'),
+      hour: t.getHours(), temp: Math.round((4 + 3 * Math.sin((t.getHours() - 8) / 24 * 2 * Math.PI)) * 10) / 10,
+      feels: 1, wind: 5, wind_dir: 225, pop: sym > 30 ? 70 : 10, rain: sym > 30 ? 0.6 : 0, symbol: sym + (night ? 100 : 0),
+    });
+  }
+  const day = (n, min, max, rain, symbol) => ({ date: K.addInterval(K.todayISO(), n, 'day'), hours: 24, min, max, rain, symbol });
   return {
-    name: String(d.name || '').trim().slice(0, 200),
-    barcode: String(d.barcode || '').replace(/[^0-9A-Za-z\-.]/g, '').slice(0, 64),
-    category: PANTRY_CATEGORIES.includes(d.category) ? d.category : 'Muu',
-    qty: Number.isFinite(q) ? Math.min(Math.max(q, 1), 9999) : 1,
-    best_before: /^\d{4}-\d{2}-\d{2}$/.test(bb) ? bb : '',
+    demo: true, failing: false, fetched_at: new Date().toISOString(),
+    data: {
+      place: 'Helsinki', observed_at: new Date().toISOString(), temp: hours[0].temp, wind: 5, wind_dir: 225,
+      humidity: 78, feels: 1, symbol: hours[0].symbol, hours,
+      days: [day(0, 2, 6, 1.8, 31), day(1, 1, 5, 0, 4), day(2, -2, 3, 4.2, 52)],
+    },
   };
 }
 
@@ -2100,13 +2322,6 @@ const Store = {
           .map(pick);
       }
       return clone(rows).sort((a, b) => a.title.localeCompare(b.title)).map(pick);
-    },
-    async popular(limit = 10) {
-      await ready;
-      return clone(DB.pages).filter((p) => (p.views || 0) > 0 && !p.deleted_at)
-        .sort((a, b) => b.views - a.views || a.title.localeCompare(b.title))
-        .slice(0, limit)
-        .map((p) => ({ id: p.id, title: p.title, category_id: p.category_id, views: p.views, category_name: catName(p.category_id) }));
     },
     async get(id, { track } = {}) {
       await ready; id = Number(id);
@@ -2310,7 +2525,7 @@ const Store = {
     async update(id, data) {
       await ready; id = Number(id);
       const a = DB.announcements.find((x) => x.id === id);
-      if (!a) throw new Error('Tiedotetta ei löydy');
+      if (!a) throw new Error('Muistutusta ei löydy');
       if (data.title !== undefined) {
         const t = (data.title || '').trim();
         if (!t) throw new Error('Otsikko puuttuu');
@@ -2355,13 +2570,18 @@ const Store = {
       await ready;
       const items = clone(DB.pantry).sort((a, b) =>
         (a.best_before === '') - (b.best_before === '') || a.best_before.localeCompare(b.best_before) || a.name.localeCompare(b.name, 'fi'));
-      return { categories: PANTRY_CATEGORIES, items };
+      return { categories: K.PANTRY_CATEGORIES, items };
     },
     async lookup(code) { await ready; const c = DB.pantryCatalog[code]; return c ? clone(c) : null; },
     async create(data) {
       await ready;
-      const f = pantryFields(data);
+      const f = K.pantryFields(data);
       if (!f.name) throw new Error('Nimi puuttuu');
+      const same = pantrySiblings(f.name);
+      // Uusi erä perii tuotteen tavoitteen ja korvaa "loppu"-muistilapun.
+      if (!f.target_qty) f.target_qty = Math.max(0, ...same.map((r) => r.target_qty));
+      DB.pantry = DB.pantry.filter((r) => !(same.includes(r) && r.qty === 0));
+      same.forEach((r) => { r.target_qty = f.target_qty; });
       const it = { id: nextId(), ...f, created_at: nowISO(), created_by: '', updated_at: nowISO() };
       DB.pantry.push(it);
       if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
@@ -2371,18 +2591,32 @@ const Store = {
       await ready; id = Number(id);
       const it = DB.pantry.find((x) => x.id === id);
       if (!it) throw new Error('Tuotetta ei löydy');
-      const f = pantryFields(data);
+      const f = K.pantryFields(data);
       if (!f.name) throw new Error('Nimi puuttuu');
+      const same = pantrySiblings(f.name, id);
+      // Nimen vaihto toiseksi tuotteeksi: rivi perii uuden tuotteensa tavoitteen.
+      if (!f.target_qty && K.nameKey(it.name) !== K.nameKey(f.name)) {
+        f.target_qty = Math.max(0, ...same.map((r) => r.target_qty));
+      }
       Object.assign(it, f, { updated_at: nowISO() });
+      same.forEach((r) => { r.target_qty = f.target_qty; });
       if (f.barcode) DB.pantryCatalog[f.barcode] = { barcode: f.barcode, name: f.name, category: f.category };
       save(DB); return clone(it);
     },
+    // Viimeinen kappale poistaa rivin, paitsi jos tuotteella on tavoitemäärä
+    // eikä muita eriä ole: silloin rivi jää määrällä 0 muistuttamaan ostamisesta.
     async useOne(id) {
       await ready; id = Number(id);
       const it = DB.pantry.find((x) => x.id === id);
       if (!it) throw new Error('Tuotetta ei löydy');
-      if (it.qty <= 1) DB.pantry = DB.pantry.filter((x) => x.id !== id); else it.qty -= 1;
-      save(DB); return { id, qty: Math.max(0, it.qty) };
+      if (it.qty > 1) it.qty -= 1;
+      else if (it.target_qty > 0 && !pantrySiblings(it.name, id).length) { it.qty = 0; it.best_before = ''; }
+      else {
+        DB.pantry = DB.pantry.filter((x) => x.id !== id);
+        save(DB); return { id, qty: 0, removed: true };
+      }
+      it.updated_at = nowISO();
+      save(DB); return clone(it);
     },
     async remove(id) { await ready; id = Number(id); DB.pantry = DB.pantry.filter((x) => x.id !== id); save(DB); return { ok: true }; },
   },
@@ -2395,13 +2629,14 @@ const Store = {
       const done = DB.shopping.filter((i) => i.done_at).sort((a, b) => b.done_at.localeCompare(a.done_at));
       return clone([...open, ...done]);
     },
-    async add(text, qty) {
+    async add(text, qty, category) {
       await ready;
       text = String(text || '').trim().slice(0, 200);
       if (!text) throw new Error('Kirjoita tuote');
-      const dup = DB.shopping.find((i) => !i.done_at && i.text.toLowerCase() === text.toLowerCase());
+      const dup = DB.shopping.find((i) => !i.done_at && K.nameKey(i.text) === K.nameKey(text));
       if (dup) return { ...clone(dup), duplicate: true };
-      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
+      const it = { id: nextId(), text, qty: String(qty || '').trim().slice(0, 40), section: sectionFor(text, category),
+        added_by: '', created_at: nowISO(), done_at: null, done_by: '' };
       DB.shopping.push(it); save(DB); return clone(it);
     },
     async update(id, data) {
@@ -2410,6 +2645,9 @@ const Store = {
       if (!it) throw new Error('Riviä ei löydy');
       if (data.text !== undefined) it.text = String(data.text).trim().slice(0, 200) || it.text;
       if (data.qty !== undefined) it.qty = String(data.qty).trim().slice(0, 40);
+      // Käsin vaihdettu osasto muistetaan tälle tuotteelle.
+      const section = K.cleanSection(data.section);
+      if (section && section !== it.section) { it.section = section; DB.shopSections[K.nameKey(it.text)] = section; }
       if (data.done === true && !it.done_at) it.done_at = nowISO();
       if (data.done === false) it.done_at = null;
       save(DB); return clone(it);
@@ -2423,8 +2661,48 @@ const Store = {
     },
   },
 
+  // ---------- Toistuvat kotityöt ----------
+  chores: {
+    async list() {
+      await ready;
+      return clone(DB.chores).sort((a, b) => a.next_due.localeCompare(b.next_due) || a.title.localeCompare(b.title, 'fi'));
+    },
+    async create(data) {
+      await ready;
+      const f = K.choreFields(data, K.todayISO());
+      if (!f.title) throw new Error('Anna tehtävälle nimi');
+      const c = { id: nextId(), ...f, last_done_at: '', last_done_by: '', created_at: nowISO(), created_by: '' };
+      DB.chores.push(c); save(DB); return clone(c);
+    },
+    async update(id, data) {
+      await ready; id = Number(id);
+      const c = DB.chores.find((x) => x.id === id);
+      if (!c) throw new Error('Tehtävää ei löydy');
+      const f = K.choreFields(data, K.todayISO());
+      if (!f.title) throw new Error('Anna tehtävälle nimi');
+      Object.assign(c, f);
+      save(DB); return clone(c);
+    },
+    async done(id, date) {
+      await ready; id = Number(id);
+      const c = DB.chores.find((x) => x.id === id);
+      if (!c) throw new Error('Tehtävää ei löydy');
+      const day = K.doneDate(date, K.todayISO());
+      c.last_done_at = day; c.last_done_by = '';
+      c.next_due = K.addInterval(day, c.every_n, c.unit);
+      save(DB); return clone(c);
+    },
+    async remove(id) { await ready; id = Number(id); DB.chores = DB.chores.filter((x) => x.id !== id); save(DB); return { ok: true }; },
+  },
+
   // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
   events: null,
+
+  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti
+  // saa keksityn esimerkkisään (demo: true → kortti kertoo sen käyttäjälle).
+  dashboard: {
+    async get(id) { return id === 'saa' ? demoWeather() : null; },
+  },
 
   notes: {
     async list({ categoryId, limit } = {}) {
@@ -2658,9 +2936,9 @@ const Dashboard = (() => {
    Dashboardin kortit
    ----------------------------------------------------------------------------
    Nämä kortit toimivat ILMAN verkkoyhteyttä: kaikki data tulee joko omasta
-   tietokannasta tai lasketaan selaimessa. Ulkoiset lähteet (uutiset, sää,
-   Euribor, sähkön hinta) lisätään myöhemmin omina kortteinaan – ks. tiedoston
-   loppu, jossa on valmis paikanpitäjä ja ohje.
+   tietokannasta tai lasketaan selaimessa. Poikkeus on sääkortti, jonka datan
+   palvelin hakee Ilmatieteen laitokselta. Muut ulkoiset lähteet (uutiset,
+   Euribor, sähkön hinta) odottavat tiedoston lopussa paikanpitäjinä.
    ========================================================================== */
 
 // ---------- Päivä: pvm, kellonaika, viikko, auringonnousu ja -lasku ----------
@@ -2875,6 +3153,129 @@ Dashboard.register({
 });
 
 /* ============================================================================
+   Sää (Ilmatieteen laitoksen avoin data)
+   ----------------------------------------------------------------------------
+   Palvelin hakee havainnot ja ennusteen (sources/saa.js) ja tämä kortti vain
+   piirtää ne. Selain ei ota yhteyttä Ilmatieteen laitokseen. Kaikki arvot
+   tarkistetaan luvuiksi ja escapetaan: myös oman palvelimen välittämä
+   ulkoinen data on epäluotettavaa.
+   ========================================================================== */
+const SAA_KUVAT = {
+  clear: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>',
+  'clear-night': '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  partly: '<path d="M8 5V3.5M3.7 6.7l-1-1M2.5 11H1M12.3 6.7l1-1"/><path d="M4.6 12A3.6 3.6 0 0 1 11 8.2"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8.3 14 3 3 0 0 0 9 20z"/>',
+  'partly-night': '<path d="M11.5 8.5A4.5 4.5 0 0 1 6 3a4.5 4.5 0 1 0 5.5 5.5z"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8.3 14 3 3 0 0 0 9 20z"/>',
+  cloudy: '<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 11.1 3.5 3.5 0 0 0 7 18z"/>',
+  fog: '<path d="M4 8h16M4 12h16M6 16h12M9 20h6"/>',
+  rain: '<path d="M7 15h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 8.1 3.5 3.5 0 0 0 7 15z"/><path d="M8.5 18l-1 3M12.5 18l-1 3M16.5 18l-1 3"/>',
+  sleet: '<path d="M7 15h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 8.1 3.5 3.5 0 0 0 7 15z"/><path d="M8.5 18l-1 3M16.5 18l-1 3M12 19v.01M12 22v.01"/>',
+  snow: '<path d="M7 15h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 8.1 3.5 3.5 0 0 0 7 15z"/><path d="M8 18.5v.01M12 18.5v.01M16 18.5v.01M10 21.5v.01M14 21.5v.01"/>',
+  thunder: '<path d="M7 15h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 8.1 3.5 3.5 0 0 0 7 15z"/><path d="M13 15l-3 4h3l-2 3.5"/>',
+};
+
+// Ilmatieteen laitoksen SmartSymbol-koodi → [kuva, kuvaus]. Yöllä koodi on +100.
+function saaSymboli(sym) {
+  const n = Number(sym);
+  if (!Number.isFinite(n)) return ['cloudy', ''];
+  const night = n >= 100, s = n % 100;
+  const sky = (kind) => (night ? kind + '-night' : kind);
+  if (s === 1) return [sky('clear'), 'Selkeää'];
+  if (s === 2) return [sky('partly'), 'Melkein selkeää'];
+  if (s === 4) return [sky('partly'), 'Puolipilvistä'];
+  if (s === 6) return ['cloudy', 'Melko pilvistä'];
+  if (s === 7) return ['cloudy', 'Pilvistä'];
+  if (s === 9) return ['fog', 'Sumua'];
+  if (s === 11) return ['rain', 'Tihkusadetta'];
+  if (s === 14 || s === 17) return ['sleet', 'Jäätävää sadetta'];
+  if (s >= 21 && s <= 27) return ['rain', 'Sadekuuroja'];
+  if (s >= 31 && s <= 39) return ['rain', ['Heikkoa vesisadetta', 'Vesisadetta', 'Runsasta vesisadetta'][(s - 31) % 3]];
+  if (s >= 41 && s <= 49) return ['sleet', 'Räntäsadetta'];
+  if (s >= 51 && s <= 59) return ['snow', 'Lumisadetta'];
+  if (s >= 61 && s <= 67) return ['sleet', 'Raekuuroja'];
+  if (s >= 71 && s <= 77) return ['thunder', 'Ukkoskuuroja'];
+  return ['cloudy', ''];
+}
+function saaKuva(sym, cls) {
+  const [kind, text] = saaSymboli(sym);
+  return `<svg class="ic wx-ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" `
+    + `stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="${esc(text || 'sää')}">${SAA_KUVAT[kind]}</svg>`;
+}
+
+const saaLuku = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+// 6.1 → "6,1" ja -3 → "−3" (oikea miinusmerkki).
+const fiLuku = (v, dec) => v.toFixed(dec).replace('.', ',').replace('-', '−');
+const saaAste = (v) => (saaLuku(v) === null ? '?' : fiLuku(Math.round(v), 0) + '°');
+const TUULI = ['pohjoisesta', 'koillisesta', 'idästä', 'kaakosta', 'etelästä', 'lounaasta', 'lännestä', 'luoteesta'];
+const HKI = 'Europe/Helsinki';
+const hkiKlo = (iso) => new Date(iso).toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit', timeZone: HKI });
+const hkiPvm = (d) => d.toLocaleDateString('sv-SE', { timeZone: HKI }); // YYYY-MM-DD
+
+function saaPaiva(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date));
+  if (!m) return '';
+  if (date === hkiPvm(new Date())) return 'Tänään';
+  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).toLocaleDateString('fi-FI', { weekday: 'short', timeZone: 'UTC' });
+}
+
+function saaHtml(res) {
+  const d = res && res.data;
+  if (!d || saaLuku(d.temp) === null) {
+    return `<div class="dash-empty">${res && res.failing
+      ? 'Säätietoja ei juuri nyt saada Ilmatieteen laitokselta. Haku yritetään uudelleen automaattisesti.'
+      : 'Säätietoja haetaan ensimmäistä kertaa. Päivitä sivu hetken kuluttua.'}</div>`;
+  }
+  const hours = Array.isArray(d.hours) ? d.hours : [];
+  const days = Array.isArray(d.days) ? d.days : [];
+  const [, kuvaus] = saaSymboli(d.symbol);
+  const rivi = [
+    saaLuku(d.wind) !== null ? `Tuuli ${fiLuku(Math.round(d.wind), 0)} m/s${saaLuku(d.wind_dir) !== null
+      ? ' ' + TUULI[Math.round(d.wind_dir / 45) % 8 || 0] : ''}` : '',
+    saaLuku(d.humidity) !== null ? `kosteus ${fiLuku(d.humidity, 0)} %` : '',
+  ].filter(Boolean).join(' · ');
+  // Kolmen tunnin jaksot: jakson alun lämpötila ja symboli, sade koko jaksolta.
+  const jaksot = [];
+  for (let i = 0; i + 2 < hours.length && jaksot.length < 6; i += 3) {
+    const sade = hours.slice(i, i + 3).reduce((s, h) => s + (saaLuku(h.rain) || 0), 0);
+    jaksot.push(`<div class="wx-h"><span class="mono">${esc(String(saaLuku(hours[i].hour) === null ? '' : hours[i].hour).padStart(2, '0'))}</span>
+      ${saaKuva(hours[i].symbol)}<b>${esc(saaAste(hours[i].temp))}</b>
+      <span class="wx-rain">${sade >= 0.1 ? esc(fiLuku(sade, 1)) + ' mm' : '&nbsp;'}</span></div>`);
+  }
+  const vanha = res.failing || (res.fetched_at && Date.now() - Date.parse(res.fetched_at) > 90 * 60000);
+  const haettu = res.fetched_at ? new Date(res.fetched_at) : null;
+  return `<div class="wx">
+    <div class="wx-now">
+      ${saaKuva(d.symbol, 'wx-big')}
+      <div>
+        <div class="wx-temp mono">${esc(fiLuku(d.temp, 1))} °C</div>
+        <div class="wx-desc">${esc([kuvaus, saaLuku(d.feels) !== null ? 'tuntuu kuin ' + saaAste(d.feels) : ''].filter(Boolean).join(' · '))}</div>
+      </div>
+    </div>
+    ${rivi ? `<div class="wx-meta">${esc(rivi)}</div>` : ''}
+    ${jaksot.length ? `<div class="wx-hours">${jaksot.join('')}</div>` : ''}
+    ${days.length ? `<ul class="wx-days">${days.map((p) => `<li>
+      <span class="wx-day">${esc(saaPaiva(p.date))}</span>${saaKuva(p.symbol)}
+      <span class="wx-rain">${saaLuku(p.rain) !== null && p.rain >= 0.1 ? esc(fiLuku(p.rain, 1)) + ' mm' : ''}</span>
+      <span class="mono wx-range">${esc(saaAste(p.min))} … ${esc(saaAste(p.max))}</span></li>`).join('')}</ul>` : ''}
+    ${res.demo ? '<div class="wx-warn">Esimerkkidata: demo ei hae säätä verkosta. Palvelinversiossa tässä näkyy oikea sää.</div>' : ''}
+    ${vanha && haettu && !res.demo ? `<div class="wx-warn">Uutta säätietoa ei juuri nyt saada. Tiedot ovat ajalta ${
+      esc(haettu.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric', timeZone: HKI }))} klo ${esc(hkiKlo(res.fetched_at))}.</div>` : ''}
+    <div class="wx-foot">Lähde: Ilmatieteen laitos, avoin data (CC BY 4.0)${d.observed_at && !res.demo
+      ? ' · havainto klo ' + esc(hkiKlo(d.observed_at)) : ''}</div>
+  </div>`;
+}
+
+Dashboard.register({
+  id: 'saa',
+  title: 'Sää',
+  slot: 'rail',
+  order: 30,
+  icon: 'droplet',
+  headExtra: '<span class="d2-more">Helsinki</span>',
+  load: () => Store.dashboard.get('saa'),
+  render: saaHtml,
+});
+
+/* ============================================================================
    PAIKANPITÄJÄT ulkoisille lähteille
    ----------------------------------------------------------------------------
    Nämä kortit näkyvät dashboardilla, mutta kertovat rehellisesti ettei lähdettä
@@ -2885,11 +3286,12 @@ Dashboard.register({
      3. GET /api/dashboard palauttaa kaikkien lähteiden viimeisimmät arvot.
      4. Täällä: load: () => Store.dashboard.get('<nimi>') ja oikea render.
 
+   Sääkortti (yllä) on tehty jo näin: käytä sitä mallina. Palvelimen puoli
+   on dashboard-sources.js ja sources/saa.js.
+
    Selain EI hae mitään ulkoa – ks. dashboard.js:n alkukommentti.
    ========================================================================== */
 const TULOSSA = [
-  { id: 'saa', title: 'Sää', icon: 'droplet', slot: 'rail', order: 30,
-    kuvaus: 'Helsinki ja Rovaniemi. Lähde-ehdokkaat: Ilmatieteen laitoksen avoin data tai Open-Meteo (molemmat ilmaisia).' },
   { id: 'uutiset', title: 'Uutiset', icon: 'announce', slot: 'main', order: 15,
     kuvaus: 'Otsikot RSS-syötteestä, linkki alkuperäiseen. Koko artikkelia ei kopioida.' },
   { id: 'korot', title: 'Euribor', icon: 'popular', slot: 'rail', order: 40,
@@ -2910,9 +3312,10 @@ TULOSSA.forEach((k) => Dashboard.register({
   <script>
 'use strict';
 /* ============================================================================
-   Varmuusvarasto + yhteinen kauppalista
+   Varmuusvarasto + yhteinen kauppalista + toistuvat kotityöt
    ----------------------------------------------------------------------------
-   Näkymät #/varasto ja #/kauppalista sekä niiden etusivun kortit.
+   Näkymät #/varasto, #/kauppalista ja #/kotityot sekä niiden etusivun kortit.
+   Säännöt (osastot, päivien laskenta) tulevat koti-shared.js:stä.
    Ladataan dashboard.js:n ja cards.js:n JÄLKEEN mutta ENNEN app.js:ää
    (Dashboard.register tarvitsee rungon; app.js:n apufunktioita kuten esc,
    icon, toast ja $ käytetään vasta ajonaikaisesti, joten järjestys riittää).
@@ -2935,7 +3338,8 @@ const Koti = (() => {
     const [y, m, d] = iso.split('-').map(Number);
     return Math.round((new Date(y, m - 1, d) - today0()) / DAY);
   }
-  const fiDate = (iso) => { if (!iso) return ''; const [y, m, d] = iso.split('-'); return `${+d}.${+m}.${y}`; };
+  // Osat muunnetaan luvuiksi: tulos on turvallinen HTML:ään, vaikka data olisi rikki.
+  const fiDate = (iso) => { if (!iso) return ''; const [y, m, d] = String(iso).split('-'); return `${+d}.${+m}.${+y}`; };
   function level(dl) {
     if (dl === null) return 'none';
     if (dl < 0) return 'bad';
@@ -2951,6 +3355,7 @@ const Koti = (() => {
     const kk = Math.round(dl / 30.4);
     return kk < 24 ? `${kk} kk jäljellä` : `${String(Math.round(dl / 36.5) / 10).replace('.', ',')} v jäljellä`;
   }
+  const { SECTIONS, nameKey, todayISO } = KotiShared;
   const canEdit = () => !Store.auth || !currentUser || currentUser.role !== 'viewer';
   const onRoute = (name) => (location.hash.slice(2).split(/[/?]/)[0] || '') === name;
 
@@ -2974,6 +3379,49 @@ const Koti = (() => {
   // ======================================================================
   let shopShowDone = false;
 
+  // Ostettavat kaupan kiertojärjestyksessä: [[osasto, rivit], ...].
+  // Tuntematon tai puuttuva osasto menee viimeiseen ("Muu").
+  function bySection(open) {
+    const last = SECTIONS.length - 1;
+    const idx = (it) => { const i = SECTIONS.indexOf(it.section); return i === -1 ? last : i; };
+    return SECTIONS.map((sec, i) => [sec, open.filter((it) => idx(it) === i)]).filter(([, rows]) => rows.length);
+  }
+
+  // Ostoehdotukset varastosta: tuote on alle tavoitemäärän tai vanhenee
+  // 30 päivän sisällä. Saman nimiset erät lasketaan yhteen, ja jo listalla
+  // olevat jätetään pois.
+  function pantrySuggestions(pantryItems, shopItems) {
+    const onList = new Set(shopItems.filter((i) => !i.done_at).map((i) => nameKey(i.text)));
+    const groups = new Map();
+    pantryItems.forEach((it) => {
+      const key = nameKey(it.name);
+      const g = groups.get(key) || { name: it.name, category: it.category, total: 0, target: 0, dl: null };
+      g.total += it.qty;
+      g.target = Math.max(g.target, it.target_qty || 0);
+      const dl = it.qty > 0 ? daysLeft(it.best_before) : null;
+      if (dl !== null && (g.dl === null || dl < g.dl)) g.dl = dl;
+      groups.set(key, g);
+    });
+    const out = [];
+    groups.forEach((g, key) => {
+      if (onList.has(key)) return;
+      if (g.target > 0 && g.total < g.target) {
+        out.push({ name: g.name, category: g.category, qty: `${g.target - g.total} kpl`,
+          why: g.total ? `varastossa ${g.total}, tavoite ${g.target}` : `loppu, tavoite ${g.target}` });
+      } else if (g.dl !== null && g.dl <= 30) {
+        out.push({ name: g.name, category: g.category, qty: '',
+          why: g.dl < 0 ? 'vanhentunut' : g.dl === 0 ? 'vanhenee tänään' : `vanhenee ${g.dl} pv päästä` });
+      }
+    });
+    return out;
+  }
+
+  // Lisää ehdotukset kauppalistalle; varaston kategoria kertoo osaston.
+  async function addSuggestions(list) {
+    for (const s of list) await Store.shopping.add(s.name, s.qty, s.category);
+    toast(list.length === 1 ? `Lisätty kauppalistalle: ${list[0].name}` : `Lisätty kauppalistalle ${list.length} tuotetta`);
+  }
+
   function shopRowHtml(it) {
     const done = !!it.done_at;
     const meta = done
@@ -2988,17 +3436,22 @@ const Koti = (() => {
         ${it.qty ? `<span class="shop-qty mono">${esc(it.qty)}</span>` : ''}
         ${meta ? `<span class="shop-meta">${meta}</span>` : ''}
       </div>
+      ${done ? '' : `<label class="icon-btn small shop-move editor-only" title="Siirrä toiseen osastoon">
+        ${catSvg('store')}<select data-shopsec="${it.id}" aria-label="Osasto: ${esc(it.text)}">
+          ${SECTIONS.map((sec) => `<option${sec === it.section ? ' selected' : ''}>${esc(sec)}</option>`).join('')}
+        </select></label>`}
       <button class="icon-btn small editor-only" data-shopdel="${it.id}" title="Poista rivi"
         aria-label="Poista ${esc(it.text)}">${icon('close')}</button>
     </li>`;
   }
 
   async function viewShopping() {
-    const items = await Store.shopping.list();
+    const [items, pantry] = await Promise.all([Store.shopping.list(), Store.pantry.list()]);
     const open = items.filter((i) => !i.done_at);
     const done = items.filter((i) => i.done_at);
-    // Ehdotukset aiemmin ostetuista (nopea uudelleenlisäys).
+    // Kirjoitusehdotukset aiemmin ostetuista (nopea uudelleenlisäys).
     const suggestions = [...new Set(done.map((i) => i.text))].slice(0, 40);
+    const fromPantry = pantrySuggestions(pantry.items, items);
     const live = Store.events ? '<span class="live-dot" title="Muutokset näkyvät heti kaikilla laitteilla"></span>Päivittyy reaaliajassa' : 'Demo: tallentuu vain tähän selaimeen';
     content.innerHTML = `
       <div class="koti-head">
@@ -3011,10 +3464,22 @@ const Koti = (() => {
         <button class="btn" type="submit">Lisää</button>
         <datalist id="shopSuggest">${suggestions.map((s) => `<option value="${esc(s)}">`).join('')}</datalist>
       </form>
+      ${fromPantry.length ? `<div class="card shop-card" id="shopSuggestCard">
+        <div class="spread"><h3 style="margin:0">${icon('box')} Ehdotukset varastosta (${fromPantry.length})</h3>
+          <button class="btn small secondary editor-only" id="sugAll">Lisää kaikki</button></div>
+        <ul class="shop-list">${fromPantry.map((s, i) => `<li class="shop-row">
+          <div class="shop-body sug-body"><span class="shop-text">${esc(s.name)}</span>
+            ${s.qty ? `<span class="shop-qty mono">${esc(s.qty)}</span>` : ''}
+            <span class="shop-meta">${esc(s.why)}</span></div>
+          <button class="btn small secondary editor-only" data-sugadd="${i}"
+            aria-label="Lisää kauppalistalle: ${esc(s.name)}">Lisää</button></li>`).join('')}</ul>
+      </div>` : ''}
       <div class="card shop-card">
-        <div class="spread"><h3 style="margin:0">Ostettavat (${open.length})</h3></div>
+        <div class="spread"><h3 style="margin:0">Ostettavat (${open.length})</h3>
+          ${open.length ? '<span class="muted shop-hint">kaupan kiertojärjestyksessä</span>' : ''}</div>
         <ul class="shop-list" id="shopOpen">
-          ${open.map(shopRowHtml).join('') || '<li class="empty">Lista on tyhjä. Lisää ensimmäinen tuote yllä.</li>'}
+          ${bySection(open).map(([sec, rows]) => `<li class="shop-sec">${esc(sec)}</li>${rows.map(shopRowHtml).join('')}`).join('')
+            || '<li class="empty">Lista on tyhjä. Lisää ensimmäinen tuote yllä.</li>'}
         </ul>
       </div>
       ${done.length ? `<div class="card shop-card">
@@ -3047,6 +3512,16 @@ const Koti = (() => {
       try { await Store.shopping.update(id, { done: !it.done_at }); await viewShopping(); }
       catch (err) { toast(err.message, true); viewShopping(); }
     });
+    content.querySelectorAll('[data-shopsec]').forEach((sel) => sel.onchange = async () => {
+      try { await Store.shopping.update(+sel.dataset.shopsec, { section: sel.value }); viewShopping(); }
+      catch (err) { toast(err.message, true); }
+    });
+    const addSug = async (list) => {
+      try { await addSuggestions(list); viewShopping(); } catch (err) { toast(err.message, true); }
+    };
+    content.querySelectorAll('[data-sugadd]').forEach((b) => b.onclick = () => addSug([fromPantry[+b.dataset.sugadd]]));
+    const sugAll = $('#sugAll');
+    if (sugAll) sugAll.onclick = () => addSug(fromPantry);
     content.querySelectorAll('[data-shopdel]').forEach((b) => b.onclick = async () => {
       try { await Store.shopping.remove(+b.dataset.shopdel); viewShopping(); }
       catch (err) { toast(err.message, true); }
@@ -3070,9 +3545,10 @@ const Koti = (() => {
     });
   }
 
-  async function addToShopping(text) {
+  // category = varaston kategoria (valinnainen vihje osaston päättelyyn).
+  async function addToShopping(text, category) {
     try {
-      const r = await Store.shopping.add(text, '');
+      const r = await Store.shopping.add(text, '', category);
       toast(r && r.duplicate ? 'Tuote on jo kauppalistalla' : 'Lisätty kauppalistalle');
     } catch (err) { toast(err.message, true); }
   }
@@ -3205,15 +3681,18 @@ const Koti = (() => {
   // ======================================================================
   // Varmuusvarasto
   // ======================================================================
-  const pantryUi = { filter: 'Kaikki', form: null, scanning: false, confirmDel: null };
+  // ranOut = juuri loppunut tuote, jolle tarjotaan lisäystä kauppalistalle.
+  const pantryUi = { filter: 'Kaikki', form: null, scanning: false, confirmDel: null, ranOut: null };
+  const blankPantryForm = () => ({ id: null, name: '', best_before: '', qty: 1, category: 'Ruoka', barcode: '', target_qty: 0 });
 
   function pantryItemHtml(it) {
-    const dl = daysLeft(it.best_before), lv = level(dl);
+    const out = it.qty === 0; // loppu: rivi on jäljellä vain tavoitemäärän takia
+    const dl = daysLeft(it.best_before), lv = out ? 'bad' : level(dl);
     const acts = canEdit() ? (pantryUi.confirmDel === it.id
       ? `<span class="muted">Poistetaanko?</span>
          <button class="btn small danger" data-pdel="${it.id}">Poista</button>
          <button class="btn small secondary" data-pnodel>Peruuta</button>`
-      : `<button class="btn small secondary" data-puse="${it.id}">Käytetty 1</button>
+      : `${out ? '' : `<button class="btn small secondary" data-puse="${it.id}">Käytetty 1</button>`}
          <button class="btn small secondary" data-pshop="${it.id}">${icon('cart')} Listalle</button>
          <button class="btn small secondary" data-pedit="${it.id}">Muokkaa</button>
          <button class="icon-btn small" data-paskdel="${it.id}" title="Poista" aria-label="Poista ${esc(it.name)}">${icon('trash')}</button>`)
@@ -3222,9 +3701,9 @@ const Koti = (() => {
       <div class="spread pantry-top">
         <div>
           <div class="pantry-name">${esc(it.name)}</div>
-          <div class="pantry-meta">${esc(it.category)} · ${it.qty} kpl${it.best_before ? ' · pe ' + fiDate(it.best_before) : ''}</div>
+          <div class="pantry-meta">${esc(it.category)} · ${esc(it.qty)} kpl${it.target_qty ? ` · tavoite ${esc(it.target_qty)}` : ''}${it.best_before ? ' · pe ' + fiDate(it.best_before) : ''}</div>
         </div>
-        <span class="pbadge lv-${lv}">${badgeText(dl)}</span>
+        <span class="pbadge lv-${lv}">${out ? 'loppu' : badgeText(dl)}</span>
       </div>
       ${acts ? `<div class="pantry-acts">${acts}</div>` : ''}
     </div>`;
@@ -3239,8 +3718,11 @@ const Koti = (() => {
         <div class="field"><label for="pfBb">Parasta ennen</label>
           <input type="date" id="pfBb" value="${esc(f.best_before)}" /></div>
         <div class="field"><label for="pfQty">Määrä (kpl)</label>
-          <input type="number" id="pfQty" min="1" max="9999" inputmode="numeric" value="${esc(f.qty)}" /></div>
+          <input type="number" id="pfQty" min="0" max="9999" inputmode="numeric" value="${esc(f.qty)}" /></div>
       </div>
+      <div class="field"><label for="pfTarget">Tavoitemäärä (kpl)</label>
+        <input type="number" id="pfTarget" min="0" max="9999" inputmode="numeric" value="${f.target_qty ? esc(f.target_qty) : ''}" placeholder="ei tavoitetta" />
+        <div class="muted pf-hint">Kun tuotetta on varastossa vähemmän, kauppalista ehdottaa sen ostamista.</div></div>
       <div class="field"><label for="pfCat">Kategoria</label>
         <select id="pfCat">${categories.map((c) => `<option${c === f.category ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
       <div class="field"><label for="pfCode">Viivakoodi</label>
@@ -3268,9 +3750,10 @@ const Koti = (() => {
       id: pantryUi.form && pantryUi.form.id,
       name: $('#pfName').value.trim(),
       best_before: $('#pfBb').value,
-      qty: +$('#pfQty').value || 1,
+      qty: $('#pfQty').value === '' ? 1 : +$('#pfQty').value,
       category: $('#pfCat').value,
       barcode: $('#pfCode').value.trim(),
+      target_qty: +$('#pfTarget').value || 0,
     };
   }
 
@@ -3278,7 +3761,7 @@ const Koti = (() => {
   async function onBarcode(code) {
     pantryUi.scanning = false;
     const keep = $('#pantryForm') ? readForm() : null;
-    const f = keep || { id: null, name: '', best_before: '', qty: 1, category: 'Ruoka', barcode: '' };
+    const f = keep || blankPantryForm();
     f.barcode = code;
     let known = null;
     try { known = await Store.pantry.lookup(code); } catch (_) {}
@@ -3298,7 +3781,8 @@ const Koti = (() => {
 
   async function viewPantry() {
     Scanner.stop();
-    const { categories, items } = await Store.pantry.list();
+    const [{ categories, items }, shopItems] = await Promise.all([Store.pantry.list(), Store.shopping.list()]);
+    const toBuy = pantrySuggestions(items, shopItems);
     let nExp = 0, nSoon = 0, total = 0;
     items.forEach((it) => {
       total += it.qty;
@@ -3322,6 +3806,16 @@ const Koti = (() => {
         <button class="btn" id="pScanBtn">${icon('camera')} Skannaa viivakoodi</button>
         <button class="btn secondary" id="pAddBtn">${icon('add')} Lisää käsin</button>
       </div>` : ''}
+      ${pantryUi.ranOut ? `<div class="card pantry-note" id="pantryRanOut">
+        <span><b>${esc(pantryUi.ranOut.name)}</b> loppui varastosta.</span>
+        <span class="row"><button class="btn small editor-only" id="ranOutAdd">${icon('cart')} Lisää kauppalistalle</button>
+          <button class="btn small secondary" id="ranOutClose">Sulje</button></span>
+      </div>` : ''}
+      ${toBuy.length ? `<div class="card pantry-note" id="pantryToBuy">
+        <span><b>Ostettavaa: ${toBuy.length} ${toBuy.length === 1 ? 'tuote' : 'tuotetta'}.</b>
+          ${esc(toBuy.slice(0, 4).map((s) => s.name).join(', '))}${toBuy.length > 4 ? ' ja muita' : ''}</span>
+        <button class="btn small editor-only" id="toBuyAll">${icon('cart')} Lisää kauppalistalle</button>
+      </div>` : ''}
       ${pantryUi.scanning ? scannerHtml() : ''}
       ${pantryUi.form && !pantryUi.scanning ? pantryFormHtml(pantryUi.form, categories) : ''}
       ${items.length ? `<div class="pchips">${['Kaikki', ...used].map((c) =>
@@ -3336,7 +3830,7 @@ const Koti = (() => {
     if (scanBtn) scanBtn.onclick = openScanner;
     const addBtn = $('#pAddBtn');
     if (addBtn) addBtn.onclick = () => {
-      pantryUi.form = { id: null, name: '', best_before: '', qty: 1, category: 'Ruoka', barcode: '' };
+      pantryUi.form = blankPantryForm();
       viewPantry().then(() => $('#pfName') && $('#pfName').focus());
     };
 
@@ -3384,15 +3878,35 @@ const Koti = (() => {
     content.querySelectorAll('[data-puse]').forEach((b) => b.onclick = async () => {
       const it = byId(b.dataset.puse);
       try {
-        await Store.pantry.useOne(it.id);
-        if (it.qty <= 1) toast(`${it.name} loppui varastosta`);
+        const r = await Store.pantry.useOne(it.id);
+        // Rivi poistui kokonaan: tarjotaan lisäystä kauppalistalle. (Tavoitteellinen
+        // tuote jää näkyviin "loppu"-tilassa ja tulee ostoehdotuksiin.)
+        if (r && r.removed && !items.some((x) => x.id !== it.id && nameKey(x.name) === nameKey(it.name))) {
+          pantryUi.ranOut = { name: it.name, category: it.category };
+        }
         viewPantry();
       } catch (err) { toast(err.message, true); }
     });
-    content.querySelectorAll('[data-pshop]').forEach((b) => b.onclick = () => addToShopping(byId(b.dataset.pshop).name));
+    const ranOutAdd = $('#ranOutAdd');
+    if (ranOutAdd) ranOutAdd.onclick = async () => {
+      await addToShopping(pantryUi.ranOut.name, pantryUi.ranOut.category);
+      pantryUi.ranOut = null; viewPantry();
+    };
+    const ranOutClose = $('#ranOutClose');
+    if (ranOutClose) ranOutClose.onclick = () => { pantryUi.ranOut = null; viewPantry(); };
+    const toBuyAll = $('#toBuyAll');
+    if (toBuyAll) toBuyAll.onclick = async () => {
+      try { await addSuggestions(toBuy); viewPantry(); } catch (err) { toast(err.message, true); }
+    };
+    content.querySelectorAll('[data-pshop]').forEach((b) => b.onclick = async () => {
+      const it = byId(b.dataset.pshop);
+      await addToShopping(it.name, it.category);
+      viewPantry();
+    });
     content.querySelectorAll('[data-pedit]').forEach((b) => b.onclick = () => {
       const it = byId(b.dataset.pedit);
-      pantryUi.form = { id: it.id, name: it.name, best_before: it.best_before, qty: it.qty, category: it.category, barcode: it.barcode };
+      pantryUi.form = { id: it.id, name: it.name, best_before: it.best_before, qty: it.qty, category: it.category,
+        barcode: it.barcode, target_qty: it.target_qty || 0 };
       viewPantry().then(() => window.scrollTo({ top: 0 }));
     });
     content.querySelectorAll('[data-paskdel]').forEach((b) => b.onclick = () => { pantryUi.confirmDel = +b.dataset.paskdel; viewPantry(); });
@@ -3408,8 +3922,142 @@ const Koti = (() => {
 
   // Kun käyttäjä poistuu varastosta kesken skannauksen, kamera sammuu.
   window.addEventListener('hashchange', () => {
-    if (!onRoute('varasto')) { Scanner.stop(); pantryUi.scanning = false; pantryUi.form = null; pantryUi.confirmDel = null; }
+    if (!onRoute('varasto')) {
+      Scanner.stop();
+      Object.assign(pantryUi, { scanning: false, form: null, confirmDel: null, ranOut: null });
+    }
+    if (!onRoute('kotityot')) Object.assign(choreUi, { form: null, confirmDel: null });
   });
+
+  // ======================================================================
+  // Toistuvat kotityöt
+  // ======================================================================
+  const choreUi = { form: null, confirmDel: null };
+  const UNIT_EVERY = { day: 'päivittäin', week: 'viikoittain', month: 'kuukausittain', year: 'vuosittain' };
+  const UNIT_GEN = { day: 'päivän', week: 'viikon', month: 'kuukauden', year: 'vuoden' };
+  const everyText = (c) => (c.every_n === 1 ? UNIT_EVERY[c.unit] : `${c.every_n} ${UNIT_GEN[c.unit]} välein`);
+  function choreLevel(dl) { return dl < 0 ? 'bad' : dl <= 7 ? 'warn' : dl <= 30 ? 'soon' : 'ok'; }
+  function choreBadge(c) {
+    const dl = daysLeft(c.next_due);
+    if (dl < 0) return `myöhässä ${-dl} pv`;
+    if (dl === 0) return 'tänään';
+    if (dl === 1) return 'huomenna';
+    return dl <= 30 ? `${dl} pv päästä` : fiDate(c.next_due);
+  }
+
+  async function markChoreDone(id) {
+    const c = await Store.chores.done(id, todayISO());
+    toast(`Kuitattu tehdyksi. Seuraava kerta ${fiDate(c.next_due)}`);
+  }
+
+  function choreHtml(c) {
+    const lv = choreLevel(daysLeft(c.next_due));
+    const acts = canEdit() ? (choreUi.confirmDel === c.id
+      ? `<span class="muted">Poistetaanko?</span>
+         <button class="btn small danger" data-cdel="${c.id}">Poista</button>
+         <button class="btn small secondary" data-cnodel>Peruuta</button>`
+      : `<button class="btn small" data-cdone="${c.id}">${icon('verify')} Tehty</button>
+         <button class="btn small secondary" data-cedit="${c.id}">Muokkaa</button>
+         <button class="icon-btn small" data-caskdel="${c.id}" title="Poista" aria-label="Poista ${esc(c.title)}">${icon('trash')}</button>`)
+      : '';
+    const last = c.last_done_at
+      ? ` · viimeksi ${fiDate(c.last_done_at)}${c.last_done_by ? ' (' + esc(c.last_done_by) + ')' : ''}` : '';
+    return `<div class="pantry-item chore lv-${lv}">
+      <div class="spread pantry-top">
+        <div>
+          <div class="pantry-name">${esc(c.title)}</div>
+          <div class="pantry-meta">${esc(everyText(c))} · seuraava ${fiDate(c.next_due)}${last}</div>
+          ${c.note ? `<div class="chore-note">${esc(c.note)}</div>` : ''}
+        </div>
+        <span class="pbadge lv-${lv}">${choreBadge(c)}</span>
+      </div>
+      ${acts ? `<div class="pantry-acts">${acts}</div>` : ''}
+    </div>`;
+  }
+
+  function choreFormHtml(f) {
+    return `<div class="card pantry-form" id="choreForm">
+      <h3 style="margin-top:0">${f.id ? 'Muokkaa tehtävää' : 'Uusi toistuva tehtävä'}</h3>
+      <div class="field"><label for="cfTitle">Tehtävä</label>
+        <input type="text" id="cfTitle" maxlength="200" value="${esc(f.title)}" placeholder="esim. Vaihda palovaroittimen paristo" /></div>
+      <div class="pf-row">
+        <div class="field"><label for="cfEvery">Toistuu</label>
+          <input type="number" id="cfEvery" min="1" max="999" inputmode="numeric" value="${esc(f.every_n)}" /></div>
+        <div class="field"><label for="cfUnit">välein</label>
+          <select id="cfUnit">${Object.keys(UNIT_GEN).map((u) =>
+            `<option value="${u}"${u === f.unit ? ' selected' : ''}>${UNIT_GEN[u]}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label for="cfDue">Seuraava kerta</label>
+        <input type="date" id="cfDue" value="${esc(f.next_due)}" />
+        <div class="muted pf-hint">Jos jätät tyhjäksi, päivä lasketaan tästä päivästä toistovälin päähän.</div></div>
+      <div class="field"><label for="cfNote">Lisätieto</label>
+        <input type="text" id="cfNote" maxlength="500" value="${esc(f.note)}" placeholder="valinnainen, esim. pariston tyyppi 9 V" /></div>
+      <div class="row">
+        <button class="btn" id="cfSave">Tallenna</button>
+        <button class="btn secondary" id="cfCancel">Peruuta</button>
+      </div>
+    </div>`;
+  }
+
+  async function viewChores() {
+    const chores = await Store.chores.list();
+    const late = chores.filter((c) => daysLeft(c.next_due) < 0).length;
+    const week = chores.filter((c) => { const dl = daysLeft(c.next_due); return dl >= 0 && dl <= 7; }).length;
+    content.innerHTML = `
+      <div class="koti-head"><h2>${icon('repeat', 'ic-lg')} Kotityöt</h2></div>
+      <p class="muted">Toistuvat huollot ja kotityöt. Kun merkitset tehtävän tehdyksi, seuraava kerta lasketaan siitä päivästä.</p>
+      <div class="pantry-stats">
+        <div class="pstat"><b>${chores.length}</b><span>tehtävää</span></div>
+        <div class="pstat${week ? ' warn' : ''}"><b>${week}</b><span>viikon sisällä</span></div>
+        <div class="pstat${late ? ' bad' : ''}"><b>${late}</b><span>myöhässä</span></div>
+      </div>
+      ${canEdit() && !choreUi.form ? `<div class="pantry-actions one">
+        <button class="btn" id="cAddBtn">${icon('add')} Lisää tehtävä</button></div>` : ''}
+      ${choreUi.form ? choreFormHtml(choreUi.form) : ''}
+      <div id="choreList">
+        ${chores.map(choreHtml).join('') || '<div class="card empty">Ei tehtäviä vielä. Lisää ensimmäinen, esimerkiksi palovaroittimen pariston vaihto kerran vuodessa.</div>'}
+      </div>`;
+
+    const addBtn = $('#cAddBtn');
+    if (addBtn) addBtn.onclick = () => {
+      choreUi.form = { id: null, title: '', note: '', every_n: 1, unit: 'month', next_due: '' };
+      viewChores().then(() => $('#cfTitle') && $('#cfTitle').focus());
+    };
+    if ($('#choreForm')) {
+      $('#cfCancel').onclick = () => { choreUi.form = null; viewChores(); };
+      $('#cfSave').onclick = async () => {
+        const f = {
+          title: $('#cfTitle').value.trim(), note: $('#cfNote').value.trim(),
+          every_n: +$('#cfEvery').value || 1, unit: $('#cfUnit').value, next_due: $('#cfDue').value,
+        };
+        if (!f.title) return toast('Anna tehtävälle nimi', true);
+        try {
+          const id = choreUi.form.id;
+          if (id) await Store.chores.update(id, f); else await Store.chores.create(f);
+          toast(id ? 'Päivitetty' : `Lisätty: ${f.title}`);
+          choreUi.form = null;
+          viewChores();
+        } catch (err) { toast(err.message, true); }
+      };
+    }
+    content.querySelectorAll('[data-cdone]').forEach((b) => b.onclick = async () => {
+      try { await markChoreDone(+b.dataset.cdone); viewChores(); } catch (err) { toast(err.message, true); }
+    });
+    content.querySelectorAll('[data-cedit]').forEach((b) => b.onclick = () => {
+      const c = chores.find((x) => x.id === +b.dataset.cedit);
+      choreUi.form = { id: c.id, title: c.title, note: c.note, every_n: c.every_n, unit: c.unit, next_due: c.next_due };
+      viewChores().then(() => window.scrollTo({ top: 0 }));
+    });
+    content.querySelectorAll('[data-caskdel]').forEach((b) => b.onclick = () => { choreUi.confirmDel = +b.dataset.caskdel; viewChores(); });
+    content.querySelectorAll('[data-cnodel]').forEach((b) => b.onclick = () => { choreUi.confirmDel = null; viewChores(); });
+    content.querySelectorAll('[data-cdel]').forEach((b) => b.onclick = async () => {
+      try { await Store.chores.remove(+b.dataset.cdel); choreUi.confirmDel = null; toast('Poistettu'); viewChores(); }
+      catch (err) { toast(err.message, true); }
+    });
+
+    // Toisen laitteen muutokset: ei päivitetä kesken lomakkeen täytön.
+    listen('chores', 'kotityot', () => { if (!choreUi.form) viewChores(); });
+  }
 
   // ======================================================================
   // Etusivun kortit
@@ -3423,7 +4071,7 @@ const Koti = (() => {
     headExtra: '<a class="d2-more" href="#/kauppalista">Avaa</a>',
     load: () => Store.shopping.list(),
     render: (items) => {
-      const open = items.filter((i) => !i.done_at);
+      const open = bySection(items.filter((i) => !i.done_at)).flatMap(([, list]) => list);
       const rows = open.slice(0, 8).map((i) => `<li><span>${esc(i.text)}</span>${i.qty ? `<span class="mono">${esc(i.qty)}</span>` : ''}</li>`).join('');
       return `<div class="dash-shop">
         ${open.length ? `<ul>${rows}</ul>${open.length > 8 ? `<div class="dash-more muted">+ ${open.length - 8} muuta</div>` : ''}`
@@ -3467,7 +4115,34 @@ const Koti = (() => {
     },
   });
 
-  return { viewPantry, viewShopping, daysLeft, badgeText, level };
+  // Kotityöt: myöhässä olevat ja kahden viikon sisällä erääntyvät, kuittaus suoraan kortista.
+  Dashboard.register({
+    id: 'kotityot',
+    title: 'Kotityöt',
+    slot: 'main',
+    order: 25,
+    icon: 'repeat',
+    headExtra: '<a class="d2-more" href="#/kotityot">Kaikki</a>',
+    load: () => Store.chores.list(),
+    render: (chores) => {
+      if (!chores.length) return '<div class="dash-empty">Ei toistuvia kotitöitä. <a href="#/kotityot">Lisää ensimmäinen</a>.</div>';
+      const due = chores.filter((c) => daysLeft(c.next_due) <= 14).slice(0, 5);
+      if (!due.length) {
+        return `<div class="dash-empty">Ei tehtävää kahden viikon sisällä. Seuraavana: ${esc(chores[0].title)}, ${fiDate(chores[0].next_due)}.</div>`;
+      }
+      return `<ul class="dash-chores">${due.map((c) => `<li>
+        <span class="dash-chore-title">${esc(c.title)}</span>
+        <span class="pbadge lv-${choreLevel(daysLeft(c.next_due))}">${choreBadge(c)}</span>
+        ${canEdit() ? `<button class="btn small secondary" data-choredone="${c.id}" aria-label="Merkitse tehdyksi: ${esc(c.title)}">Tehty</button>` : ''}
+      </li>`).join('')}</ul>`;
+    },
+    bind: (el) => el.querySelectorAll('[data-choredone]').forEach((b) => b.onclick = async () => {
+      try { await markChoreDone(+b.dataset.choredone); if (onRoute('')) viewHome(); }
+      catch (err) { toast(err.message, true); }
+    }),
+  });
+
+  return { viewPantry, viewShopping, viewChores };
 })();
 
   </script>
@@ -3527,6 +4202,7 @@ function esc(s) {
 // Käyttöliittymän kuvakkeet (ei kategorioiden käyttäjävalittavia emojeja).
 const ICON_PATHS = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/>',
+  repeat: '<path d="M4.5 11a7.5 7.5 0 0 1 13-4.5L20 9"/><path d="M20 4.5V9h-4.5"/><path d="M19.5 13a7.5 7.5 0 0 1-13 4.5L4 15"/><path d="M4 19.5V15h4.5"/>',
   announce: '<path d="M3 11v2.5l13 5V6z"/><path d="M16 8.5a3.5 3.5 0 0 1 0 7"/><path d="M7 14v4.5h3V15"/>',
   note: '<path d="M5 3.5h9l5 5V20.5H5z"/><path d="M8 12h8M8 16h5"/>',
   terms: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v18H6.5A1.5 1.5 0 0 1 5 19.5z"/><path d="M9 3v18"/>',
@@ -3551,7 +4227,6 @@ const ICON_PATHS = {
   add: '<path d="M12 5v14M5 12h14"/>',
   warn: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.2"/>',
   arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
   chevUp: '<path d="M6 15l6-6 6 6"/>',
   chevDown: '<path d="M6 9l6 6 6-6"/>',
   chevRight: '<path d="M9 6l6 6-6 6"/>',
@@ -3678,7 +4353,7 @@ function authScreen(inner) {
   document.documentElement.dataset.auth = 'out';
   content.innerHTML = `<div class="auth-wrap"><div class="card auth-card">
     <div class="brand" style="justify-content:center; margin-bottom:14px">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>${inner}</div></div>`;
 }
@@ -4117,6 +4792,7 @@ async function router() {
     if (parts.length === 0) { setActiveNav('home'); return await viewHome(); }
     if (parts[0] === 'kauppalista') { setActiveNav('shopping'); return await Koti.viewShopping(); }
     if (parts[0] === 'varasto') { setActiveNav('pantry'); return await Koti.viewPantry(); }
+    if (parts[0] === 'kotityot') { setActiveNav('chores'); return await Koti.viewChores(); }
     if (parts[0] === 'paivakirja') { setActiveNav('shiftlog'); return await viewShiftLog(); }
     if (parts[0] === 'numerot') { setActiveNav('contacts'); return await viewContacts(); }
     if (parts[0] === 'muistutukset') { setActiveNav('announcements'); return await viewAnnouncements(); }
@@ -4144,14 +4820,6 @@ const shortDate = (iso) => {
   const d = new Date(iso);
   return isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1}.`;
 };
-
-// Poikkeuksen tilamerkki. Nykyisessä datassa ei ole voimassaoloaikoja
-// (ne ovat designin toivelistalla), joten kiinnitetty = voimassa nyt.
-function noticeBadge(a) {
-  return a.pinned
-    ? '<span class="d2-badge now">Voimassa</span>'
-    : '<span class="d2-badge soon">Tiedote</span>';
-}
 
 async function viewHome() {
   currentCategoryId = null; renderSidebar();
@@ -4625,7 +5293,7 @@ async function viewPageEdit(id, presetCat) {
           </span>
         </div>
         <input type="file" id="imgFileInput" accept="image/*" multiple style="display:none" />
-        <textarea id="contentInput" placeholder="Kirjoita työohje tähän…">${esc(p.content)}</textarea>
+        <textarea id="contentInput" placeholder="Kirjoita ohje tähän…">${esc(p.content)}</textarea>
         <div id="previewBox" class="doc preview-box" style="display:none"></div>
         <p class="muted" style="margin:6px 0 0">Kuva tekstin sekaan: <strong>Lisää kuva</strong> -napista,
           tai liitä kuvakaappaus suoraan tekstiin (Ctrl/Cmd+V). Kuva ilmestyy siihen kohtaan, missä kursori on.</p>
@@ -4992,11 +5660,11 @@ async function viewAnnouncements(editId) {
       <h3 style="margin-top:0">${editing ? 'Muokkaa muistutusta' : 'Uusi muistutus'}</h3>
       <div class="field">
         <label>Otsikko</label>
-        <input type="text" id="annTitle" value="${editing ? esc(editing.title) : ''}" placeholder="Esim. Kohteen 4021 huoltokatko 12.7." />
+        <input type="text" id="annTitle" value="${editing ? esc(editing.title) : ''}" placeholder="Esim. Auton katsastus maaliskuussa" />
       </div>
       <div class="field">
         <label>Sisältö</label>
-        <textarea id="annContent" style="min-height:110px" placeholder="Tiedotteen teksti…">${editing ? esc(editing.content) : ''}</textarea>
+        <textarea id="annContent" style="min-height:110px" placeholder="Muistutuksen teksti…">${editing ? esc(editing.content) : ''}</textarea>
       </div>
       <label class="row" style="margin-bottom:12px; cursor:pointer">
         <input type="checkbox" id="annPinned" ${editing && editing.pinned ? 'checked' : ''} />
@@ -5008,7 +5676,7 @@ async function viewAnnouncements(editId) {
       </div>
     </div>
     <div id="annList">
-      ${anns.map((a) => announcementHtml(a)).join('') || '<p class="empty">Ei tiedotteita vielä.</p>'}
+      ${anns.map((a) => announcementHtml(a)).join('') || '<p class="empty">Ei muistutuksia vielä.</p>'}
     </div>`;
 
   $('#annSaveBtn').onclick = async () => {
@@ -5411,7 +6079,7 @@ document.addEventListener('click', async (e) => {
   if (cat) { location.hash = '#/kohde/' + cat.dataset.cat; return; }
   const nav = e.target.closest('[data-nav]');
   if (nav) {
-    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', chores: '#/kotityot', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
     location.hash = routes[nav.dataset.nav] || '#/';
     return;
   }

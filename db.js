@@ -1,5 +1,5 @@
 // Tietokantakerros. Käyttää SQLitea (yksi tiedosto: data/elama.db).
-// 20 käyttäjälle tämä on kevyt ja helppo varmuuskopioida.
+// Kotikäyttöön tämä on kevyt ja helppo varmuuskopioida.
 const path = require('path');
 const fs = require('fs');
 const Database = require('better-sqlite3');
@@ -207,6 +207,58 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_pantry_bb ON pantry_items(best_before);
   CREATE INDEX IF NOT EXISTS idx_shopping_done ON shopping_items(done_at);
+`);
+
+// Migraatio: varaston tavoitemäärä (0 = ei tavoitetta). Kun tuotetta on alle
+// tavoitteen, kauppalista ehdottaa sen ostamista.
+const pantryCols = db.prepare('PRAGMA table_info(pantry_items)').all().map((c) => c.name);
+if (!pantryCols.includes('target_qty')) {
+  db.exec('ALTER TABLE pantry_items ADD COLUMN target_qty INTEGER NOT NULL DEFAULT 0');
+}
+
+// Migraatio: kauppalistan osasto (kaupan kiertojärjestys). Tyhjä = ei vielä
+// määritetty; koti-routes.js täyttää vanhat rivit käynnistyksessä.
+// shopping_sections muistaa käyttäjän itse valitseman osaston tuotteelle.
+const shopCols = db.prepare('PRAGMA table_info(shopping_items)').all().map((c) => c.name);
+if (!shopCols.includes('section')) {
+  db.exec("ALTER TABLE shopping_items ADD COLUMN section TEXT NOT NULL DEFAULT ''");
+}
+db.exec(`
+  CREATE TABLE IF NOT EXISTS shopping_sections (
+    name_key TEXT PRIMARY KEY,
+    section  TEXT NOT NULL
+  );
+`);
+
+// Migraatio: toistuvat kotityöt. next_due ja last_done_at ovat YYYY-MM-DD.
+// Kuittaus siirtää next_due:n toistovälin päähän kuittauspäivästä.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS chores (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    title        TEXT NOT NULL,
+    note         TEXT NOT NULL DEFAULT '',
+    every_n      INTEGER NOT NULL DEFAULT 1,
+    unit         TEXT NOT NULL DEFAULT 'month',  -- day | week | month | year
+    next_due     TEXT NOT NULL,
+    last_done_at TEXT NOT NULL DEFAULT '',
+    last_done_by TEXT NOT NULL DEFAULT '',
+    created_at   TEXT NOT NULL,
+    created_by   TEXT NOT NULL DEFAULT ''
+  );
+  CREATE INDEX IF NOT EXISTS idx_chores_due ON chores(next_due);
+`);
+
+// Migraatio: etusivun ulkoisten lähteiden välimuisti (dashboard-sources.js).
+// Yksi rivi per lähde: viimeisin onnistunut data JSON:na sekä tieto siitä,
+// jos uusin haku on epäonnistunut (failed_at; data säilyy silti).
+db.exec(`
+  CREATE TABLE IF NOT EXISTS dashboard_cache (
+    source     TEXT PRIMARY KEY,
+    data       TEXT NOT NULL DEFAULT '',
+    fetched_at TEXT,
+    failed_at  TEXT,
+    error      TEXT NOT NULL DEFAULT ''
+  );
 `);
 
 module.exports = db;
