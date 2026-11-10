@@ -296,6 +296,13 @@ kokeiluvaiheen kytkin on poistettu.
 - **Kontrastikorjaukset:** handoffin `--tx3`, vaalean `--brand` ja `--warn`
   alittivat WCAG AA:n 4,5:1. Korjatut arvot ja mittaukset design2a.css:n
   alkukommentissa – mittaa uudelleen jos sävyjä muutetaan.
+- **Tumman teeman täytöt ovat kirkkaita, joten teksti niiden päällä on tumma.**
+  Älä kirjoita täytön päälle `color: #fff`, vaan `var(--acttx, #fff)`
+  (vaaleassa valkoinen, tummassa #20120A). Näin tekevät `.btn`, `.btn.danger`,
+  `.brand-mark`, `#backTop` ja kauppalistan valintamerkki. Kategorian
+  aksenttiväri tekstinä (`.d2-catnum`, `.d2-recmeta`) vaalennetaan tummassa
+  teemassa muuttujalla `--cat-ink` (40 % aksenttia, 60 % valkoista), koska
+  paletti on valittu vaalealle pohjalle.
 - Sudenkuoppa: `.d2-home`-flexissä `align-items: flex-start` kutistaa
   pystysuunnassa sarakkeet max-content-levyisiksi → vaakavieritys. Kapeilla
   näytöillä on oltava `stretch`.

@@ -95,7 +95,7 @@ body {
 .brand-mark {
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
   background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff; font-weight: 800; font-size: 18px;
+  color: var(--acttx, #fff); font-weight: 800; font-size: 18px;
   display: flex; align-items: center; justify-content: center;
 }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
@@ -267,8 +267,12 @@ h2 .ic, h3 .ic { margin-right: 7px; }
 .crumbs .sep { margin: 0 5px; opacity: .6; }
 
 /* Buttons */
+/* Tekstiväri tulee 2a-ilmeen parista --act / --acttx: vaaleassa valkoinen,
+   tummassa tumma (#20120A), koska valkoinen teksti kirkkaan oranssin päällä
+   jäi 2,9:1:een. Sama pari kantaa myös .btn.danger-napin tummassa teemassa
+   (tumma teksti punaisella 4,7:1; valkoinen oli 3,8:1). */
 .btn {
-  background: var(--brand); color: #fff; border: none; padding: 9px 16px;
+  background: var(--brand); color: var(--acttx, #fff); border: none; padding: 9px 16px;
   border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;
   transition: background .12s;
 }
@@ -585,7 +589,7 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 /* Takaisin ylös (mobiili/pitkät sivut) */
 #backTop {
   position: fixed; right: 18px; bottom: 18px; width: 42px; height: 42px;
-  border-radius: 50%; border: none; background: var(--brand); color: #fff;
+  border-radius: 50%; border: none; background: var(--brand); color: var(--acttx, #fff);
   font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.25);
   opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40;
 }
