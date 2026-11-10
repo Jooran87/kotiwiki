@@ -177,8 +177,10 @@ silloin kun oma kone on kiinni. Käynnistys automaattiseksi: ks. `TUOTANTOON.md`
 
 ## Muokkaaminen omaksi
 
-- **Nimi ja logo:** `public/index.html` ja `sandbox/build-single.js`,
-  kohdat `brand-mark` ja `brand-text`
+- **Nimi ja logo:** `public/index.html`, `sandbox/index.html`,
+  `sandbox/build-single.js` ja kirjautumisruutu (`public/app.js`),
+  kohdat `brand-mark` (upotettu SVG-kuvio) ja `brand-text`. Välilehden
+  kuvake on `public/favicon.svg`
 - **Värit:** `public/design2a.css`, tokenit tiedoston alussa
 - **Kategoriat ja esimerkkisisältö:** `seed.js` (palvelin) ja
   `sandbox/store-local.js` (sandbox). Molemmat ovat pelkkää esimerkkiä –

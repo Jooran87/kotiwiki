@@ -204,7 +204,7 @@ function authScreen(inner) {
   document.documentElement.dataset.auth = 'out';
   content.innerHTML = `<div class="auth-wrap"><div class="card auth-card">
     <div class="brand" style="justify-content:center; margin-bottom:14px">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>${inner}</div></div>`;
 }
