@@ -25,8 +25,11 @@ public/koti-shared.js ★ Kodin toimintojen SÄÄNNÖT (osastot, päivälaskenta
                      sama tiedosto palvelimella (require), selaimessa ja sandboxissa
 public/koti.css      Niiden ulkoasu (2a-tokenit)
 public/vendor/       zxing.min.js (Apache-2.0), ladataan vain skannatessa
+dashboard-sources.js Etusivun ulkoiset lähteet: ajastus, välimuisti (SQLite), GET /api/dashboard
+sources/saa.js       Sää Ilmatieteen laitoksen avoimesta datasta (havainnot + ennuste)
 deploy/              systemd-palvelu ja Caddyfile omalle palvelimelle
-tests/               npm test: api (auth+CRUD+turva), backup, ui (Chromium)
+tests/               npm test: api (auth+CRUD+turva), sources (sää valepalvelimella),
+                     backup, ui (Chromium)
 backup.js/restore.js Varmuuskopiointi (VACUUM INTO) ja palautus
 seed.js              Esimerkkisisältö (vain tyhjään kantaan)
 ```
@@ -60,9 +63,35 @@ varmennettu oikeita aikoja vastaan (Helsinki ja Rovaniemi, kesä ja talvi).
 ### Ulkoiset lähteet – EI selaimesta
 
 Selain ei ota yhteyttä ulos. Uusi lähde:
-`sources/<nimi>.js` → `server.js` ajastaa ja tallentaa SQLiteen →
-`GET /api/dashboard` → kortin `load`. Näin CSP pysyy tiukkana, avaimet
-palvelimella, ja lähteen ollessa alhaalla voidaan näyttää viimeisin arvo.
+`sources/<nimi>.js` → `dashboard-sources.js` ajastaa ja tallentaa SQLiteen
+(taulu `dashboard_cache`) → `GET /api/dashboard` → kortin `load`
+(`Store.dashboard.get('<nimi>')`). Näin CSP pysyy tiukkana, avaimet
+palvelimella, ja lähteen ollessa alhaalla näytetään viimeisin arvo.
+
+- **Lähteen sopimus:** moduuli vie `{ id, intervalMs, fetch }`. `fetch`
+  palauttaa JSON-kelpoisen olion tai heittää virheen. Epäonnistunut haku ei
+  koske aiempaan dataan: riville kirjataan vain `failed_at` ja virheteksti,
+  ja reitti palauttaa `failing: true`. Virheteksti jää palvelimen lokiin,
+  selaimelle sitä ei anneta.
+- **Lähteen dataan ei luoteta.** `sources/saa.js` poimii XML:stä vain
+  tunnetut suureet, kelvolliset aikaleimat ja äärelliset luvut, rajaa
+  vastauksen koon (3 Mt) ja keston (15 s). Kortti tarkistaa arvot vielä
+  luvuiksi ja escapettaa ne. Testi syöttää korttiin haitallista dataa.
+- **Sää (`sources/saa.js`):** Ilmatieteen laitoksen WFS-rajapinta, ei avainta.
+  Havainnot `fmi::observations::weather::simple` (lähin asema, Kaisaniemi) ja
+  ennuste `fmi::forecast::edited::weather::scandinavia::point::simple`
+  (meteorologin tarkistama, 72 h). "NaN" = mittaus puuttuu, jolloin käytetään
+  edellistä arvoa. Päivät ja tunnit lasketaan Helsingin ajassa palvelimella
+  (`Intl`, `Europe/Helsinki`), koska palvelin voi olla UTC:ssä. Lisenssi
+  CC BY 4.0: lähdemaininta on kortin alareunassa, älä poista sitä.
+- **Testit eivät käytä verkkoa.** `tests/sources.test.js` käynnistää
+  paikallisen valepalvelimen ja ohjaa haun sinne (`FMI_URL`). Rajapintatestit
+  ajavat palvelimen asetuksella `ELAMA_SOURCES=off` (ei hakuja lainkaan).
+- **Sandbox:** `Store.dashboard.get('saa')` palauttaa esimerkkisään
+  (`demo: true`), ja kortti kertoo sen käyttäjälle.
+- Kehitysympäristö, jossa liikenne kulkee välityspalvelimen kautta: Noden
+  oma `fetch` ei lue `HTTPS_PROXY`-muuttujaa ilman `NODE_USE_ENV_PROXY=1`
+  (Node 22.21 tai uudempi). Omalla palvelimella tätä ei tarvita.
 
 ## Varmuusvarasto, kauppalista ja kotityöt
 
@@ -149,7 +178,7 @@ pitää Noden piilossa Caddyn takana.
    seed-dataan – tee näin vain kun uusi seed-sisältö on demolle tärkeä).
 5. **Ulkoasu-/logiikkamuutoksen jälkeen aina** `node sandbox/build-single.js`
    ja committaa syntynyt elama-sandbox.html.
-6. **`npm test` vihreänä (391 testiä) ennen jokaista committia.** Testit ajavat
+6. **`npm test` vihreänä (426 testiä) ennen jokaista committia.** Testit ajavat
    palvelimen eristetyssä ELAMA_DATA_DIR-hakemistossa – eivät koske oikeaa dataa.
 7. **Tekijätieto tulee AINA istunnosta** (`req.user.name`) – älä koskaan luota
    selaimen author-kenttään.
@@ -296,8 +325,9 @@ kokeiluvaiheen kytkin on poistettu.
 
 ## Työjono (ei aloitettu)
 
-1. **Ulkoiset lähteet etusivulle**: sää, sähkön hinta, uutiset, Euribor
-   (paikanpitäjät ovat cards.js:n lopussa, ohje README:ssä)
+1. **Lisää ulkoisia lähteitä etusivulle**: sähkön hinta, uutiset, Euribor
+   (sää on jo tehty ja toimii mallina; paikanpitäjät ovat cards.js:n lopussa,
+   ohje README:ssä)
 2. **Laiterekisteri**: kodinkoneiden takuut, kuitit ja huoltohistoria
    (wikin liitteet ja haku toimivat tähän valmiiksi)
 3. **Reseptit ja viikon ruokalista**: ainekset kauppalistalle yhdellä napilla
@@ -309,7 +339,7 @@ kokeiluvaiheen kytkin on poistettu.
 
 ```bash
 npm start                      # palvelin (PORT=xxxx vaihtaa portin)
-npm test                       # 391 testiä eristetyssä ympäristössä
+npm test                       # 426 testiä eristetyssä ympäristössä
 npm run backup                 # varmuuskopio backups/-kansioon
 node sandbox/build-single.js   # kokoa jaettava sandbox-tiedosto
 node reindex.js                # liitteiden hakuindeksin uudelleenajo

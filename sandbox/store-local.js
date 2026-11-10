@@ -385,6 +385,33 @@ function sectionFor(text, pantryCategory) {
   return K.guessSection(text, cat);
 }
 
+// Esimerkkisää samassa muodossa kuin palvelimen sources/saa.js tuottaa.
+function demoWeather() {
+  const now = new Date();
+  now.setMinutes(0, 0, 0);
+  const symbols = [7, 7, 6, 4, 2, 4, 6, 7, 31, 31, 32, 7];
+  const hours = [];
+  for (let i = 0; i < 24; i++) {
+    const t = new Date(now.getTime() + i * 3600000);
+    const night = t.getHours() < 7 || t.getHours() > 17;
+    const sym = symbols[Math.floor(i / 2) % symbols.length];
+    hours.push({
+      time: t.toISOString(), date: K.addInterval(K.todayISO(), Math.floor((now.getHours() + i) / 24), 'day'),
+      hour: t.getHours(), temp: Math.round((4 + 3 * Math.sin((t.getHours() - 8) / 24 * 2 * Math.PI)) * 10) / 10,
+      feels: 1, wind: 5, wind_dir: 225, pop: sym > 30 ? 70 : 10, rain: sym > 30 ? 0.6 : 0, symbol: sym + (night ? 100 : 0),
+    });
+  }
+  const day = (n, min, max, rain, symbol) => ({ date: K.addInterval(K.todayISO(), n, 'day'), hours: 24, min, max, rain, symbol });
+  return {
+    demo: true, failing: false, fetched_at: new Date().toISOString(),
+    data: {
+      place: 'Helsinki', observed_at: new Date().toISOString(), temp: hours[0].temp, wind: 5, wind_dir: 225,
+      humidity: 78, feels: 1, symbol: hours[0].symbol, hours,
+      days: [day(0, 2, 6, 1.8, 31), day(1, 1, 5, 0, 4), day(2, -2, 3, 4.2, 52)],
+    },
+  };
+}
+
 // ---------- Store-rajapinta ----------
 const Store = {
   mode: 'sandbox',
@@ -830,6 +857,12 @@ const Store = {
 
   // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
   events: null,
+
+  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti
+  // saa keksityn esimerkkisään (demo: true → kortti kertoo sen käyttäjälle).
+  dashboard: {
+    async get(id) { return id === 'saa' ? demoWeather() : null; },
+  },
 
   notes: {
     async list({ categoryId, limit } = {}) {

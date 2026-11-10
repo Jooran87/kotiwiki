@@ -156,6 +156,12 @@ const Store = {
     remove: (id) => api('/api/chores/' + id, { method: 'DELETE' }),
   },
 
+  // Etusivun ulkoiset lähteet (sää ym.): palvelimen valmiiksi hakema data.
+  // get('saa') → { data, fetched_at, failing } tai null.
+  dashboard: {
+    get: (id) => api('/api/dashboard').then((all) => all[id] || null),
+  },
+
   // Reaaliaikaiset muutokset muilta laitteilta (Server-Sent Events).
   // on('shopping', fn) palauttaa funktion, jolla kuuntelun voi lopettaa.
   events: (() => {

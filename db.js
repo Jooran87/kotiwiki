@@ -248,4 +248,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_chores_due ON chores(next_due);
 `);
 
+// Migraatio: etusivun ulkoisten lähteiden välimuisti (dashboard-sources.js).
+// Yksi rivi per lähde: viimeisin onnistunut data JSON:na sekä tieto siitä,
+// jos uusin haku on epäonnistunut (failed_at; data säilyy silti).
+db.exec(`
+  CREATE TABLE IF NOT EXISTS dashboard_cache (
+    source     TEXT PRIMARY KEY,
+    data       TEXT NOT NULL DEFAULT '',
+    fetched_at TEXT,
+    failed_at  TEXT,
+    error      TEXT NOT NULL DEFAULT ''
+  );
+`);
+
 module.exports = db;

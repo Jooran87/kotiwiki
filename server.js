@@ -867,6 +867,8 @@ function deletePageFiles(pageId) {
 
 // ---------- Varmuusvarasto + kauppalista (+ reaaliaikaiset tapahtumat) ----------
 require('./koti-routes')(app, db);
+// Etusivun ulkoiset lähteet (sää): palvelin hakee, selain lukee /api/dashboard.
+require('./dashboard-sources')(app, db);
 
 // Multer-virheet ihmisluettavaan muotoon.
 app.use((err, req, res, next) => {

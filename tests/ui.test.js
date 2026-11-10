@@ -562,6 +562,35 @@ async function main() {
 
     // Etusivun kortit
     await mob.click('.bn-item[data-bnav="home"]'); await mob.waitForTimeout(600);
+    // Sääkortti (demossa esimerkkidata, palvelinversiossa Ilmatieteen laitoksen data)
+    const wx = await mob.textContent('[data-slot="saa"]');
+    ok('sääkortti näyttää lämpötilan, tuulen ja lähteen', /\d,\d °C/.test(wx) && wx.includes('m/s')
+      && wx.includes('Lähde: Ilmatieteen laitos'), wx.replace(/\s+/g, ' ').slice(0, 200));
+    ok('sääkortissa on tuntiennuste ja päiväennuste', (await mob.$$('.wx-h')).length === 6
+      && (await mob.$$('.wx-days li')).length === 3 && wx.includes('Tänään'));
+    ok('demo kertoo säätietojen olevan esimerkkidataa', wx.includes('Esimerkkidata'));
+    ok('sääkortti ei aiheuta vaakavieritystä puhelimessa',
+      await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    // Ulkoinen data on epäluotettavaa: haitalliset arvot eivät saa päätyä sivulle.
+    const evil = await mob.evaluate(() => {
+      const x = '<img src=x onerror="window.__xss3=1">';
+      const html = saaHtml({ fetched_at: x, failing: true, data: { temp: 5, symbol: x, wind: x, wind_dir: x, humidity: x,
+        feels: x, observed_at: x, hours: [{ hour: x, temp: x, rain: x, symbol: x }, {}, {}],
+        days: [{ date: x, min: x, max: x, rain: x, symbol: x }] } });
+      const box = document.createElement('div');
+      box.innerHTML = html;
+      document.body.appendChild(box);
+      const bad = box.querySelectorAll('img, script').length;
+      document.body.removeChild(box);
+      return { bad, hasTemp: html.includes('5,0 °C') };
+    });
+    await mob.waitForTimeout(150);
+    ok('XSS: sääkortti ei päästä lähteen haitallista dataa sivulle', evil.bad === 0 && evil.hasTemp
+      && !(await mob.evaluate(() => window.__xss3)), JSON.stringify(evil));
+    ok('sääkortti kertoo, jos tietoja ei ole tai lähde ei vastaa', await mob.evaluate(() =>
+      saaHtml({ data: null, failing: true }).includes('ei juuri nyt saada') && saaHtml(null).includes('haetaan')
+      && saaHtml({ failing: true, fetched_at: new Date(Date.now() - 5 * 3600000).toISOString(),
+        data: { temp: 2, hours: [], days: [] } }).includes('Tiedot ovat ajalta')));
     ok('etusivun kotityökortti näyttää kahden viikon sisällä erääntyvät',
       (await mob.$$('.dash-chores li')).length === 1 && (await mob.textContent('.dash-chores')).includes('Testaa palovaroittimet'));
     await mob.click('[data-choredone]'); await mob.waitForTimeout(600);

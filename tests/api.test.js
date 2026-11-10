@@ -45,7 +45,9 @@ const delCat = (id, password, cookie) =>
 
 async function main() {
   // Siemen + palvelin eristettyyn hakemistoon
-  const env = { ...process.env, ELAMA_DATA_DIR: TMP, PORT: String(PORT) };
+  // ELAMA_SOURCES=off: palvelin ei hae säätä verkosta testien aikana
+  // (lähteiden haku testataan valepalvelimella: tests/sources.test.js).
+  const env = { ...process.env, ELAMA_DATA_DIR: TMP, PORT: String(PORT), ELAMA_SOURCES: 'off' };
   spawnSync(process.execPath, ['seed.js'], { cwd: ROOT, env });
   const server = spawn(process.execPath, ['server.js'], { cwd: ROOT, env, stdio: 'ignore' });
   try {
@@ -519,6 +521,19 @@ async function main() {
     ok('kauppalistan rivit voi poistaa', (await jget('/api/shopping')).length === 0);
     const hdr = await fetch(B + '/', { headers: H() });
     ok('kamera sallittu vain omalle sivulle', (hdr.headers.get('permissions-policy') || '').includes('camera=(self)'));
+
+    // --- Etusivun ulkoiset lähteet (sää) ---
+    ok('lähteiden data vaatii kirjautumisen', await status('GET', '/api/dashboard', null, '') === 401);
+    const dash = await jget('/api/dashboard');
+    ok('sää on mukana lähteissä, ennen ensimmäistä hakua tyhjänä',
+      dash.saa && dash.saa.data === null && dash.saa.failing === false && dash.saa.fetched_at === null, JSON.stringify(dash));
+    ok('lukija näkee sään', await status('GET', '/api/dashboard', null, V_COOKIE) === 200);
+    ok('lähteiden dataa ei voi kirjoittaa rajapinnasta', await status('POST', '/api/dashboard', { saa: {} }) === 404
+      && await status('PUT', '/api/dashboard', { saa: {} }) === 404);
+    const idxRes = await fetch(B + '/', { headers: H() });
+    ok('selain ei saa ottaa yhteyttä ulos (CSP connect-src self)',
+      /connect-src 'self'/.test(idxRes.headers.get('content-security-policy') || '')
+      && !(await idxRes.text()).includes('opendata.fmi.fi'));
 
     // --- Offline ---
     const offRes = await fetch(B + '/offline', { headers: H() });

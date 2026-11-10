@@ -84,11 +84,18 @@ lisätä, järjestää ja piilottaa. Nämä toimivat jo:
 | **Muistiinpanot** | Pikakirjaus ja viimeisimmät merkinnät |
 | **Kauppalista** | Ostettavat kaupan kiertojärjestyksessä + pikalisäys |
 | **Varasto: vanhenee pian** | 90 päivän sisällä vanhenevat tuotteet |
+| **Sää** | Helsingin sää nyt (lämpötila, tuuli, kosteus), ennuste kolmen tunnin jaksoissa ja kolmelle päivälle |
 
-Auringonnousuajat **lasketaan laitteessa** – niitäkään ei haeta verkosta.
+Auringonnousuajat **lasketaan laitteessa**, niitä ei haeta verkosta.
 
-**Paikanpitäjinä** näkyvät Uutiset, Sää, Euribor ja Sähkön hinta. Ne kertovat
-suoraan ettei lähdettä ole vielä kytketty – ks. seuraava luku.
+**Sää** tulee Ilmatieteen laitoksen avoimesta datasta (lisenssi CC BY 4.0,
+lähde mainitaan kortissa). Palvelin hakee havainnot ja ennusteen 20 minuutin
+välein, avainta tai tiliä ei tarvita. Jos Ilmatieteen laitos ei vastaa,
+kortti näyttää viimeisimmän tiedon ja kertoo sen iän. Sandboxissa näkyy
+esimerkkisää, koska demo ei hae mitään verkosta.
+
+**Paikanpitäjinä** näkyvät Uutiset, Euribor ja Sähkön hinta. Ne kertovat
+suoraan, ettei lähdettä ole vielä kytketty: ks. seuraava luku.
 
 **Pohjasta peritty ja valmiina:** ohjeet ja monitasoiset kategoriat, haku (myös
 liitetiedostojen sisällöstä), liitteet ja kuvat tekstin seassa, versiohistoria,
@@ -110,14 +117,16 @@ tallennetaan välimuistiin ja tarjoillaan valmiina. Syyt:
 
 Vaiheet uudelle lähteelle:
 
-1. `sources/<nimi>.js` – hakee datan ja palauttaa olion
-2. `server.js` ajastaa haun ja tallentaa tuloksen (SQLite)
+1. `sources/<nimi>.js`: hakee datan ja palauttaa olion (malli: `sources/saa.js`)
+2. Lisää lähde `dashboard-sources.js`:n listaan. Se ajastaa haun ja tallentaa
+   tuloksen (SQLite)
 3. `GET /api/dashboard` palauttaa lähteiden viimeisimmät arvot
-4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla
+4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla (malli: sääkortti)
+
+Sään paikkakunnan voi vaihtaa `sources/saa.js`:n alusta (`PLACE`).
 
 ### Lähde-ehdokkaat (käyttöehdot tarkistettava)
 
-- **Sää:** Ilmatieteen laitoksen avoin data tai Open-Meteo – ilmaisia
 - **Uutiset:** RSS-syötteet. Näytä otsikko + linkki, älä kopioi koko artikkelia
 - **Euribor:** vaatii selvityksen. Virallinen julkaisija on EMMI ja jakelulla on
   ehtoja; Suomen Pankki ja EKP ovat avoimempia vaihtoehtoja
