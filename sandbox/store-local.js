@@ -6,7 +6,14 @@
 // TARKOITUS: ulkoasun hiominen ja demo ilman asennusta. Data on vain tässä
 // selaimessa; tyhjennä selaimen tallennustila nollataksesi.
 
-const LS_KEY = 'elama_sandbox_v1';
+// v2: demoon lisättiin varaston ja kauppalistan esimerkkidata.
+const LS_KEY = 'elama_sandbox_v2';
+
+// Varaston, kauppalistan ja kotitöiden säännöt tulevat samasta tiedostosta
+// kuin palvelimella (public/koti-shared.js), joten ne eivät voi erkaantua.
+// Määriteltävä ENNEN alustusta (ensureSeeded): vanhan datan täydennys
+// käyttää näitä heti latauksessa.
+const K = KotiShared;
 
 // ---------- localStorage-malli ----------
 function load() {
@@ -254,13 +261,35 @@ Merkitse päättymispäivät muistutuksiin.`, 'Minä', 'sopimus, vakuutus, kilpa
   );
 
   // Esimerkkejä toistuvista kotitöistä (yksi myöhässä, jotta kuittaus näkyy demossa).
-  const today = KotiShared.todayISO();
+  const today = K.todayISO();
+  const inDays = (days) => K.addInterval(today, days, 'day');
   const chore = (title, every_n, unit, days, note) => DB.chores.push({
-    id: nextId(), title, note: note || '', every_n, unit, next_due: KotiShared.addInterval(today, days, 'day'),
+    id: nextId(), title, note: note || '', every_n, unit, next_due: inDays(days),
     last_done_at: '', last_done_by: '', created_at: nowISO(), created_by: 'Minä' });
   chore('Puhdista liesituulettimen suodatin', 3, 'month', -4);
   chore('Testaa palovaroittimet', 1, 'month', 6);
   chore('Vaihda palovaroittimen paristo', 1, 'year', 120, '9 V paristo');
+
+  // Esimerkkivarasto: mukana vanhentunut, pian vanheneva ja kaksi alle
+  // tavoitemäärän olevaa tuotetta, jotta ostoehdotukset näkyvät heti.
+  const pantry = (name, category, qty, days, target_qty, barcode) => {
+    DB.pantry.push({ id: nextId(), name, barcode: barcode || '', category, qty, target_qty: target_qty || 0,
+      best_before: days === null ? '' : inDays(days), created_at: nowISO(), created_by: 'Minä', updated_at: nowISO() });
+    if (barcode) DB.pantryCatalog[barcode] = { barcode, name, category };
+  };
+  pantry('Vesi 1,5 l', 'Juomavesi', 8, 400, 20);
+  pantry('Hernekeitto 435 g', 'Ruoka', 4, 12, 0, '6408430000258');
+  pantry('Tonnikala', 'Ruoka', 6, 700);
+  pantry('Näkkileipä', 'Ruoka', 2, 200);
+  pantry('Särkylääke', 'Ensiapu ja lääkkeet', 1, -5);
+  pantry('Paristot AA', 'Paristot ja valo', 2, null, 8);
+
+  // Esimerkkikauppalista usealta osastolta + yksi jo ostettu.
+  const shop = (text, qty, done) => DB.shopping.push({
+    id: nextId(), text, qty: qty || '', section: K.guessSection(text), added_by: 'Minä', created_at: nowISO(),
+    done_at: done ? nowISO() : null, done_by: done ? 'Minä' : '' });
+  shop('Maito', '2 l'); shop('Banaanit'); shop('Ruisleipä'); shop('Jauheliha', '400 g');
+  shop('Kahvi'); shop('Pakastepizza', '2 kpl'); shop('Tiskiaine'); shop('Kananmunat', '', true);
 
   save(DB);
 }
@@ -341,9 +370,6 @@ function makeSnippet(text, q) {
   return (start > 0 ? '…' : '') + plain.slice(start, end).trim() + (end < plain.length ? '…' : '');
 }
 
-// Varaston, kauppalistan ja kotitöiden säännöt tulevat samasta tiedostosta
-// kuin palvelimella (public/koti-shared.js), joten ne eivät voi erkaantua.
-const K = KotiShared;
 // Saman tuotteen muut rivit (sama nimi, eri päiväys).
 const pantrySiblings = (name, exceptId) =>
   DB.pantry.filter((r) => r.id !== exceptId && K.nameKey(r.name) === K.nameKey(name));

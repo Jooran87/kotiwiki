@@ -359,6 +359,20 @@ async function main() {
     const mob = await browser.newPage({ viewport: { width: 390, height: 800 } });
     mob.on('pageerror', (e) => errors.push('mob: ' + e.message));
     await mob.goto(fileUrl); await mob.waitForTimeout(800);
+    // Demodata: varastossa ja kauppalistalla on valmiiksi kokeiltavaa.
+    await mob.evaluate(() => { location.hash = '#/kauppalista'; }); await mob.waitForTimeout(500);
+    ok('demossa on valmis kauppalista usealta osastolta', (await mob.$$('#shopOpen .shop-sec')).length >= 5
+      && (await mob.$$('#shopOpen .shop-row')).length >= 6);
+    const demoSug = await mob.textContent('#shopSuggestCard');
+    ok('demossa näkyvät ostoehdotukset varastosta heti', demoSug.includes('Vesi 1,5 l') && demoSug.includes('12 kpl')
+      && demoSug.includes('Särkylääke') && demoSug.includes('vanhentunut'), demoSug);
+    // Testit jatkuvat tyhjästä varastosta ja kauppalistasta.
+    await mob.evaluate(async () => {
+      for (const i of (await Store.pantry.list()).items) await Store.pantry.remove(i.id);
+      for (const i of await Store.shopping.list()) await Store.shopping.remove(i.id);
+      location.hash = '#/';
+    });
+    await mob.waitForTimeout(500);
     ok('alapalkki näkyy puhelimessa', await mob.isVisible('#bottomNav'));
     ok('alapalkissa 5 kohtaa', (await mob.$$('.bn-item')).length === 5);
     await mob.click('.bn-item[data-bnav="shopping"]'); await mob.waitForTimeout(400);
@@ -419,6 +433,13 @@ async function main() {
     })());
     ok('kauppalista ei aiheuta vaakavieritystä puhelimessa',
       await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    // Regressio: sandbox ei käynnistynyt uudelleen, kun kauppalistalla oli rivejä
+    // (vanhan datan täydennys käytti sääntöjä ennen kuin ne oli alustettu).
+    const rowsBefore = (await mob.$$('#shopOpen .shop-row')).length;
+    await mob.reload(); await mob.waitForTimeout(900);
+    ok('sandbox käynnistyy uudelleen, kun kauppalistalla on tuotteita', rowsBefore > 0
+      && (await mob.$$('#shopOpen .shop-row')).length === rowsBefore
+      && !(await mob.textContent('#content')).includes('käynnistys epäonnistui'));
 
     // ===== Varmuusvarasto (sandbox) =====
     await mob.click('.bn-item[data-bnav="pantry"]'); await mob.waitForTimeout(400);

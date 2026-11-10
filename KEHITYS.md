@@ -149,7 +149,7 @@ pitää Noden piilossa Caddyn takana.
    seed-dataan – tee näin vain kun uusi seed-sisältö on demolle tärkeä).
 5. **Ulkoasu-/logiikkamuutoksen jälkeen aina** `node sandbox/build-single.js`
    ja committaa syntynyt elama-sandbox.html.
-6. **`npm test` vihreänä (388 testiä) ennen jokaista committia.** Testit ajavat
+6. **`npm test` vihreänä (391 testiä) ennen jokaista committia.** Testit ajavat
    palvelimen eristetyssä ELAMA_DATA_DIR-hakemistossa – eivät koske oikeaa dataa.
 7. **Tekijätieto tulee AINA istunnosta** (`req.user.name`) – älä koskaan luota
    selaimen author-kenttään.
@@ -160,6 +160,13 @@ pitää Noden piilossa Caddyn takana.
    backups -kansioita.
 
 ## Sudenkuopat (älä astu uudelleen)
+
+- **store-local.js alustetaan heti latauksessa** (`const ready = ensureSeeded()`
+  tiedoston alkupäässä). Kaikki, mitä `ensureSeeded` tai `migrateExisting`
+  käyttää, on määriteltävä sen YLÄPUOLELLA. Muuten tyhjä demo toimii, mutta
+  sandbox kaatuu vasta uudelleenlatauksessa, kun selaimessa on vanhaa dataa
+  ("Cannot access ... before initialization"). Testi lataa sivun uudelleen
+  datan kanssa juuri tämän takia.
 
 - **Safari + file://** estää IndexedDB:n → sandboxin blob-toiminnot on
   kääritty try/catchiin; älä tee IndexedDB:stä kriittistä polkua.
@@ -302,7 +309,7 @@ kokeiluvaiheen kytkin on poistettu.
 
 ```bash
 npm start                      # palvelin (PORT=xxxx vaihtaa portin)
-npm test                       # 388 testiä eristetyssä ympäristössä
+npm test                       # 391 testiä eristetyssä ympäristössä
 npm run backup                 # varmuuskopio backups/-kansioon
 node sandbox/build-single.js   # kokoa jaettava sandbox-tiedosto
 node reindex.js                # liitteiden hakuindeksin uudelleenajo
