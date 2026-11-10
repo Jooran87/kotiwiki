@@ -8,6 +8,8 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const css = fs.readFileSync(path.join(root, 'public', 'styles.css'), 'utf8');
+// Välilehden kuvake luetaan tiedostosta, jottei upotettu kopio jää jälkeen.
+const favicon = fs.readFileSync(path.join(root, 'public', 'favicon.svg')).toString('base64');
 // Designehdotus 2a: fonttien url() korvataan base64-datalla, jotta yhden
 // tiedoston sandbox toimii ilman fonts-kansiota ja ilman verkkoa.
 const design2a = fs.readFileSync(path.join(root, 'public', 'design2a.css'), 'utf8')
@@ -29,7 +31,7 @@ const html = `<!DOCTYPE html>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oma dashboard (Sandbox)</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiNlYTZhMWUiLz48dGV4dCB4PSIzMiIgeT0iNDUiIGZvbnQtZmFtaWx5PSJBcmlhbCxIZWx2ZXRpY2Esc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjgwMCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UDwvdGV4dD48L3N2Zz4=" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,${favicon}" />
   <script>
     /* Teema ennen renderöintiä, ettei sivu välähdä väärällä värillä */
     (function(){try{var t=localStorage.getItem('elama_theme');
@@ -48,7 +50,7 @@ ${kotiCss}
   <header class="topbar">
     <button id="menuToggle" class="icon-btn" title="Valikko" aria-label="Valikko">☰</button>
     <div class="brand" data-nav="home">
-      <span class="brand-mark">O</span>
+      <span class="brand-mark"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M13 30.5 32 13l19 17.5M18.5 27v24h27V27" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="29.6" cy="43" rx="5.2" ry="3.9" transform="rotate(-22 29.6 43)" fill="currentColor"/><path d="M34.3 42V28.5c4.2.8 6.4 3.6 5.6 7.6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="brand-text"><strong>Oma</strong><small>DASHBOARD · OHJEET</small></span>
     </div>
     <span class="sandbox-badge" title="Demo: data tallentuu vain tähän selaimeen">Sandbox</span>

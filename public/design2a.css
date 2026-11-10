@@ -104,6 +104,12 @@
 }
 :root[data-design="2a"] .content { background: var(--app); }
 
+/* Logomerkki: koti ja nuotti. Kuvio on upotettu SVG, joka perii värin:
+   --acttx on vaaleassa teemassa valkoinen ja tummassa tumma, joten kuvio
+   erottuu oranssista pohjasta molemmissa (4,9:1 ja 6,4:1). */
+:root[data-design="2a"] .brand-mark { color: var(--acttx); }
+:root[data-design="2a"] .brand-mark svg { display: block; width: 100%; height: 100%; }
+
 /* ---- Yläpalkki ja sivupalkki: kiinteät mitat vain työpöydällä ----
    Alle 781 px styles.css tekee sivupalkista off-canvasin ja kutistaa
    yläpalkin. Jos 2a:n mitat pätisivät siellä, yläpalkki työntyisi ruudun
@@ -115,7 +121,6 @@
 }
 :root[data-design="2a"] .brand-mark {
   width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
-  color: #fff; font-size: 15px; font-weight: 700;
 }
 :root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 :root[data-design="2a"] .brand-text small { color: var(--tx3); }
