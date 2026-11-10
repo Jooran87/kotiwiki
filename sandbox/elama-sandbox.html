@@ -111,7 +111,7 @@ body {
 .brand-mark {
   width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
   background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-  color: #fff; font-weight: 800; font-size: 18px;
+  color: var(--acttx, #fff); font-weight: 800; font-size: 18px;
   display: flex; align-items: center; justify-content: center;
 }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
@@ -283,8 +283,12 @@ h2 .ic, h3 .ic { margin-right: 7px; }
 .crumbs .sep { margin: 0 5px; opacity: .6; }
 
 /* Buttons */
+/* Tekstiväri tulee 2a-ilmeen parista --act / --acttx: vaaleassa valkoinen,
+   tummassa tumma (#20120A), koska valkoinen teksti kirkkaan oranssin päällä
+   jäi 2,9:1:een. Sama pari kantaa myös .btn.danger-napin tummassa teemassa
+   (tumma teksti punaisella 4,7:1; valkoinen oli 3,8:1). */
 .btn {
-  background: var(--brand); color: #fff; border: none; padding: 9px 16px;
+  background: var(--brand); color: var(--acttx, #fff); border: none; padding: 9px 16px;
   border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;
   transition: background .12s;
 }
@@ -544,7 +548,7 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 
 /* Kiinnitetty tiedote: huomiobanneri sivun ylälaidassa */
 .pin-banner {
-  display: block; background: var(--brand); color: #fff;
+  display: block; background: var(--brand); color: var(--acttx, #fff);
   border-radius: 12px; padding: 12px 16px; margin-bottom: 14px;
   text-decoration: none; box-shadow: 0 4px 14px rgba(234, 106, 30, .28);
 }
@@ -623,7 +627,7 @@ mark { background: var(--mark-bg); color: var(--mark-text); padding: 0 2px; bord
 /* Takaisin ylös (mobiili/pitkät sivut) */
 #backTop {
   position: fixed; right: 18px; bottom: 18px; width: 42px; height: 42px;
-  border-radius: 50%; border: none; background: var(--brand); color: #fff;
+  border-radius: 50%; border: none; background: var(--brand); color: var(--acttx, #fff);
   font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.25);
   opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40;
 }
@@ -813,6 +817,11 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
    - --warn  vaalea #A86A06 (4,4:1) -> #8A5605 (6,1:1)
    Näillä ladotaan 10,5–11,5 px metatekstiä, joten raja on oikeasti tarpeen.
    Muut arvot ovat handoffista sellaisenaan.
+
+   Tumman teeman täytöt ovat kirkkaita, joten niiden päällä teksti on tumma:
+   käytä paria --act / --acttx, älä kiinteää valkoista (#fff oranssilla 2,9:1,
+   vihreällä --ok 2,7:1). styles.css:n .btn, .brand-mark ja #backTop sekä
+   koti.css:n valintamerkki lukevat tekstivärinsä --acttx:stä.
    ========================================================================== */
 
 /* ---- Fontit (paketoitu mukaan: toimii ilman internetiä, OFL-1.1) ---- */
@@ -914,7 +923,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 }
 :root[data-design="2a"] .brand-mark {
   width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
-  color: #fff; font-size: 15px; font-weight: 700;
+  color: var(--acttx); font-size: 15px; font-weight: 700;
 }
 :root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 :root[data-design="2a"] .brand-text small { color: var(--tx3); }
@@ -1070,7 +1079,7 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .d2-cat:hover { background: var(--sel); }
 .d2-catrow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .d2-catname { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-.d2-catnum { font-family: 'Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--cat-accent, var(--tx3)); }
+.d2-catnum { font-family: 'Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--cat-ink, var(--cat-accent, var(--tx3))); }
 .d2-catdesc { font-size: 12.5px; line-height: 1.5; color: var(--tx2); margin-top: 6px; }
 .d2-cat.all {
   border-style: dashed; border-color: var(--line2);
@@ -1109,7 +1118,20 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .d2-rectop { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .d2-recname { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
 .d2-recdate { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); flex: none; }
-.d2-recmeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; margin-top: 6px; color: var(--cat-accent, var(--tx3)); text-transform: uppercase; }
+.d2-recmeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; margin-top: 6px; color: var(--cat-ink, var(--cat-accent, var(--tx3))); text-transform: uppercase; }
+
+/* Kategorian aksentti TEKSTINÄ tummassa teemassa. Paletin värit (CAT_COLORS,
+   app.js) on valittu vaalealle pohjalle ja jäivät tummalla --panel-pinnalla
+   välille 2,2:1 ja 3,4:1. --cat-ink on sama sävy vaalennettuna: 40 % aksenttia, 60 %
+   valkoista. Sekoitus riittää mille tahansa heksavärille (mustakin antaa yli
+   5:1 myös hover-pinnalla), joten käyttäjän oma väri ei voi rikkoa rajaa.
+   Raita, tikku ja sivupalkin merkki käyttävät yhä alkuperäistä --cat-accentia.
+   Ilman aksenttia --cat-ink jää määrittelemättä ja teksti on --tx3 kuten ennen.
+   Vaaleaan teemaan tämä ei vaikuta. */
+:root[data-design="2a"][data-theme="dark"] .d2-cat,
+:root[data-design="2a"][data-theme="dark"] .d2-rec {
+  --cat-ink: color-mix(in srgb, var(--cat-accent) 40%, #fff);
+}
 
 /* ---- Oikea kaista: numerot ---- */
 .d2-num { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
@@ -1210,6 +1232,9 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 @media (prefers-reduced-motion: reduce) { .dash-skel { animation: none; } }
 
 .dash-empty, .dash-err, .dash-todo { padding: 14px 16px; font-size: 13px; color: var(--tx2); }
+/* Tyhjän tilan linkki: ilman väriä selaimen oletussininen on tummalla
+   pinnalla 1,8:1. Vain tummaan teemaan, vaalea säilyy ennallaan. */
+:root[data-design="2a"][data-theme="dark"] .dash-empty a { color: var(--brand); }
 .dash-err { color: var(--crit); display: flex; align-items: center; gap: 7px; }
 .dash-todo strong { display: block; font-size: 13px; color: var(--tx2); margin-bottom: 4px; }
 .dash-todo p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--tx3); }
@@ -1261,6 +1286,12 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 /* ---------- Kauppalista ---------- */
 .shop-add { display: flex; gap: 8px; align-items: stretch; padding: 12px; }
 .shop-add input { flex: 1; min-width: 0; font-size: 16px; } /* 16px: iOS ei zoomaa */
+/* Sama ulkoasu kuin .field input (styles.css); ilman tätä kentät näkyivät
+   selaimen oletuskehyksellä. Koskee myös etusivun kortin pikalisäystä. */
+.shop-add input, .dash-shop-add input {
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none;
+}
+.shop-add input:focus, .dash-shop-add input:focus { border-color: var(--brand); }
 .shop-add .shop-qty-in { flex: 0 0 90px; }
 .shop-list { list-style: none; margin: 8px 0 0; padding: 0; }
 .shop-list .empty { padding: 14px 0; }
@@ -1269,7 +1300,9 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
 .shop-check { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line2, var(--border));
   background: transparent; color: var(--acttx, #fff); display: grid; place-items: center; cursor: pointer; padding: 0; }
 .shop-check .ic { width: 20px; height: 20px; }
-.shop-row.done .shop-check { background: var(--ok, #2f7d46); border-color: var(--ok, #2f7d46); color: #fff; }
+/* Valintamerkki: vaaleassa valkoinen, tummassa tumma (--acttx), koska
+   valkoinen tumman teeman kirkkaan vihreän päällä oli 2,7:1. */
+.shop-row.done .shop-check { background: var(--ok, #2f7d46); border-color: var(--ok, #2f7d46); color: var(--acttx, #fff); }
 .shop-body { flex: 1; min-width: 0; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .shop-text { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .shop-qty { font-size: 13px; color: var(--tx2, var(--muted)); }

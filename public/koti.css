@@ -11,6 +11,12 @@
 /* ---------- Kauppalista ---------- */
 .shop-add { display: flex; gap: 8px; align-items: stretch; padding: 12px; }
 .shop-add input { flex: 1; min-width: 0; font-size: 16px; } /* 16px: iOS ei zoomaa */
+/* Sama ulkoasu kuin .field input (styles.css); ilman tätä kentät näkyivät
+   selaimen oletuskehyksellä. Koskee myös etusivun kortin pikalisäystä. */
+.shop-add input, .dash-shop-add input {
+  padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; outline: none;
+}
+.shop-add input:focus, .dash-shop-add input:focus { border-color: var(--brand); }
 .shop-add .shop-qty-in { flex: 0 0 90px; }
 .shop-list { list-style: none; margin: 8px 0 0; padding: 0; }
 .shop-list .empty { padding: 14px 0; }
@@ -19,7 +25,9 @@
 .shop-check { flex: none; width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line2, var(--border));
   background: transparent; color: var(--acttx, #fff); display: grid; place-items: center; cursor: pointer; padding: 0; }
 .shop-check .ic { width: 20px; height: 20px; }
-.shop-row.done .shop-check { background: var(--ok, #2f7d46); border-color: var(--ok, #2f7d46); color: #fff; }
+/* Valintamerkki: vaaleassa valkoinen, tummassa tumma (--acttx), koska
+   valkoinen tumman teeman kirkkaan vihreän päällä oli 2,7:1. */
+.shop-row.done .shop-check { background: var(--ok, #2f7d46); border-color: var(--ok, #2f7d46); color: var(--acttx, #fff); }
 .shop-body { flex: 1; min-width: 0; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .shop-text { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .shop-qty { font-size: 13px; color: var(--tx2, var(--muted)); }

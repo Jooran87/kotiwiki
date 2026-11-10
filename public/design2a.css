@@ -14,6 +14,11 @@
    - --warn  vaalea #A86A06 (4,4:1) -> #8A5605 (6,1:1)
    Näillä ladotaan 10,5–11,5 px metatekstiä, joten raja on oikeasti tarpeen.
    Muut arvot ovat handoffista sellaisenaan.
+
+   Tumman teeman täytöt ovat kirkkaita, joten niiden päällä teksti on tumma:
+   käytä paria --act / --acttx, älä kiinteää valkoista (#fff oranssilla 2,9:1,
+   vihreällä --ok 2,7:1). styles.css:n .btn, .brand-mark ja #backTop sekä
+   koti.css:n valintamerkki lukevat tekstivärinsä --acttx:stä.
    ========================================================================== */
 
 /* ---- Fontit (paketoitu mukaan: toimii ilman internetiä, OFL-1.1) ---- */
@@ -115,7 +120,7 @@
 }
 :root[data-design="2a"] .brand-mark {
   width: 26px; height: 26px; border-radius: 6px; background: var(--brand);
-  color: #fff; font-size: 15px; font-weight: 700;
+  color: var(--acttx); font-size: 15px; font-weight: 700;
 }
 :root[data-design="2a"] .brand-text strong { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
 :root[data-design="2a"] .brand-text small { color: var(--tx3); }
@@ -271,7 +276,7 @@
 .d2-cat:hover { background: var(--sel); }
 .d2-catrow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .d2-catname { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-.d2-catnum { font-family: 'Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--cat-accent, var(--tx3)); }
+.d2-catnum { font-family: 'Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--cat-ink, var(--cat-accent, var(--tx3))); }
 .d2-catdesc { font-size: 12.5px; line-height: 1.5; color: var(--tx2); margin-top: 6px; }
 .d2-cat.all {
   border-style: dashed; border-color: var(--line2);
@@ -310,7 +315,20 @@
 .d2-rectop { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .d2-recname { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
 .d2-recdate { font-family: 'Plex Mono', monospace; font-size: 11px; color: var(--tx3); flex: none; }
-.d2-recmeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; margin-top: 6px; color: var(--cat-accent, var(--tx3)); text-transform: uppercase; }
+.d2-recmeta { font-family: 'Plex Mono', monospace; font-size: 11.5px; margin-top: 6px; color: var(--cat-ink, var(--cat-accent, var(--tx3))); text-transform: uppercase; }
+
+/* Kategorian aksentti TEKSTINÄ tummassa teemassa. Paletin värit (CAT_COLORS,
+   app.js) on valittu vaalealle pohjalle ja jäivät tummalla --panel-pinnalla
+   välille 2,2:1 ja 3,4:1. --cat-ink on sama sävy vaalennettuna: 40 % aksenttia, 60 %
+   valkoista. Sekoitus riittää mille tahansa heksavärille (mustakin antaa yli
+   5:1 myös hover-pinnalla), joten käyttäjän oma väri ei voi rikkoa rajaa.
+   Raita, tikku ja sivupalkin merkki käyttävät yhä alkuperäistä --cat-accentia.
+   Ilman aksenttia --cat-ink jää määrittelemättä ja teksti on --tx3 kuten ennen.
+   Vaaleaan teemaan tämä ei vaikuta. */
+:root[data-design="2a"][data-theme="dark"] .d2-cat,
+:root[data-design="2a"][data-theme="dark"] .d2-rec {
+  --cat-ink: color-mix(in srgb, var(--cat-accent) 40%, #fff);
+}
 
 /* ---- Oikea kaista: numerot ---- */
 .d2-num { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
@@ -411,6 +429,9 @@
 @media (prefers-reduced-motion: reduce) { .dash-skel { animation: none; } }
 
 .dash-empty, .dash-err, .dash-todo { padding: 14px 16px; font-size: 13px; color: var(--tx2); }
+/* Tyhjän tilan linkki: ilman väriä selaimen oletussininen on tummalla
+   pinnalla 1,8:1. Vain tummaan teemaan, vaalea säilyy ennallaan. */
+:root[data-design="2a"][data-theme="dark"] .dash-empty a { color: var(--brand); }
 .dash-err { color: var(--crit); display: flex; align-items: center; gap: 7px; }
 .dash-todo strong { display: block; font-size: 13px; color: var(--tx2); margin-bottom: 4px; }
 .dash-todo p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--tx3); }
