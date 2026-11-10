@@ -53,6 +53,7 @@ function esc(s) {
 // Käyttöliittymän kuvakkeet (ei kategorioiden käyttäjävalittavia emojeja).
 const ICON_PATHS = {
   home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/>',
+  repeat: '<path d="M4.5 11a7.5 7.5 0 0 1 13-4.5L20 9"/><path d="M20 4.5V9h-4.5"/><path d="M19.5 13a7.5 7.5 0 0 1-13 4.5L4 15"/><path d="M4 19.5V15h4.5"/>',
   announce: '<path d="M3 11v2.5l13 5V6z"/><path d="M16 8.5a3.5 3.5 0 0 1 0 7"/><path d="M7 14v4.5h3V15"/>',
   note: '<path d="M5 3.5h9l5 5V20.5H5z"/><path d="M8 12h8M8 16h5"/>',
   terms: '<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v18H6.5A1.5 1.5 0 0 1 5 19.5z"/><path d="M9 3v18"/>',
@@ -77,7 +78,6 @@ const ICON_PATHS = {
   add: '<path d="M12 5v14M5 12h14"/>',
   warn: '<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5v.2"/>',
   arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
   chevUp: '<path d="M6 15l6-6 6 6"/>',
   chevDown: '<path d="M6 9l6 6 6-6"/>',
   chevRight: '<path d="M9 6l6 6-6 6"/>',
@@ -643,6 +643,7 @@ async function router() {
     if (parts.length === 0) { setActiveNav('home'); return await viewHome(); }
     if (parts[0] === 'kauppalista') { setActiveNav('shopping'); return await Koti.viewShopping(); }
     if (parts[0] === 'varasto') { setActiveNav('pantry'); return await Koti.viewPantry(); }
+    if (parts[0] === 'kotityot') { setActiveNav('chores'); return await Koti.viewChores(); }
     if (parts[0] === 'paivakirja') { setActiveNav('shiftlog'); return await viewShiftLog(); }
     if (parts[0] === 'numerot') { setActiveNav('contacts'); return await viewContacts(); }
     if (parts[0] === 'muistutukset') { setActiveNav('announcements'); return await viewAnnouncements(); }
@@ -670,14 +671,6 @@ const shortDate = (iso) => {
   const d = new Date(iso);
   return isNaN(d) ? '' : `${d.getDate()}.${d.getMonth() + 1}.`;
 };
-
-// Poikkeuksen tilamerkki. Nykyisessä datassa ei ole voimassaoloaikoja
-// (ne ovat designin toivelistalla), joten kiinnitetty = voimassa nyt.
-function noticeBadge(a) {
-  return a.pinned
-    ? '<span class="d2-badge now">Voimassa</span>'
-    : '<span class="d2-badge soon">Tiedote</span>';
-}
 
 async function viewHome() {
   currentCategoryId = null; renderSidebar();
@@ -1151,7 +1144,7 @@ async function viewPageEdit(id, presetCat) {
           </span>
         </div>
         <input type="file" id="imgFileInput" accept="image/*" multiple style="display:none" />
-        <textarea id="contentInput" placeholder="Kirjoita työohje tähän…">${esc(p.content)}</textarea>
+        <textarea id="contentInput" placeholder="Kirjoita ohje tähän…">${esc(p.content)}</textarea>
         <div id="previewBox" class="doc preview-box" style="display:none"></div>
         <p class="muted" style="margin:6px 0 0">Kuva tekstin sekaan: <strong>Lisää kuva</strong> -napista,
           tai liitä kuvakaappaus suoraan tekstiin (Ctrl/Cmd+V). Kuva ilmestyy siihen kohtaan, missä kursori on.</p>
@@ -1518,11 +1511,11 @@ async function viewAnnouncements(editId) {
       <h3 style="margin-top:0">${editing ? 'Muokkaa muistutusta' : 'Uusi muistutus'}</h3>
       <div class="field">
         <label>Otsikko</label>
-        <input type="text" id="annTitle" value="${editing ? esc(editing.title) : ''}" placeholder="Esim. Kohteen 4021 huoltokatko 12.7." />
+        <input type="text" id="annTitle" value="${editing ? esc(editing.title) : ''}" placeholder="Esim. Auton katsastus maaliskuussa" />
       </div>
       <div class="field">
         <label>Sisältö</label>
-        <textarea id="annContent" style="min-height:110px" placeholder="Tiedotteen teksti…">${editing ? esc(editing.content) : ''}</textarea>
+        <textarea id="annContent" style="min-height:110px" placeholder="Muistutuksen teksti…">${editing ? esc(editing.content) : ''}</textarea>
       </div>
       <label class="row" style="margin-bottom:12px; cursor:pointer">
         <input type="checkbox" id="annPinned" ${editing && editing.pinned ? 'checked' : ''} />
@@ -1534,7 +1527,7 @@ async function viewAnnouncements(editId) {
       </div>
     </div>
     <div id="annList">
-      ${anns.map((a) => announcementHtml(a)).join('') || '<p class="empty">Ei tiedotteita vielä.</p>'}
+      ${anns.map((a) => announcementHtml(a)).join('') || '<p class="empty">Ei muistutuksia vielä.</p>'}
     </div>`;
 
   $('#annSaveBtn').onclick = async () => {
@@ -1937,7 +1930,7 @@ document.addEventListener('click', async (e) => {
   if (cat) { location.hash = '#/kohde/' + cat.dataset.cat; return; }
   const nav = e.target.closest('[data-nav]');
   if (nav) {
-    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
+    const routes = { home: '#/', shopping: '#/kauppalista', pantry: '#/varasto', chores: '#/kotityot', shiftlog: '#/paivakirja', contacts: '#/numerot', announcements: '#/muistutukset', terms: '#/termipankki', links: '#/linkit', users: '#/kayttajat', trash: '#/roskakori' };
     location.hash = routes[nav.dataset.nav] || '#/';
     return;
   }

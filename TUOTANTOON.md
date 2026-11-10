@@ -83,6 +83,12 @@ tulevan Caddyn osoitteesta, ja hyökkääjä voisi lukita teidät molemmat ulos)
 Wiki kuuntelee vain osoitteessa 127.0.0.1, joten sitä ei pääse ohittamaan
 Caddyn ohi.
 
+**Sää:** palvelin hakee Helsingin sään Ilmatieteen laitokselta
+(`opendata.fmi.fi`) noin 20 minuutin välein. Erillisiä asetuksia ei tarvita:
+palomuuri sallii palvelimelta lähtevän liikenteen, eikä rajapinta vaadi
+avainta. Jos haluat haut pois päältä, lisää palvelutiedostoon rivi
+`Environment=ELAMA_SOURCES=off`.
+
 ---
 
 ## 4. Käyttöönotto [Sinä]

@@ -1,7 +1,8 @@
 # Kotiwiki (oma dashboard)
 
 Henkilökohtainen aloitussivu: **muistutukset, omat ohjeet, päivän tiedot,
-yhteinen kauppalista ja varmuusvaraston päiväysseuranta** yhdellä silmäyksellä. Rakennettu Palmian työohje-wikin pohjalle – sama moottori,
+yhteinen kauppalista, varmuusvaraston päiväysseuranta ja toistuvat kotityöt**
+yhdellä silmäyksellä. Rakennettu aiemman ohjewikin pohjalle: sama moottori,
 eri käyttötarkoitus.
 
 Toimii omalla koneella, kotiverkon pikkukoneella tai omalla pienellä
@@ -20,6 +21,15 @@ kaikki data on omassa SQLite-tietokannassa.
   ne voi palauttaa tai tyhjentää kerralla.
 - **Muutokset näkyvät kaikilla laitteilla heti** (Server-Sent Events): kun
   toinen lisää tai ruksii tuotteen, se päivittyy toisen puhelimeen sekunnissa.
+- **Ryhmittely kaupan reitin mukaan:** ostettavat näkyvät osastoittain siinä
+  järjestyksessä, jossa kauppa kierretään (hedelmät ja vihannekset, leipä,
+  liha ja kala, maito, kuivatuotteet, juomat, makeiset, pakasteet, hygienia,
+  koti ja siivous, lemmikit, muu). Osasto päätellään itsestään tuotteen
+  nimestä tai varaston kategoriasta. Jos arvaus menee väärin, vaihda osasto
+  rivin kauppakuvakkeesta: valinta muistetaan seuraavalla kerralla.
+- **Ehdotukset varastosta:** jos varaston tuote on alle tavoitemäärän tai
+  vanhenee 30 päivän sisällä, se näkyy listan yläpuolella ja siirtyy listalle
+  yhdellä napautuksella (tai kaikki kerralla).
 - Sama ostamaton tuote ei tuplaannu. Aiemmin ostetut tulevat ehdotuksina.
 - Rivillä näkyy kuka lisäsi ja kuka osti (nimi tulee kirjautumisesta).
 - Etusivulla oma kortti, josta voi myös lisätä suoraan.
@@ -36,7 +46,27 @@ kaikki data on omassa SQLite-tietokannassa.
 - Lista vanhenemisjärjestyksessä värikoodein: punainen = vanhentunut,
   oranssi = alle 30 pv, keltainen = alle 90 pv, vihreä = kunnossa.
 - **Käytetty 1** vähentää määrää, **Listalle** lisää tuotteen kauppalistalle.
+- **Tavoitemäärä** (esim. vettä aina 20 kpl): kun tuotetta on vähemmän,
+  varasto ja kauppalista ehdottavat puuttuvan määrän ostamista. Tavoite
+  koskee tuotetta, eli saman nimiset erät lasketaan yhteen. Loppunut
+  tavoitteellinen tuote jää näkyviin merkinnällä "loppu".
+- Kun tuote loppuu kokonaan, sivu tarjoaa sitä kauppalistalle yhdellä
+  napautuksella.
 - Etusivun kortti näyttää 90 päivän sisällä vanhenevat.
+
+### Toistuvat kotityöt
+
+- Huollot ja kotityöt, jotka toistuvat päivien, viikkojen, kuukausien tai
+  vuosien välein (esim. palovaroittimen paristo kerran vuodessa,
+  liesituulettimen suodatin 3 kuukauden välein).
+- **Tehty** kuittaa tehtävän, ja seuraava kerta lasketaan kuittauspäivästä.
+  Rivillä näkyy, kuka kuittasi ja milloin.
+- Lista on eräpäivän mukaisessa järjestyksessä: myöhässä olevat punaisella,
+  viikon sisällä erääntyvät oranssilla.
+- Seuraavan kerran voi asettaa myös käsin (esim. "ilmanvaihdon suodattimet
+  keväällä": toistuu vuoden välein, ensimmäinen kerta huhtikuussa).
+- Etusivun kortti näyttää myöhässä olevat ja kahden viikon sisällä erääntyvät.
+  Tehtävän voi kuitata suoraan kortista.
 
 ### Etusivu
 
@@ -47,17 +77,25 @@ lisätä, järjestää ja piilottaa. Nämä toimivat jo:
 |---|---|
 | **Päivä** | Kellonaika, päivämäärä, viikkonumero sekä auringonnousu ja -lasku Helsingissä ja Rovaniemellä |
 | **Muistutukset** | Kiinnitetyt ja tuoreimmat muistutukset |
+| **Kotityöt** | Myöhässä olevat ja kahden viikon sisällä erääntyvät tehtävät + kuittaus |
 | **Ohjeet** | Omat kategoriat ja niiden ohjemäärät |
 | **Viimeksi päivitetyt** | Mitä olet viimeksi muokannut |
 | **Tärkeät numerot** | Hätänumero korostettuna, muut alla |
 | **Muistiinpanot** | Pikakirjaus ja viimeisimmät merkinnät |
-| **Kauppalista** | Ostettavat + pikalisäys |
+| **Kauppalista** | Ostettavat kaupan kiertojärjestyksessä + pikalisäys |
 | **Varasto: vanhenee pian** | 90 päivän sisällä vanhenevat tuotteet |
+| **Sää** | Helsingin sää nyt (lämpötila, tuuli, kosteus), ennuste kolmen tunnin jaksoissa ja kolmelle päivälle |
 
-Auringonnousuajat **lasketaan laitteessa** – niitäkään ei haeta verkosta.
+Auringonnousuajat **lasketaan laitteessa**, niitä ei haeta verkosta.
 
-**Paikanpitäjinä** näkyvät Uutiset, Sää, Euribor ja Sähkön hinta. Ne kertovat
-suoraan ettei lähdettä ole vielä kytketty – ks. seuraava luku.
+**Sää** tulee Ilmatieteen laitoksen avoimesta datasta (lisenssi CC BY 4.0,
+lähde mainitaan kortissa). Palvelin hakee havainnot ja ennusteen 20 minuutin
+välein, avainta tai tiliä ei tarvita. Jos Ilmatieteen laitos ei vastaa,
+kortti näyttää viimeisimmän tiedon ja kertoo sen iän. Sandboxissa näkyy
+esimerkkisää, koska demo ei hae mitään verkosta.
+
+**Paikanpitäjinä** näkyvät Uutiset, Euribor ja Sähkön hinta. Ne kertovat
+suoraan, ettei lähdettä ole vielä kytketty: ks. seuraava luku.
 
 **Pohjasta peritty ja valmiina:** ohjeet ja monitasoiset kategoriat, haku (myös
 liitetiedostojen sisällöstä), liitteet ja kuvat tekstin seassa, versiohistoria,
@@ -79,14 +117,16 @@ tallennetaan välimuistiin ja tarjoillaan valmiina. Syyt:
 
 Vaiheet uudelle lähteelle:
 
-1. `sources/<nimi>.js` – hakee datan ja palauttaa olion
-2. `server.js` ajastaa haun ja tallentaa tuloksen (SQLite)
+1. `sources/<nimi>.js`: hakee datan ja palauttaa olion (malli: `sources/saa.js`)
+2. Lisää lähde `dashboard-sources.js`:n listaan. Se ajastaa haun ja tallentaa
+   tuloksen (SQLite)
 3. `GET /api/dashboard` palauttaa lähteiden viimeisimmät arvot
-4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla
+4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla (malli: sääkortti)
+
+Sään paikkakunnan voi vaihtaa `sources/saa.js`:n alusta (`PLACE`).
 
 ### Lähde-ehdokkaat (käyttöehdot tarkistettava)
 
-- **Sää:** Ilmatieteen laitoksen avoin data tai Open-Meteo – ilmaisia
 - **Uutiset:** RSS-syötteet. Näytä otsikko + linkki, älä kopioi koko artikkelia
 - **Euribor:** vaatii selvityksen. Virallinen julkaisija on EMMI ja jakelulla on
   ehtoja; Suomen Pankki ja EKP ovat avoimempia vaihtoehtoja

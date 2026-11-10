@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed.js",
-    "test": "node tests/api.test.js && node tests/backup.test.js && node tests/ui.test.js",
+    "test": "node tests/api.test.js && node tests/sources.test.js && node tests/backup.test.js && node tests/ui.test.js",
     "backup": "node backup.js"
   },
   "dependencies": {

@@ -18,6 +18,7 @@ const design2a = fs.readFileSync(path.join(root, 'public', 'design2a.css'), 'utf
     return `url(data:font/woff2;base64,${buf.toString('base64')})`;
   });
 const offlineTpl = fs.readFileSync(path.join(root, 'public', 'offline-template.js'), 'utf8');
+const kotiShared = fs.readFileSync(path.join(root, 'public', 'koti-shared.js'), 'utf8');
 const storeLocal = fs.readFileSync(path.join(__dirname, 'store-local.js'), 'utf8');
 const dashboard = fs.readFileSync(path.join(root, 'public', 'dashboard.js'), 'utf8');
 const cardsJs = fs.readFileSync(path.join(root, 'public', 'cards.js'), 'utf8');
@@ -70,6 +71,7 @@ ${kotiCss}
         <button class="nav-link" data-nav="shopping" data-icon="cart"><span>Kauppalista</span></button>
         <button class="nav-link" data-nav="pantry" data-icon="box"><span>Varmuusvarasto</span></button>
         <button class="nav-link" data-nav="announcements" data-icon="announce"><span>Muistutukset</span></button>
+        <button class="nav-link" data-nav="chores" data-icon="repeat"><span>Kotityöt</span></button>
         <button class="nav-link" data-nav="shiftlog" data-icon="note"><span>Päiväkirja</span></button>
         <button class="nav-link" data-nav="contacts" data-icon="contact"><span>Tärkeät numerot</span></button>
         <button class="nav-link" data-nav="terms" data-icon="terms"><span>Termipankki</span></button>
@@ -101,6 +103,9 @@ ${kotiCss}
   <div id="toast" class="toast"></div>
   <script>
 ${offlineTpl}
+  </script>
+  <script>
+${kotiShared}
   </script>
   <script>
 ${storeLocal}
