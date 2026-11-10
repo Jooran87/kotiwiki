@@ -1312,6 +1312,53 @@ li:hover > .row-order, .contact:hover .row-order, .link-row:hover .row-order,
   background: var(--warnbg, #fff3d6); color: var(--warn, #8a5605); }
 .wx-foot { margin-top: 10px; font-size: 10.5px; line-height: 1.4; color: var(--tx3, var(--muted)); }
 
+/* ---------- Sähkön hinta (cards.js) ----------
+   Pylväskaavio: yksi sarja, joten väri ei kanna tietoa. Pylväät ovat
+   neutraalin harmaita, menneet tunnit himmeämpiä ja kuluva tunti brändivärillä.
+   Sama tieto on aina luettavissa myös ilman väriä: lukurivi kaavion alla
+   ja taulukko. Pylvään korkeus (--h) ja nollaviivan paikka (--b) tulevat
+   kortilta tyyliattribuuttina. */
+.sahko { padding: 14px 16px 12px; }
+.sahko-price { font-size: 30px; font-weight: 700; line-height: 1; }
+.sahko-price span { font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500; color: var(--tx2, var(--muted)); }
+.sahko-desc { font-size: 13px; color: var(--tx2, var(--muted)); margin-top: 5px; }
+.sahko-day { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line, var(--border)); }
+.sahko-dayhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sahko-daytitle { font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tx3, var(--muted)); }
+.sahko-avg { font-size: 11.5px; color: var(--tx2, var(--muted)); }
+.sahko-avg b { color: var(--tx, inherit); font-weight: 600; }
+.sahko-plot { display: grid; grid-template-columns: 22px 1fr; column-gap: 6px; margin-top: 8px; }
+.sahko-y { display: flex; flex-direction: column; justify-content: space-between; height: 64px;
+  text-align: right; font-size: 10px; line-height: 1; color: var(--tx3, var(--muted)); }
+.sahko-chart { position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; height: 64px;
+  border-radius: 2px; touch-action: pan-y;
+  background:
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) top / 100% 1px no-repeat,
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) center / 100% 1px no-repeat,
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) bottom / 100% 1px no-repeat; }
+/* Koko sarake on osumakohta, itse pylväs on sen sisällä oleva i-elementti. */
+.sahko-bar { position: relative; min-width: 0; }
+.sahko-bar i { position: absolute; left: 50%; transform: translateX(-50%); width: 100%; max-width: 24px;
+  bottom: var(--b); height: var(--h); min-height: 1px; border-radius: 3px 3px 0 0; background: var(--tx2, var(--muted)); }
+.sahko-bar.neg i { bottom: auto; top: calc(100% - var(--b)); border-radius: 0 0 3px 3px; }
+.sahko-bar.past i { opacity: .4; }
+.sahko-bar.now i { background: var(--brand); }
+.sahko-bar.on i { background: var(--tx, var(--text)); opacity: 1; }
+.sahko-bar.now.on i { background: var(--brand); filter: brightness(1.15); }
+.sahko-x { grid-column: 2; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; margin-top: 4px;
+  font-size: 10px; line-height: 1; color: var(--tx3, var(--muted)); }
+.sahko-x span { grid-row: 1; grid-column: calc(var(--i) + 1); white-space: nowrap; }
+.sahko-read { margin: 7px 0 0 28px; min-height: 15px; font-size: 11.5px; line-height: 1.3; color: var(--tx2, var(--muted)); }
+.sahko-note, .sahko-best { margin-top: 10px; font-size: 12.5px; line-height: 1.45; color: var(--tx2, var(--muted)); }
+.sahko-best { padding-top: 10px; border-top: 1px solid var(--line, var(--border)); color: var(--tx, inherit); }
+.sahko-table { margin-top: 10px; font-size: 12px; color: var(--tx2, var(--muted)); }
+.sahko-table summary { cursor: pointer; }
+.sahko-table table { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 11.5px; color: var(--tx, inherit); }
+.sahko-table th, .sahko-table td { padding: 3px 0; text-align: right; border-top: 1px solid var(--line, var(--border)); font-weight: 400; }
+.sahko-table th:first-child { text-align: left; color: var(--tx3, var(--muted)); }
+.sahko-table thead th { border-top: none; color: var(--tx3, var(--muted)); }
+
 /* ---------- Puhelimen yläpalkki kirjautuneena ----------
    Nimi + "Kirjaudu ulos" eivät mahdu 390 px leveyteen kellon ja haun kanssa,
    vaan aiheuttivat vaakavierityksen. Puhelimessa ne ovat valikossa. */
@@ -2225,6 +2272,34 @@ function sectionFor(text, pantryCategory) {
   return K.guessSection(text, cat);
 }
 
+// Esimerkkihinnat samassa muodossa kuin palvelimen sources/sahko.js tuottaa:
+// tämän ja huomisen päivän tunnit Suomen ajassa, halpa yö ja kaksi huippua.
+function demoPrices() {
+  const fmt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Helsinki', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+  });
+  const parts = (ms) => {
+    const p = {};
+    for (const x of fmt.formatToParts(new Date(ms))) p[x.type] = x.value;
+    return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) };
+  };
+  const HOUR = 3600000;
+  const start = Math.floor(Date.now() / HOUR) * HOUR;
+  const today = parts(start).date;
+  const tomorrow = parts(start + 24 * HOUR).date;
+  const curve = [2.1, 1.6, 1.3, 1.2, 1.4, 2.4, 5.8, 9.6, 11.2, 8.9, 7.1, 6.2, 5.6, 5.9, 6.8, 8.4, 11.9, 14.6, 13.2, 10.1, 7.4, 5.2, 3.6, 2.7];
+  const hours = [];
+  for (let t = start - 30 * HOUR; t <= start + 50 * HOUR; t += HOUR) {
+    const lp = parts(t);
+    if (lp.date !== today && lp.date !== tomorrow) continue;
+    const base = curve[lp.hour] * (lp.date === tomorrow ? 0.8 : 1);
+    const quarters = [0, 1, 2, 3].map((i) => Math.round(base * (1 + (i - 1.5) * 0.04) * 1000) / 1000);
+    hours.push({ time: new Date(t).toISOString(), date: lp.date, hour: lp.hour,
+      price: Math.round(quarters.reduce((s, v) => s + v, 0) / 4 * 1000) / 1000, quarters });
+  }
+  return { demo: true, failing: false, fetched_at: new Date().toISOString(), data: { unit: 'snt/kWh', vat_included: true, hours } };
+}
+
 // Esimerkkisää samassa muodossa kuin palvelimen sources/saa.js tuottaa.
 function demoWeather() {
   const now = new Date();
@@ -2698,10 +2773,15 @@ const Store = {
   // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
   events: null,
 
-  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti
-  // saa keksityn esimerkkisään (demo: true → kortti kertoo sen käyttäjälle).
+  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti ja
+  // sähkön hinta saavat keksityn esimerkkidatan (demo: true → kortti kertoo
+  // sen käyttäjälle).
   dashboard: {
-    async get(id) { return id === 'saa' ? demoWeather() : null; },
+    async get(id) {
+      if (id === 'saa') return demoWeather();
+      if (id === 'sahko') return demoPrices();
+      return null;
+    },
   },
 
   notes: {
@@ -2936,9 +3016,9 @@ const Dashboard = (() => {
    Dashboardin kortit
    ----------------------------------------------------------------------------
    Nämä kortit toimivat ILMAN verkkoyhteyttä: kaikki data tulee joko omasta
-   tietokannasta tai lasketaan selaimessa. Poikkeus on sääkortti, jonka datan
-   palvelin hakee Ilmatieteen laitokselta. Muut ulkoiset lähteet (uutiset,
-   Euribor, sähkön hinta) odottavat tiedoston lopussa paikanpitäjinä.
+   tietokannasta tai lasketaan selaimessa. Poikkeuksia ovat sääkortti ja
+   sähkön hinta, joiden datan palvelin hakee ulkoa. Muut ulkoiset lähteet
+   (uutiset, Euribor) odottavat tiedoston lopussa paikanpitäjinä.
    ========================================================================== */
 
 // ---------- Päivä: pvm, kellonaika, viikko, auringonnousu ja -lasku ----------
@@ -3276,6 +3356,186 @@ Dashboard.register({
 });
 
 /* ============================================================================
+   Sähkön hinta (pörssisähkö, porssisahko.net)
+   ----------------------------------------------------------------------------
+   Palvelin hakee hinnat kerran tunnissa (sources/sahko.js) ja tämä kortti
+   piirtää ne: hinta juuri nyt, päivän tunnit pylväinä ja halvin tuleva
+   kolmen tunnin jakso. Hinnat ovat snt/kWh ja sisältävät arvonlisäveron.
+
+   "Nyt" lasketaan selaimen kellosta, koska hinta vaihtuu vartin välein eikä
+   palvelimen data päivity niin usein. Kaikki arvot tarkistetaan luvuiksi:
+   myös oman palvelimen välittämä ulkoinen data on epäluotettavaa.
+   ========================================================================== */
+const SAHKO_TUNTI = 3600000;
+const sahkoLuku = (v) => (typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= 1000 ? v : null);
+const sahkoHinta = (v) => fiLuku(v, 2);
+const sahkoKlo = (h) => String(h).padStart(2, '0');
+
+// Lähteen tunnit siistiksi listaksi: vain kelvolliset rivit, aikajärjestyksessä.
+function sahkoTunnit(d) {
+  const list = d && Array.isArray(d.hours) ? d.hours.slice(0, 80) : [];
+  return list.map((h) => {
+    const t = Date.parse(h && h.time);
+    const price = sahkoLuku(h && h.price);
+    const hour = sahkoLuku(h && h.hour);
+    if (!Number.isFinite(t) || price === null || hour === null || hour < 0 || hour > 23) return null;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(h.date))) return null;
+    const q = Array.isArray(h.quarters) ? h.quarters.slice(0, 4).map(sahkoLuku) : [];
+    return { t, date: String(h.date), hour: Math.floor(hour), price, q };
+  }).filter(Boolean).sort((a, b) => a.t - b.t);
+}
+
+// Tämän vartin hinta: { price, start } tai null, jos tunti puuttuu datasta.
+function sahkoNyt(tunnit, now) {
+  const h = tunnit.find((x) => x.t <= now && now < x.t + SAHKO_TUNTI);
+  if (!h) return null;
+  const i = Math.floor((now - h.t) / 900000);
+  const q = h.q[i];
+  return { price: q === null || q === undefined ? h.price : q, start: h.t + i * 900000, tunti: h };
+}
+
+// Halvin peräkkäisten tuntien jakso nykyisestä tunnista eteenpäin.
+function sahkoHalvin(tunnit, now, pituus) {
+  const tulevat = tunnit.filter((h) => h.t + SAHKO_TUNTI > now);
+  let paras = null;
+  for (let i = 0; i + pituus <= tulevat.length; i++) {
+    const jakso = tulevat.slice(i, i + pituus);
+    if (jakso[pituus - 1].t - jakso[0].t !== (pituus - 1) * SAHKO_TUNTI) continue; // aukko datassa
+    const avg = jakso.reduce((s, h) => s + h.price, 0) / pituus;
+    if (!paras || avg < paras.avg) paras = { avg, alku: jakso[0] };
+  }
+  return paras;
+}
+
+// Akselin yläraja siistiksi luvuksi: kaksi tasaväliä (0, puoliväli, yläraja).
+function sahkoAskel(max) {
+  const askeleet = [0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500];
+  return askeleet.find((a) => a * 2 >= max) || 500;
+}
+
+// Yhden päivän pylväät. Asteikko on yhteinen molemmille päiville, jotta
+// tämän päivän ja huomisen pylväät ovat keskenään vertailukelpoisia.
+function sahkoKaavio(otsikko, lista, asteikko, now) {
+  const { ala, yla } = asteikko;
+  const ala0 = (0 - ala) / (yla - ala) * 100; // nollaviivan paikka alhaalta, %
+  const avg = lista.reduce((s, h) => s + h.price, 0) / lista.length;
+  const low = lista.reduce((a, b) => (b.price < a.price ? b : a));
+  const high = lista.reduce((a, b) => (b.price > a.price ? b : a));
+  const oletus = `alin ${sahkoHinta(low.price)} klo ${sahkoKlo(low.hour)} · ylin ${sahkoHinta(high.price)} klo ${sahkoKlo(high.hour)}`;
+  const pylvaat = lista.map((h) => {
+    const korkeus = Math.abs(h.price) / (yla - ala) * 100;
+    const tila = h.t + SAHKO_TUNTI <= now ? ' past' : (h.t <= now ? ' now' : '');
+    return `<span class="sahko-bar${tila}${h.price < 0 ? ' neg' : ''}" data-klo="${sahkoKlo(h.hour)}" data-hinta="${esc(sahkoHinta(h.price))}"`
+      + ` style="--b:${ala0.toFixed(2)}%;--h:${korkeus.toFixed(2)}%"><i></i></span>`;
+  }).join('');
+  const tikit = [yla, (yla + ala) / 2, ala].map((v) => `<span>${esc(fiLuku(v, v % 1 ? 1 : 0))}</span>`).join('');
+  const akseli = lista.filter((h) => h.hour % 6 === 0)
+    .map((h) => `<span style="--i:${lista.indexOf(h)}">${sahkoKlo(h.hour)}</span>`).join('');
+  return `<div class="sahko-day">
+    <div class="sahko-dayhead"><span class="sahko-daytitle">${esc(otsikko)}</span>
+      <span class="sahko-avg">keskihinta <b class="mono">${esc(sahkoHinta(avg))}</b></span></div>
+    <div class="sahko-plot">
+      <div class="sahko-y mono" aria-hidden="true">${tikit}</div>
+      <div class="sahko-chart" tabindex="0" role="group" style="--n:${lista.length}"
+        aria-label="${esc(otsikko)} tunneittain, ${esc(oletus)}. Nuolinäppäimillä näet yksittäisen tunnin hinnan.">${pylvaat}</div>
+      <div class="sahko-x mono" style="--n:${lista.length}" aria-hidden="true">${akseli}</div>
+    </div>
+    <div class="sahko-read" aria-live="polite" data-oletus="${esc(oletus)}">${esc(oletus)}</div>
+  </div>`;
+}
+
+function sahkoHtml(res, nowMs) {
+  const now = typeof nowMs === 'number' ? nowMs : Date.now();
+  const tunnit = sahkoTunnit(res && res.data);
+  const tanaan = hkiPvm(new Date(now));
+  const tanaanLista = tunnit.filter((h) => h.date === tanaan);
+  if (!tanaanLista.length) {
+    return `<div class="dash-empty">${res && res.failing
+      ? 'Sähkön hintoja ei juuri nyt saada. Haku yritetään uudelleen automaattisesti.'
+      : 'Sähkön hintoja haetaan ensimmäistä kertaa. Päivitä sivu hetken kuluttua.'}</div>`;
+  }
+  const huomenna = hkiPvm(new Date(now + 24 * SAHKO_TUNTI));
+  const huomennaLista = tunnit.filter((h) => h.date === huomenna);
+  const kaikki = tanaanLista.concat(huomennaLista);
+  const max = Math.max(...kaikki.map((h) => h.price), 0);
+  const min = Math.min(...kaikki.map((h) => h.price), 0);
+  const askel = sahkoAskel(Math.max(max, -min));
+  const asteikko = { yla: askel * 2, ala: min < 0 ? -askel * Math.ceil(-min / askel) : 0 };
+
+  const nyt = sahkoNyt(tunnit, now);
+  const halvin = sahkoHalvin(kaikki, now, 3);
+  const halvinTeksti = halvin
+    ? `Halvin 3 tunnin jakso alkaa ${halvin.alku.t <= now ? 'nyt' : (halvin.alku.date === tanaan ? 'tänään' : 'huomenna') + ' klo ' + sahkoKlo(halvin.alku.hour)}`
+      + `, keskimäärin ${sahkoHinta(halvin.avg)} snt/kWh.`
+    : '';
+  const vanha = res.failing || (res.fetched_at && now - Date.parse(res.fetched_at) > 3 * SAHKO_TUNTI);
+  const haettu = res.fetched_at && Number.isFinite(Date.parse(res.fetched_at)) ? new Date(res.fetched_at) : null;
+  const rivit = Array.from({ length: 24 }, (_, hour) => {
+    const a = tanaanLista.find((h) => h.hour === hour), b = huomennaLista.find((h) => h.hour === hour);
+    return a || b ? `<tr><th scope="row">${sahkoKlo(hour)}</th><td>${a ? esc(sahkoHinta(a.price)) : ''}</td>`
+      + (huomennaLista.length ? `<td>${b ? esc(sahkoHinta(b.price)) : ''}</td>` : '') + '</tr>' : '';
+  }).join('');
+
+  return `<div class="sahko">
+    ${nyt ? `<div class="sahko-now">
+      <div class="sahko-price mono">${esc(sahkoHinta(nyt.price))}<span> snt/kWh</span></div>
+      <div class="sahko-desc">Nyt, klo ${esc(hkiKlo(nyt.start))} alkaen · sis. alv</div>
+    </div>` : '<div class="sahko-desc">Tämän hetken hintaa ei ole saatavilla.</div>'}
+    ${sahkoKaavio('Tänään', tanaanLista, asteikko, now)}
+    ${huomennaLista.length ? sahkoKaavio('Huomenna', huomennaLista, asteikko, now)
+      : '<div class="sahko-note">Huomisen hinnat julkaistaan noin klo 14.</div>'}
+    ${halvinTeksti ? `<div class="sahko-best">${esc(halvinTeksti)}</div>` : ''}
+    <details class="sahko-table"><summary>Näytä tunnit taulukkona</summary>
+      <table class="mono"><thead><tr><th scope="col">Klo</th><th scope="col">Tänään</th>${
+        huomennaLista.length ? '<th scope="col">Huomenna</th>' : ''}</tr></thead><tbody>${rivit}</tbody></table>
+    </details>
+    ${res.demo ? '<div class="wx-warn">Esimerkkidata: demo ei hae hintoja verkosta. Palvelinversiossa tässä näkyvät oikeat hinnat.</div>' : ''}
+    ${vanha && haettu && !res.demo ? `<div class="wx-warn">Uusia hintoja ei juuri nyt saada. Tiedot ovat ajalta ${
+      esc(haettu.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric', timeZone: HKI }))} klo ${esc(hkiKlo(res.fetched_at))}.</div>` : ''}
+    <div class="wx-foot">Lähde: porssisahko.net · pörssihinta snt/kWh, sis. alv, ilman siirtoa ja marginaalia</div>
+  </div>`;
+}
+
+// Pylvään hinta lukuriville: osoittamalla, napauttamalla tai nuolinäppäimillä.
+function sahkoBind(slot) {
+  slot.querySelectorAll('.sahko-day').forEach((day) => {
+    const chart = day.querySelector('.sahko-chart');
+    const read = day.querySelector('.sahko-read');
+    const bars = [...chart.querySelectorAll('.sahko-bar')];
+    let valittu = -1;
+    const nayta = (i) => {
+      bars.forEach((b, j) => b.classList.toggle('on', j === i));
+      valittu = i;
+      if (i < 0) { read.textContent = read.dataset.oletus; return; }
+      read.textContent = `klo ${bars[i].dataset.klo}: ${bars[i].dataset.hinta} snt/kWh`;
+    };
+    chart.addEventListener('pointermove', (e) => { const b = e.target.closest('.sahko-bar'); if (b) nayta(bars.indexOf(b)); });
+    chart.addEventListener('pointerdown', (e) => { const b = e.target.closest('.sahko-bar'); if (b) nayta(bars.indexOf(b)); });
+    chart.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') nayta(-1); });
+    chart.addEventListener('blur', () => nayta(-1));
+    chart.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const alku = valittu < 0 ? Math.max(0, bars.findIndex((b) => b.classList.contains('now'))) : valittu;
+      const seuraava = valittu < 0 ? alku : alku + (e.key === 'ArrowRight' ? 1 : -1);
+      nayta(Math.min(bars.length - 1, Math.max(0, seuraava)));
+    });
+  });
+}
+
+Dashboard.register({
+  id: 'sahko',
+  title: 'Sähkön hinta',
+  slot: 'rail',
+  order: 50,
+  icon: 'bolt',
+  headExtra: '<span class="d2-more">pörssisähkö</span>',
+  load: () => Store.dashboard.get('sahko'),
+  render: (res) => sahkoHtml(res),
+  bind: sahkoBind,
+});
+
+/* ============================================================================
    PAIKANPITÄJÄT ulkoisille lähteille
    ----------------------------------------------------------------------------
    Nämä kortit näkyvät dashboardilla, mutta kertovat rehellisesti ettei lähdettä
@@ -3286,8 +3546,8 @@ Dashboard.register({
      3. GET /api/dashboard palauttaa kaikkien lähteiden viimeisimmät arvot.
      4. Täällä: load: () => Store.dashboard.get('<nimi>') ja oikea render.
 
-   Sääkortti (yllä) on tehty jo näin: käytä sitä mallina. Palvelimen puoli
-   on dashboard-sources.js ja sources/saa.js.
+   Sääkortti ja sähkön hinta (yllä) on tehty jo näin: käytä niitä mallina.
+   Palvelimen puoli on dashboard-sources.js ja sources/-kansio.
 
    Selain EI hae mitään ulkoa – ks. dashboard.js:n alkukommentti.
    ========================================================================== */
@@ -3296,8 +3556,6 @@ const TULOSSA = [
     kuvaus: 'Otsikot RSS-syötteestä, linkki alkuperäiseen. Koko artikkelia ei kopioida.' },
   { id: 'korot', title: 'Euribor', icon: 'popular', slot: 'rail', order: 40,
     kuvaus: 'Vaatii vielä selvityksen: virallinen julkaisija on EMMI ja jakelulla on ehtoja. Suomen Pankki ja EKP ovat avoimempia vaihtoehtoja.' },
-  { id: 'sahko', title: 'Sähkön hinta', icon: 'bolt', slot: 'rail', order: 50,
-    kuvaus: 'Pörssisähkön tuntihinta tänään ja huomenna.' },
 ];
 
 TULOSSA.forEach((k) => Dashboard.register({
@@ -4241,6 +4499,9 @@ const ICON_PATHS = {
   search2: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
   cart: '<path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
   box: '<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
+  // Etusivun korttien otsikkokuvakkeet (samat polut kuin kategoriakuvakkeissa)
+  bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+  droplet: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
 };
 function icon(name, cls) {
   const p = ICON_PATHS[name];

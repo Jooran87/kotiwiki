@@ -92,6 +92,9 @@ const ICON_PATHS = {
   search2: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',
   cart: '<path d="M3 4h2.5l2.2 10.5h10.6L20.5 7H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
   box: '<path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4z"/><path d="M3.5 7.5 12 11.5l8.5-4M12 11.5v9"/>',
+  // Etusivun korttien otsikkokuvakkeet (samat polut kuin kategoriakuvakkeissa)
+  bolt: '<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+  droplet: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
 };
 function icon(name, cls) {
   const p = ICON_PATHS[name];

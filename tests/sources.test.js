@@ -1,5 +1,6 @@
-// Ulkoisten lähteiden testit (sää). Verkkoa EI käytetä: Ilmatieteen laitosta
-// esittää paikallinen valepalvelin, jolle sources/saa.js ohjataan FMI_URL:lla.
+// Ulkoisten lähteiden testit (sää ja sähkön hinta). Verkkoa EI käytetä:
+// Ilmatieteen laitosta ja porssisahko.net-palvelua esittää paikallinen
+// valepalvelin, jolle lähteet ohjataan muuttujilla FMI_URL ja SAHKO_URL.
 // Kanta on väliaikaisessa hakemistossa (ELAMA_DATA_DIR). Aja: npm test
 'use strict';
 const fs = require('fs');
@@ -50,10 +51,57 @@ function fcXml() {
   return wrap(m);
 }
 
+// ---------- Sähkön hinta: sama JSON-rakenne kuin api.porssisahko.net ----------
+const QUARTER = 15 * 60000;
+const hki = new Intl.DateTimeFormat('sv-SE', {
+  timeZone: 'Europe/Helsinki', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+});
+function hkiParts(ms) {
+  const p = {};
+  for (const x of hki.formatToParts(new Date(ms))) p[x.type] = x.value;
+  return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) };
+}
+// Suomen ajan keskiyö: kuljetaan tunti kerrallaan taaksepäin, kunnes päivä vaihtuu
+// (toimii myös kesä- ja talviajan vaihtopäivinä).
+function hkiMidnight(ms) {
+  let t = Math.floor(ms / HOUR) * HOUR;
+  const date = hkiParts(t).date;
+  while (hkiParts(t - HOUR).date === date) t -= HOUR;
+  return t;
+}
+const midnight = hkiMidnight(now);
+const midnight2 = hkiMidnight(midnight + 26 * HOUR); // huomisen alku
+const midnight3 = hkiMidnight(midnight2 + 26 * HOUR); // ylihuomisen alku
+const sahkoPrice = (t) => Math.round((5 + hkiParts(t).hour * 0.5 + ((t % HOUR) / QUARTER) * 0.1) * 1000) / 1000;
+function sahkoJson(from) {
+  const prices = [];
+  // Kuten oikea rajapinta: uusin ensin, ja tunti ylihuomisen puolelle.
+  for (let t = midnight3 + HOUR - QUARTER; t >= from; t -= QUARTER) {
+    prices.push({ price: sahkoPrice(t), startDate: new Date(t).toISOString(), endDate: new Date(t + QUARTER - 1).toISOString() });
+  }
+  // Kelvottomat rivit: jokainen ohitetaan.
+  prices.push(null, { price: '<script>alert(1)</script>', startDate: new Date(midnight).toISOString() },
+    { price: 99999, startDate: new Date(midnight + HOUR).toISOString() }, { price: NaN, startDate: new Date(midnight).toISOString() },
+    { price: 7, startDate: 'ei-aika' }, { price: 7, startDate: new Date(midnight + 7 * 60000).toISOString() }, { startDate: 5, price: 7 });
+  return JSON.stringify({ prices });
+}
+let sahkoMode = 'ok';
+let sahkoFrom = midnight;
+let sahkoSeen = 0;
+
 let mode = 'ok';
 const seen = [];
 const fake = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
+  if (u.pathname === '/v2/latest-prices.json') {
+    sahkoSeen++;
+    if (sahkoMode === 'error') { res.writeHead(429); return res.end('liikaa'); }
+    if (sahkoMode === 'garbage') { res.writeHead(200); return res.end('<html>huoltokatko</html>'); }
+    if (sahkoMode === 'huge') { res.writeHead(200); return res.end('x'.repeat(1024 * 1024)); }
+    if (sahkoMode === 'empty') { res.writeHead(200); return res.end('{"prices":[]}'); }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    return res.end(sahkoJson(sahkoFrom));
+  }
   seen.push(u.searchParams);
   if (mode === 'error') { res.writeHead(500); return res.end('rikki'); }
   if (mode === 'garbage') { res.writeHead(200); return res.end('<html>huoltokatko</html>'); }
@@ -65,6 +113,7 @@ const fake = http.createServer((req, res) => {
 async function main() {
   await new Promise((r) => fake.listen(0, '127.0.0.1', r));
   process.env.FMI_URL = `http://127.0.0.1:${fake.address().port}/wfs`;
+  process.env.SAHKO_URL = `http://127.0.0.1:${fake.address().port}/v2/latest-prices.json`;
 
   const saa = require('../sources/saa');
   const db = require('../db');
@@ -140,6 +189,80 @@ async function main() {
   // Kannassa oleva rikkinäinen JSON ei kaada reittiä.
   db.prepare("UPDATE dashboard_cache SET data = '{rikki' WHERE source = 'saa'").run();
   ok('rikkinäinen välimuisti ei kaada reittiä', get().saa.data === null);
+
+  // ====================== Sähkön hinta (sources/sahko.js) ======================
+  const sahko = require('../sources/sahko');
+  ok('sähkön hinta on lähdelistassa ja haetaan enintään kerran tunnissa',
+    srv.sources.some((x) => x.id === 'sahko') && sahko.intervalMs >= HOUR);
+
+  // --- Jäsennys oikealla porssisahko.net-vastauksella (ote) ---
+  const realPrices = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'porssisahko-ote.json'), 'utf8'));
+  const realQ = sahko.parsePrices(realPrices);
+  const realBuilt = sahko.buildPrices(realQ, Date.parse('2026-11-10T08:00:00Z'));
+  ok('oikea porssisahko.net-vastaus jäsentyy', realQ.size === 8 && realBuilt.hours.length === 2
+    && realBuilt.hours[0].price === 1.177 && realBuilt.hours[0].hour === 1 && realBuilt.hours[0].date === '2026-11-10',
+    JSON.stringify(realBuilt.hours[0]));
+  ok('tyhjä tai rikkinäinen vastaus antaa tyhjän tuloksen', sahko.parsePrices(null).size === 0
+    && sahko.parsePrices({}).size === 0 && sahko.parsePrices({ prices: 'x' }).size === 0 && sahko.parsePrices({ prices: [1, 'a', {}] }).size === 0);
+  ok('hintarajan ylittävä luku ei ole hinta', sahko.parsePrices({ prices: [
+    { price: 1001, startDate: '2026-11-10T00:00:00.000Z' }, { price: -101, startDate: '2026-11-10T00:15:00.000Z' },
+    { price: -0.002, startDate: '2026-11-10T00:30:00.000Z' }] }).size === 1);
+  let noToday = '';
+  try { sahko.buildPrices(realQ, Date.parse('2026-11-13T08:00:00Z')); } catch (e) { noToday = e.message; }
+  ok('vanhentunut vastaus (ei tämän päivän hintoja) on virhe', noToday.includes('tämän päivän'), noToday);
+
+  // --- Haku valepalvelimelta ---
+  const today = hkiParts(now).date;
+  const tomorrow = hkiParts(midnight2).date;
+  const e1 = await sahko.fetch();
+  const todayHours = e1.hours.filter((h) => h.date === today);
+  const tomorrowHours = e1.hours.filter((h) => h.date === tomorrow);
+  ok('hinnat tälle ja huomiselle päivälle tunneittain', todayHours.length === (midnight2 - midnight) / HOUR
+    && tomorrowHours.length === (midnight3 - midnight2) / HOUR && todayHours.length >= 23, todayHours.length + '/' + tomorrowHours.length);
+  ok('vajaa ylihuominen (yksi tunti) jätetään pois', e1.hours.every((h) => h.date === today || h.date === tomorrow));
+  ok('tunnit ovat aikajärjestyksessä ja Suomen ajassa', e1.hours.every((h, i) => i === 0 || h.time > e1.hours[i - 1].time)
+    && e1.hours[0].hour === 0 && e1.hours.every((h) => hkiParts(Date.parse(h.time)).hour === h.hour));
+  const h7 = todayHours.find((h) => h.hour === 7);
+  ok('tunnin hinta on varttien keskiarvo', h7.quarters.length === 4 && h7.quarters[0] === 8.5 && h7.quarters[3] === 8.8
+    && h7.price === 8.65, JSON.stringify(h7));
+  ok('kelvottomat rivit ohitetaan', e1.hours.every((h) => typeof h.price === 'number' && h.price < 100
+    && h.quarters.every((q) => typeof q === 'number')) && !JSON.stringify(e1).includes('script'));
+  ok('yksikkö ja arvonlisävero kerrotaan', e1.unit === 'snt/kWh' && e1.vat_included === true);
+
+  // Iltapäivällä rajapinnan ikkuna siirtyy ja päivän alku putoaa pois vastauksesta.
+  sahkoFrom = midnight + 2 * HOUR;
+  const e2 = await sahko.fetch();
+  ok('aiemmin nähdyt tunnit säilyvät, kun rajapinnan ikkuna siirtyy',
+    e2.hours.filter((h) => h.date === today).length === todayHours.length && e2.hours[0].hour === 0);
+  sahkoFrom = midnight;
+
+  // --- Välimuisti ja virhetilanteet ---
+  const src = srv.sources.find((x) => x.id === 'sahko');
+  ok('ennen ensimmäistä tallennusta sähkön data on tyhjä', get().sahko.data === null && get().sahko.failing === false);
+  await srv.refresh(src);
+  const s1 = get().sahko;
+  ok('sähkön hinnat tallentuvat ja tarjoillaan', s1.data.hours.length === e1.hours.length && s1.failing === false && !!s1.fetched_at);
+  const logsBefore = logs.length;
+  sahkoMode = 'error';
+  await srv.refresh(src);
+  ok('rajoitusvastaus (429) säilyttää viimeisimmät hinnat', get().sahko.data.hours.length === e1.hours.length
+    && get().sahko.failing === true && get().sahko.fetched_at === s1.fetched_at && logs[logs.length - 1].includes('429'));
+  ok('sähkön virheen teksti ei vuoda selaimelle', !JSON.stringify(get().sahko).includes('429'));
+  sahkoMode = 'garbage';
+  await srv.refresh(src);
+  ok('roskavastaus ei korvaa hintoja', get().sahko.data.hours.length === e1.hours.length && logs[logs.length - 1].includes('JSON'));
+  sahkoMode = 'huge';
+  await srv.refresh(src);
+  ok('ylisuuri hintavastaus hylätään', get().sahko.data.hours.length === e1.hours.length && logs[logs.length - 1].includes('suuri'));
+  sahkoMode = 'empty';
+  await srv.refresh(src);
+  ok('tyhjä hintalista on virhe eikä tyhjennä korttia', get().sahko.data.hours.length === e1.hours.length
+    && logs[logs.length - 1].includes('kelvollisia') && logs.length === logsBefore + 4);
+  sahkoMode = 'ok';
+  await srv.refresh(src);
+  ok('sähkön lähteen toivuttua tila palautuu', get().sahko.failing === false && get().sahko.fetched_at >= s1.fetched_at);
+  ok('reitti palauttaa molemmat lähteet ja sähkön haut menivät omaan osoitteeseensa',
+    Object.keys(get()).sort().join() === 'saa,sahko' && sahkoSeen === 8, String(sahkoSeen));
 
   fake.close();
   db.close();

@@ -1,5 +1,5 @@
 'use strict';
-// Etusivun ulkoiset lähteet (sää, myöhemmin sähkön hinta, uutiset...).
+// Etusivun ulkoiset lähteet (sää ja sähkön hinta, myöhemmin uutiset...).
 //
 // Selain EI ota yhteyttä ulos. Palvelin hakee datan ajastetusti, tallentaa
 // viimeisimmän onnistuneen tuloksen SQLiteen (taulu dashboard_cache) ja
@@ -14,7 +14,7 @@
 //
 // ELAMA_SOURCES=off estää haut kokonaan (testit, koneet ilman verkkoa).
 
-const SOURCES = [require('./sources/saa')];
+const SOURCES = [require('./sources/saa'), require('./sources/sahko')];
 
 module.exports = function mountSources(app, db, opts = {}) {
   const sources = opts.sources || SOURCES;
@@ -53,7 +53,7 @@ module.exports = function mountSources(app, db, opts = {}) {
     }
   }
 
-  // { saa: { data, fetched_at, failing } }. Virheen teksti jää palvelimen
+  // { saa: { data, fetched_at, failing }, sahko: { ... } }. Virheen teksti jää palvelimen
   // lokiin ja kantaan; selaimelle kerrotaan vain, että haku ei onnistu.
   app.get('/api/dashboard', (req, res) => {
     const rows = db.prepare('SELECT * FROM dashboard_cache').all();

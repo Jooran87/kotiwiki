@@ -27,8 +27,9 @@ public/koti.css      Niiden ulkoasu (2a-tokenit)
 public/vendor/       zxing.min.js (Apache-2.0), ladataan vain skannatessa
 dashboard-sources.js Etusivun ulkoiset lähteet: ajastus, välimuisti (SQLite), GET /api/dashboard
 sources/saa.js       Sää Ilmatieteen laitoksen avoimesta datasta (havainnot + ennuste)
+sources/sahko.js     Pörssisähkön hinta porssisahko.net-rajapinnasta (vartit tunneiksi)
 deploy/              systemd-palvelu ja Caddyfile omalle palvelimelle
-tests/               npm test: api (auth+CRUD+turva), sources (sää valepalvelimella),
+tests/               npm test: api (auth+CRUD+turva), sources (sää ja sähkö valepalvelimella),
                      backup, ui (Chromium)
 backup.js/restore.js Varmuuskopiointi (VACUUM INTO) ja palautus
 seed.js              Esimerkkisisältö (vain tyhjään kantaan)
@@ -84,11 +85,30 @@ palvelimella, ja lähteen ollessa alhaalla näytetään viimeisin arvo.
   edellistä arvoa. Päivät ja tunnit lasketaan Helsingin ajassa palvelimella
   (`Intl`, `Europe/Helsinki`), koska palvelin voi olla UTC:ssä. Lisenssi
   CC BY 4.0: lähdemaininta on kortin alareunassa, älä poista sitä.
+- **Sähkön hinta (`sources/sahko.js`):** `api.porssisahko.net/v2/latest-prices.json`,
+  ei avainta. Vastaus on 48 tunnin liukuva ikkuna vartin jaksoina, snt/kWh
+  arvonlisäveroineen. Lähde tekee varteista tunteja (tunnin hinta = varttien
+  keskiarvo, vartit kulkevat mukana) ja jättää vajaan päivän pois. Kortti
+  laskee "hinnan nyt" selaimen kellosta, koska hinta vaihtuu vartin välein,
+  sekä päivän keskihinnan, alimman ja ylimmän tunnin ja halvimman tulevan
+  kolmen tunnin jakson.
+  - **Haku kerran tunnissa, älä tihennä.** Rajapinta on ilmainen, mutta
+    jokainen pyyntö maksaa ylläpitäjälle (ehdot: porssisahko.net/api).
+  - **Muisti:** kun huomisen hinnat tulevat noin klo 14, ikkunan alku siirtyy
+    ja kuluvan päivän klo 00 putoaa vastauksesta. Lähde pitää aiemmin nähdyt
+    vartit muistissa (36 h) ja yhdistää ne. Palvelimen uudelleenkäynnistys
+    iltapäivällä tyhjentää muistin, jolloin klo 00 puuttuu loppupäivän.
+  - **Kelpoisuus:** rivi hylätään, jos hinta ei ole luku väliltä −100 ja 1000
+    tai aikaleima ei ole vartin tasalla. Negatiivinen hinta on oikea hinta ja
+    piirtyy nollaviivan alle.
+  - **Kaavio** on CSS-ruudukko: pylvään korkeus ja nollaviivan paikka tulevat
+    tyyliattribuuttina (`--h`, `--b`). Hinnan näkee myös ilman väriä ja
+    ilman hiirtä: lukurivi (osoitus, napautus, nuolinäppäimet) ja taulukko.
 - **Testit eivät käytä verkkoa.** `tests/sources.test.js` käynnistää
-  paikallisen valepalvelimen ja ohjaa haun sinne (`FMI_URL`). Rajapintatestit
+  paikallisen valepalvelimen ja ohjaa haut sinne (`FMI_URL`, `SAHKO_URL`). Rajapintatestit
   ajavat palvelimen asetuksella `ELAMA_SOURCES=off` (ei hakuja lainkaan).
-- **Sandbox:** `Store.dashboard.get('saa')` palauttaa esimerkkisään
-  (`demo: true`), ja kortti kertoo sen käyttäjälle.
+- **Sandbox:** `Store.dashboard.get('saa')` ja `get('sahko')` palauttavat
+  esimerkkidatan (`demo: true`), ja kortti kertoo sen käyttäjälle.
 - Kehitysympäristö, jossa liikenne kulkee välityspalvelimen kautta: Noden
   oma `fetch` ei lue `HTTPS_PROXY`-muuttujaa ilman `NODE_USE_ENV_PROXY=1`
   (Node 22.21 tai uudempi). Omalla palvelimella tätä ei tarvita.
@@ -178,7 +198,7 @@ pitää Noden piilossa Caddyn takana.
    seed-dataan – tee näin vain kun uusi seed-sisältö on demolle tärkeä).
 5. **Ulkoasu-/logiikkamuutoksen jälkeen aina** `node sandbox/build-single.js`
    ja committaa syntynyt elama-sandbox.html.
-6. **`npm test` vihreänä (426 testiä) ennen jokaista committia.** Testit ajavat
+6. **`npm test` vihreänä (465 testiä) ennen jokaista committia.** Testit ajavat
    palvelimen eristetyssä ELAMA_DATA_DIR-hakemistossa – eivät koske oikeaa dataa.
 7. **Tekijätieto tulee AINA istunnosta** (`req.user.name`) – älä koskaan luota
    selaimen author-kenttään.
@@ -332,9 +352,9 @@ kokeiluvaiheen kytkin on poistettu.
 
 ## Työjono (ei aloitettu)
 
-1. **Lisää ulkoisia lähteitä etusivulle**: sähkön hinta, uutiset, Euribor
-   (sää on jo tehty ja toimii mallina; paikanpitäjät ovat cards.js:n lopussa,
-   ohje README:ssä)
+1. **Lisää ulkoisia lähteitä etusivulle**: uutiset, Euribor
+   (sää ja sähkön hinta on jo tehty ja toimivat mallina; paikanpitäjät ovat
+   cards.js:n lopussa, ohje README:ssä)
 2. **Laiterekisteri**: kodinkoneiden takuut, kuitit ja huoltohistoria
    (wikin liitteet ja haku toimivat tähän valmiiksi)
 3. **Reseptit ja viikon ruokalista**: ainekset kauppalistalle yhdellä napilla
@@ -346,7 +366,7 @@ kokeiluvaiheen kytkin on poistettu.
 
 ```bash
 npm start                      # palvelin (PORT=xxxx vaihtaa portin)
-npm test                       # 426 testiä eristetyssä ympäristössä
+npm test                       # 465 testiä eristetyssä ympäristössä
 npm run backup                 # varmuuskopio backups/-kansioon
 node sandbox/build-single.js   # kokoa jaettava sandbox-tiedosto
 node reindex.js                # liitteiden hakuindeksin uudelleenajo

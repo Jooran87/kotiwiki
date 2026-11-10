@@ -527,6 +527,8 @@ async function main() {
     const dash = await jget('/api/dashboard');
     ok('sää on mukana lähteissä, ennen ensimmäistä hakua tyhjänä',
       dash.saa && dash.saa.data === null && dash.saa.failing === false && dash.saa.fetched_at === null, JSON.stringify(dash));
+    ok('sähkön hinta on mukana lähteissä, ennen ensimmäistä hakua tyhjänä',
+      dash.sahko && dash.sahko.data === null && dash.sahko.failing === false && dash.sahko.fetched_at === null, JSON.stringify(dash));
     ok('lukija näkee sään', await status('GET', '/api/dashboard', null, V_COOKIE) === 200);
     ok('lähteiden dataa ei voi kirjoittaa rajapinnasta', await status('POST', '/api/dashboard', { saa: {} }) === 404
       && await status('PUT', '/api/dashboard', { saa: {} }) === 404);

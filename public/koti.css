@@ -136,6 +136,53 @@
   background: var(--warnbg, #fff3d6); color: var(--warn, #8a5605); }
 .wx-foot { margin-top: 10px; font-size: 10.5px; line-height: 1.4; color: var(--tx3, var(--muted)); }
 
+/* ---------- Sähkön hinta (cards.js) ----------
+   Pylväskaavio: yksi sarja, joten väri ei kanna tietoa. Pylväät ovat
+   neutraalin harmaita, menneet tunnit himmeämpiä ja kuluva tunti brändivärillä.
+   Sama tieto on aina luettavissa myös ilman väriä: lukurivi kaavion alla
+   ja taulukko. Pylvään korkeus (--h) ja nollaviivan paikka (--b) tulevat
+   kortilta tyyliattribuuttina. */
+.sahko { padding: 14px 16px 12px; }
+.sahko-price { font-size: 30px; font-weight: 700; line-height: 1; }
+.sahko-price span { font-family: 'Inter Tight', sans-serif; font-size: 13px; font-weight: 500; color: var(--tx2, var(--muted)); }
+.sahko-desc { font-size: 13px; color: var(--tx2, var(--muted)); margin-top: 5px; }
+.sahko-day { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line, var(--border)); }
+.sahko-dayhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sahko-daytitle { font-family: 'Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--tx3, var(--muted)); }
+.sahko-avg { font-size: 11.5px; color: var(--tx2, var(--muted)); }
+.sahko-avg b { color: var(--tx, inherit); font-weight: 600; }
+.sahko-plot { display: grid; grid-template-columns: 22px 1fr; column-gap: 6px; margin-top: 8px; }
+.sahko-y { display: flex; flex-direction: column; justify-content: space-between; height: 64px;
+  text-align: right; font-size: 10px; line-height: 1; color: var(--tx3, var(--muted)); }
+.sahko-chart { position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; height: 64px;
+  border-radius: 2px; touch-action: pan-y;
+  background:
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) top / 100% 1px no-repeat,
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) center / 100% 1px no-repeat,
+    linear-gradient(var(--line, var(--border)), var(--line, var(--border))) bottom / 100% 1px no-repeat; }
+/* Koko sarake on osumakohta, itse pylväs on sen sisällä oleva i-elementti. */
+.sahko-bar { position: relative; min-width: 0; }
+.sahko-bar i { position: absolute; left: 50%; transform: translateX(-50%); width: 100%; max-width: 24px;
+  bottom: var(--b); height: var(--h); min-height: 1px; border-radius: 3px 3px 0 0; background: var(--tx2, var(--muted)); }
+.sahko-bar.neg i { bottom: auto; top: calc(100% - var(--b)); border-radius: 0 0 3px 3px; }
+.sahko-bar.past i { opacity: .4; }
+.sahko-bar.now i { background: var(--brand); }
+.sahko-bar.on i { background: var(--tx, var(--text)); opacity: 1; }
+.sahko-bar.now.on i { background: var(--brand); filter: brightness(1.15); }
+.sahko-x { grid-column: 2; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 2px; margin-top: 4px;
+  font-size: 10px; line-height: 1; color: var(--tx3, var(--muted)); }
+.sahko-x span { grid-row: 1; grid-column: calc(var(--i) + 1); white-space: nowrap; }
+.sahko-read { margin: 7px 0 0 28px; min-height: 15px; font-size: 11.5px; line-height: 1.3; color: var(--tx2, var(--muted)); }
+.sahko-note, .sahko-best { margin-top: 10px; font-size: 12.5px; line-height: 1.45; color: var(--tx2, var(--muted)); }
+.sahko-best { padding-top: 10px; border-top: 1px solid var(--line, var(--border)); color: var(--tx, inherit); }
+.sahko-table { margin-top: 10px; font-size: 12px; color: var(--tx2, var(--muted)); }
+.sahko-table summary { cursor: pointer; }
+.sahko-table table { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 11.5px; color: var(--tx, inherit); }
+.sahko-table th, .sahko-table td { padding: 3px 0; text-align: right; border-top: 1px solid var(--line, var(--border)); font-weight: 400; }
+.sahko-table th:first-child { text-align: left; color: var(--tx3, var(--muted)); }
+.sahko-table thead th { border-top: none; color: var(--tx3, var(--muted)); }
+
 /* ---------- Puhelimen yläpalkki kirjautuneena ----------
    Nimi + "Kirjaudu ulos" eivät mahdu 390 px leveyteen kellon ja haun kanssa,
    vaan aiheuttivat vaakavierityksen. Puhelimessa ne ovat valikossa. */

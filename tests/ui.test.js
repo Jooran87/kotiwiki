@@ -336,7 +336,7 @@ async function main() {
     ok('piilotetun kortin saa takaisin',
       (await page.$$('.dash-card[data-card="viimeksi"]')).length === 1);
     // Ulkoiset lähteet: paikanpitäjä kertoo rehellisesti ettei dataa ole
-    ok('kytkemättömät lähteet merkitty selvästi', (await page.$$('.dash-todo')).length >= 3);
+    ok('kytkemättömät lähteet merkitty selvästi', (await page.$$('.dash-todo')).length >= 2);
 
     // Oikean reunan muistiinpanopalsta leveällä näytöllä (>= 1400 px)
     const wide = await browser.newPage({ viewport: { width: 1600, height: 900 } });
@@ -591,6 +591,89 @@ async function main() {
       saaHtml({ data: null, failing: true }).includes('ei juuri nyt saada') && saaHtml(null).includes('haetaan')
       && saaHtml({ failing: true, fetched_at: new Date(Date.now() - 5 * 3600000).toISOString(),
         data: { temp: 2, hours: [], days: [] } }).includes('Tiedot ovat ajalta')));
+    // Sähkön hinta (demossa esimerkkidata, palvelinversiossa porssisahko.net)
+    const el = await mob.textContent('[data-slot="sahko"]');
+    ok('sähkökortti näyttää hinnan, päivät ja lähteen', /\d,\d\d snt\/kWh/.test(el) && el.includes('Tänään')
+      && el.includes('Huomenna') && el.includes('keskihinta') && el.includes('Lähde: porssisahko.net')
+      && el.includes('sis. alv'), el.replace(/\s+/g, ' ').slice(0, 200));
+    const elBars = await mob.$$eval('[data-slot="sahko"] .sahko-chart', (cs) => cs.map((c) => c.querySelectorAll('.sahko-bar').length));
+    ok('sähkökortissa on pylväs joka tunnille tänään ja huomenna', elBars.length === 2 && elBars.every((n) => n >= 23 && n <= 25),
+      JSON.stringify(elBars));
+    ok('kuluva tunti on merkitty tasan yhteen pylvääseen', (await mob.$$('[data-slot="sahko"] .sahko-bar.now')).length === 1);
+    ok('sähkökortti kertoo halvimman tulevan jakson', /Halvin 3 tunnin jakso alkaa (nyt|tänään klo \d\d|huomenna klo \d\d), keskimäärin \d+,\d\d snt\/kWh\./.test(el));
+    ok('demo kertoo sähkön hintojen olevan esimerkkidataa', el.includes('Esimerkkidata'));
+    const elRead0 = await mob.textContent('[data-slot="sahko"] .sahko-read');
+    await mob.click('[data-slot="sahko"] .sahko-chart >> nth=0 >> .sahko-bar >> nth=12'); await mob.waitForTimeout(100);
+    const elRead1 = await mob.textContent('[data-slot="sahko"] .sahko-read');
+    ok('pylvään napautus näyttää tunnin hinnan', elRead0.includes('alin') && /^klo 12: \d+,\d\d snt\/kWh$/.test(elRead1), elRead1);
+    await mob.focus('[data-slot="sahko"] .sahko-chart >> nth=1');
+    await mob.keyboard.press('ArrowRight'); await mob.keyboard.press('ArrowRight'); await mob.waitForTimeout(100);
+    const elRead2 = await mob.$$eval('[data-slot="sahko"] .sahko-read', (els) => els.map((e) => e.textContent));
+    ok('nuolinäppäimet selaavat tunteja, ja lukurivi palautuu kun kaaviosta poistutaan',
+      /^klo 01: /.test(elRead2[1]) && elRead2[0].includes('alin'), JSON.stringify(elRead2));
+    ok('tunnit saa näkyviin myös taulukkona', await mob.evaluate(() => {
+      const t = document.querySelector('[data-slot="sahko"] .sahko-table table');
+      return t.querySelectorAll('tbody tr').length >= 23 && t.querySelectorAll('thead th').length === 3;
+    }));
+    ok('sähkökortti ei aiheuta vaakavieritystä puhelimessa',
+      await mob.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
+    // Laskenta kiinteällä kellonajalla: torstai 15.1.2026 klo 12.20 Suomen aikaa.
+    const calc = await mob.evaluate(() => {
+      const now = Date.parse('2026-01-15T10:20:00Z');
+      const hours = Array.from({ length: 24 }, (_, hour) => {
+        const price = hour >= 3 && hour <= 5 ? 1 : hour >= 20 && hour <= 22 ? 2 : hour === 13 ? -1 : 10;
+        return { time: new Date(Date.parse('2026-01-14T22:00:00Z') + hour * 3600000).toISOString(), date: '2026-01-15', hour,
+          price: hour === 12 ? 25 : price, quarters: hour === 12 ? [10, 20, 30, 40] : [price, price, price, price] };
+      });
+      const html = sahkoHtml({ data: { hours }, fetched_at: new Date(now).toISOString(), failing: false }, now);
+      const box = document.createElement('div');
+      box.innerHTML = html;
+      return {
+        price: box.querySelector('.sahko-price').textContent, desc: box.querySelector('.sahko-desc').textContent,
+        best: box.querySelector('.sahko-best').textContent, note: box.querySelector('.sahko-note').textContent,
+        past: box.querySelectorAll('.sahko-bar.past').length, now: box.querySelector('.sahko-bar.now').dataset.klo,
+        neg: box.querySelectorAll('.sahko-bar.neg').length, read: box.querySelector('.sahko-read').textContent,
+        avg: box.querySelector('.sahko-avg').textContent, y: box.querySelector('.sahko-y').textContent,
+      };
+    });
+    ok('hinta nyt on kuluvan vartin hinta', calc.price.startsWith('20,00') && calc.desc.includes('klo 12.15 alkaen'), JSON.stringify(calc));
+    ok('halvin jakso etsitään vain tulevista tunneista', calc.best.includes('alkaa tänään klo 20') && calc.best.includes('2,00'), calc.best);
+    ok('menneet tunnit ja kuluva tunti erotetaan', calc.past === 12 && calc.now === '12');
+    ok('päivän alin, ylin ja keskihinta lasketaan', calc.read === 'alin −1,00 klo 13 · ylin 25,00 klo 12' && calc.avg.includes('8,04'), calc.read + ' / ' + calc.avg);
+    ok('negatiivinen hinta piirtyy nollaviivan alle', calc.neg === 1 && calc.y.includes('−'), calc.y);
+    ok('ilman huomisen hintoja kortti kertoo julkaisuajan', calc.note.includes('noin klo 14'));
+    // Ulkoinen data on epäluotettavaa: haitalliset arvot eivät saa päätyä sivulle.
+    const evilEl = await mob.evaluate(() => {
+      const x = '<img src=x onerror="window.__xss4=1">';
+      const now = Date.now();
+      const time = new Date(Math.floor(now / 3600000) * 3600000).toISOString();
+      const date = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Helsinki' });
+      const hour = Number(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Helsinki', hour: '2-digit', hourCycle: 'h23' }).format(new Date(now)));
+      const html = sahkoHtml({ fetched_at: x, failing: true, demo: x, data: { unit: x, hours: [
+        { time, date, hour, price: 5, quarters: [x, x, x, x] },
+        { time: x, date: x, hour: x, price: x, quarters: x }, { time, date: x, hour, price: 5 }, { time, date, hour: 99, price: 5 },
+        { time, date, hour, price: 1e9 }, null, x] } });
+      const box = document.createElement('div');
+      box.innerHTML = html;
+      document.body.appendChild(box);
+      const bad = box.querySelectorAll('img, script').length;
+      const bars = box.querySelectorAll('.sahko-bar').length;
+      document.body.removeChild(box);
+      return { bad, bars, hasPrice: html.includes('5,00') };
+    });
+    await mob.waitForTimeout(150);
+    ok('XSS: sähkökortti ei päästä lähteen haitallista dataa sivulle', evilEl.bad === 0 && evilEl.hasPrice && evilEl.bars === 1
+      && !(await mob.evaluate(() => window.__xss4)), JSON.stringify(evilEl));
+    ok('sähkökortti kertoo, jos hintoja ei ole tai lähde ei vastaa', await mob.evaluate(() => {
+      const now = Date.now();
+      const time = new Date(Math.floor(now / 3600000) * 3600000).toISOString();
+      const date = new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Helsinki' });
+      const hour = Number(new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Helsinki', hour: '2-digit', hourCycle: 'h23' }).format(new Date(now)));
+      return sahkoHtml({ data: null, failing: true }).includes('ei juuri nyt saada') && sahkoHtml(null).includes('haetaan')
+        && sahkoHtml({ data: { hours: [] }, failing: false }).includes('haetaan')
+        && sahkoHtml({ failing: true, fetched_at: new Date(now - 5 * 3600000).toISOString(),
+          data: { hours: [{ time, date, hour, price: 3, quarters: [3, 3, 3, 3] }] } }).includes('Tiedot ovat ajalta');
+    }));
     ok('etusivun kotityökortti näyttää kahden viikon sisällä erääntyvät',
       (await mob.$$('.dash-chores li')).length === 1 && (await mob.textContent('.dash-chores')).includes('Testaa palovaroittimet'));
     await mob.click('[data-choredone]'); await mob.waitForTimeout(600);

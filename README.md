@@ -94,8 +94,16 @@ välein, avainta tai tiliä ei tarvita. Jos Ilmatieteen laitos ei vastaa,
 kortti näyttää viimeisimmän tiedon ja kertoo sen iän. Sandboxissa näkyy
 esimerkkisää, koska demo ei hae mitään verkosta.
 
-**Paikanpitäjinä** näkyvät Uutiset, Euribor ja Sähkön hinta. Ne kertovat
-suoraan, ettei lähdettä ole vielä kytketty: ks. seuraava luku.
+**Sähkön hinta** on pörssisähkön hinta porssisahko.net-palvelusta (snt/kWh,
+arvonlisävero mukana, ilman siirtoa ja sähköyhtiön marginaalia). Kortti
+näyttää hinnan juuri nyt, tämän päivän ja huomisen tunnit pylväinä sekä
+halvimman tulevan kolmen tunnin jakson esimerkiksi pyykin tai tiskin
+ajoitukseen. Huomisen hinnat tulevat näkyviin iltapäivällä noin klo 14 ja 15
+välillä. Palvelin hakee hinnat kerran tunnissa, avainta tai tiliä ei tarvita.
+Sandboxissa näkyvät esimerkkihinnat.
+
+**Paikanpitäjinä** näkyvät Uutiset ja Euribor. Ne kertovat suoraan, ettei
+lähdettä ole vielä kytketty: ks. seuraava luku.
 
 **Pohjasta peritty ja valmiina:** ohjeet ja monitasoiset kategoriat, haku (myös
 liitetiedostojen sisällöstä), liitteet ja kuvat tekstin seassa, versiohistoria,
@@ -117,11 +125,13 @@ tallennetaan välimuistiin ja tarjoillaan valmiina. Syyt:
 
 Vaiheet uudelle lähteelle:
 
-1. `sources/<nimi>.js`: hakee datan ja palauttaa olion (malli: `sources/saa.js`)
+1. `sources/<nimi>.js`: hakee datan ja palauttaa olion (mallit: `sources/saa.js`
+   ja `sources/sahko.js`)
 2. Lisää lähde `dashboard-sources.js`:n listaan. Se ajastaa haun ja tallentaa
    tuloksen (SQLite)
 3. `GET /api/dashboard` palauttaa lähteiden viimeisimmät arvot
-4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla (malli: sääkortti)
+4. `public/cards.js`: korvaa paikanpitäjä oikealla kortilla (mallit: sääkortti
+   ja sähkön hinta)
 
 Sään paikkakunnan voi vaihtaa `sources/saa.js`:n alusta (`PLACE`).
 
@@ -130,7 +140,6 @@ Sään paikkakunnan voi vaihtaa `sources/saa.js`:n alusta (`PLACE`).
 - **Uutiset:** RSS-syötteet. Näytä otsikko + linkki, älä kopioi koko artikkelia
 - **Euribor:** vaatii selvityksen. Virallinen julkaisija on EMMI ja jakelulla on
   ehtoja; Suomen Pankki ja EKP ovat avoimempia vaihtoehtoja
-- **Sähkön pörssihinta:** tuntihinnat tälle ja huomiselle päivälle
 
 ---
 

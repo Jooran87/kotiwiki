@@ -385,6 +385,34 @@ function sectionFor(text, pantryCategory) {
   return K.guessSection(text, cat);
 }
 
+// Esimerkkihinnat samassa muodossa kuin palvelimen sources/sahko.js tuottaa:
+// tämän ja huomisen päivän tunnit Suomen ajassa, halpa yö ja kaksi huippua.
+function demoPrices() {
+  const fmt = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Helsinki', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hourCycle: 'h23',
+  });
+  const parts = (ms) => {
+    const p = {};
+    for (const x of fmt.formatToParts(new Date(ms))) p[x.type] = x.value;
+    return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour) };
+  };
+  const HOUR = 3600000;
+  const start = Math.floor(Date.now() / HOUR) * HOUR;
+  const today = parts(start).date;
+  const tomorrow = parts(start + 24 * HOUR).date;
+  const curve = [2.1, 1.6, 1.3, 1.2, 1.4, 2.4, 5.8, 9.6, 11.2, 8.9, 7.1, 6.2, 5.6, 5.9, 6.8, 8.4, 11.9, 14.6, 13.2, 10.1, 7.4, 5.2, 3.6, 2.7];
+  const hours = [];
+  for (let t = start - 30 * HOUR; t <= start + 50 * HOUR; t += HOUR) {
+    const lp = parts(t);
+    if (lp.date !== today && lp.date !== tomorrow) continue;
+    const base = curve[lp.hour] * (lp.date === tomorrow ? 0.8 : 1);
+    const quarters = [0, 1, 2, 3].map((i) => Math.round(base * (1 + (i - 1.5) * 0.04) * 1000) / 1000);
+    hours.push({ time: new Date(t).toISOString(), date: lp.date, hour: lp.hour,
+      price: Math.round(quarters.reduce((s, v) => s + v, 0) / 4 * 1000) / 1000, quarters });
+  }
+  return { demo: true, failing: false, fetched_at: new Date().toISOString(), data: { unit: 'snt/kWh', vat_included: true, hours } };
+}
+
 // Esimerkkisää samassa muodossa kuin palvelimen sources/saa.js tuottaa.
 function demoWeather() {
   const now = new Date();
@@ -858,10 +886,15 @@ const Store = {
   // Sandboxissa ei ole palvelinta eikä muita laitteita → ei reaaliaikaisuutta.
   events: null,
 
-  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti
-  // saa keksityn esimerkkisään (demo: true → kortti kertoo sen käyttäjälle).
+  // Etusivun ulkoiset lähteet: demo ei hae mitään verkosta, joten sääkortti ja
+  // sähkön hinta saavat keksityn esimerkkidatan (demo: true → kortti kertoo
+  // sen käyttäjälle).
   dashboard: {
-    async get(id) { return id === 'saa' ? demoWeather() : null; },
+    async get(id) {
+      if (id === 'saa') return demoWeather();
+      if (id === 'sahko') return demoPrices();
+      return null;
+    },
   },
 
   notes: {
